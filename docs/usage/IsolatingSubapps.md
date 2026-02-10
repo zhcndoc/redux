@@ -1,12 +1,12 @@
 ---
 id: isolating-redux-sub-apps
-title: Isolating Redux Sub-Apps
+title: 隔离 Redux 子应用
 ---
 
-# Isolating Redux Sub-Apps
+# 隔离 Redux 子应用
 
-Consider the case of a “big” app (contained in a `<BigApp>` component)
-that embeds smaller “sub-apps” (contained in `<SubApp>` components):
+考虑一种“大型”应用（包含在 `<BigApp>` 组件中），
+该应用嵌入了较小的“子应用”（包含在 `<SubApp>` 组件中）：
 
 ```js
 import React, { Component } from 'react'
@@ -25,35 +25,32 @@ class BigApp extends Component {
 }
 ```
 
-These `<SubApp>`s will be completely independent. They won't share data or
-actions, and won't see or communicate with each other.
+这些 `<SubApp>` 组件将完全独立。它们不会共享数据或动作，也不会相互看到或通信。
 
-It's best not to mix this approach with standard Redux reducer composition.
-For typical web apps, stick with reducer composition. For
-“product hubs”, “dashboards”, or enterprise software that groups disparate
-tools into a unified package, give the sub-app approach a try.
+最好不要将这种方法与标准的 Redux reducer 组合混用。
+对于典型的网页应用，坚持使用 reducer 组合。
+而对于“产品中心”、“仪表盘”或将不同工具组合成统一包的企业软件，可以尝试使用子应用方法。
 
-The sub-app approach is also useful for large teams that are divided by product
-or feature verticals. These teams can ship sub-apps independently or in combination
-with an enclosing “app shell”.
+对于按产品或功能垂直划分的大型团队，子应用方法也非常有用。
+这些团队可以独立发布子应用，或与外层的“应用框架”组合发布。
 
-Below is a sub-app's root connected component.
-As usual, it can render more components, connected or not, as children.
-Usually we'd render it in `<Provider>` and be done with it.
+下面是一个子应用的根连接组件。
+通常，它可以渲染更多连接或未连接的子组件。
+通常我们会将其渲染在 `<Provider>` 中，然后完成。
 
 ```js
 class App extends Component { ... }
 export default connect(mapStateToProps)(App)
 ```
 
-However, we don't have to call `ReactDOM.render(<Provider><App /></Provider>)`
-if we're interested in hiding the fact that the sub-app component is a Redux app.
+但是，如果我们想隐藏子应用组件是 Redux 应用这层事实，
+就不用调用 `ReactDOM.render(<Provider><App /></Provider>)`。
 
-Maybe we want to be able to run multiple instances of it in the same “bigger” app
-and keep it as a complete black box, with Redux being an implementation detail.
+也许我们希望能够在同一个“更大”应用中运行多个实例，
+并让它作为一个完整的黑盒，Redux 只是一个实现细节。
 
-To hide Redux behind a React API, we can wrap it in a special component that
-initializes the store in the constructor:
+为了在 React API 后面隐藏 Redux，可以用一个特殊组件包装，
+在构造函数中初始化 store：
 
 ```js
 import React, { Component } from 'react'
@@ -78,9 +75,9 @@ class SubApp extends Component {
 }
 ```
 
-This way every instance will be independent.
+这样每个实例都会独立存在。
 
-This pattern is _not_ recommended for parts of the same app that share data.
-However, it can be useful when the bigger app has zero access to the smaller apps' internals,
-and we'd like to keep the fact that they are implemented with Redux as an implementation detail.
-Each component instance will have its own store, so they won't “know” about each other.
+该模式**不推荐**用于需要共享数据的同一个应用的不同部分。
+但是当“大应用”无法访问“小应用”的内部功能，
+并且希望 Redux 只是一个实现细节时，它非常有用。
+每个组件实例将拥有自己的 store，因此它们彼此不会“知晓”。

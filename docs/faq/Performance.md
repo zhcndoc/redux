@@ -1,114 +1,114 @@
 ---
 id: performance
-title: Performance
-sidebar_label: Performance
+title: 性能
+sidebar_label: 性能
 ---
 
-## Redux FAQ: Performance
+## Redux 常见问题解答：性能
 
-### How well does Redux “scale” in terms of performance and architecture?
+### Redux 在性能和架构方面的“扩展”能力如何？
 
-While there's no single definitive answer to this, most of the time this should not be a concern in either case.
+虽然没有唯一的明确答案，但大多数情况下，这都不应该成为问题。
 
-The work done by Redux generally falls into a few areas: processing actions in middleware and reducers (including object duplication for immutable updates), notifying subscribers after actions are dispatched, and updating UI components based on the state changes. While it's certainly _possible_ for each of these to become a performance concern in sufficiently complex situations, there's nothing inherently slow or inefficient about how Redux is implemented. In fact, React Redux in particular is heavily optimized to cut down on unnecessary re-renders, and React-Redux v5 shows noticeable improvements over earlier versions.
+Redux 处理的工作一般分为几个方面：处理中间件和 reducer 中的 action（包括为不可变更新进行对象复制）、在 action 派发后通知订阅者、以及根据状态变化更新 UI 组件。虽然在足够复杂的情况下，这些环节可能成为性能瓶颈，但 Redux 的实现本身并不存在任何固有的缓慢或低效。实际上，特别是 React Redux 针对减少不必要的重渲染做了大量优化，React-Redux v5 相较早期版本就有明显的性能提升。
 
-Redux may not be as efficient out of the box when compared to other libraries. For maximum rendering performance in a React application, state should be stored in a normalized shape, many individual components should be connected to the store instead of just a few, and connected list components should pass item IDs to their connected child list items (allowing the list items to look up their own data by ID). This minimizes the overall amount of rendering to be done. Use of memoized selector functions is also an important performance consideration.
+与其他库相比，Redux 默认出厂可能没有那么高效。为了在 React 应用中获得最大的渲染性能，状态应存储为归一化的结构，应该让许多独立组件都连接到 store，而不是只连接几个，连接的列表组件应将项目 ID 传给连接的子列表项（这样子项可以按 ID 查找自己的数据）。这能最小化整体的渲染量。使用记忆化的 selector 函数也是重要的性能考量。
 
-As for architecture, anecdotal evidence is that Redux works well for varying project and team sizes. Redux is currently used by hundreds of companies and thousands of developers, with several hundred thousand monthly installations from NPM. One developer reported:
+至于架构方面，经验表明 Redux 适用于不同规模的项目和团队。Redux 目前被数百家公司和数千名开发者使用，在 NPM 上每月有数十万次安装。一位开发者报告说：
 
-> for scale, we have ~500 action types, ~400 reducer cases, ~150 components, 5 middlewares, ~200 actions, ~2300 tests
+> 在规模方面，我们有大约 500 个 action 类型，约 400 个 reducer case，约 150 个组件，5 个中间件，约 200 个 actions，约 2300 个测试
 
-#### Further information
+#### 更多信息
 
-**Documentation**
+**文档**
 
-- [Using Redux: Structuring Reducers - Normalizing State Shape](../usage/structuring-reducers/NormalizingStateShape.md)
+- [使用 Redux：构建 Reducers - 归一化状态形状](../usage/structuring-reducers/NormalizingStateShape.md)
 
-**Articles**
+**文章**
 
-- [How to Scale React Applications](https://www.smashingmagazine.com/2016/09/how-to-scale-react-applications/) (accompanying talk: [Scaling React Applications](https://vimeo.com/168648012))
-- [High-Performance Redux](https://somebody32.github.io/high-performance-redux/)
-- [Improving React and Redux Perf with Reselect](https://blog.rangle.io/react-and-redux-performance-with-reselect/)
-- [Encapsulating the Redux State Tree](https://randycoulman.com/blog/2016/09/13/encapsulating-the-redux-state-tree/)
-- [React/Redux Links: Performance - Redux](https://github.com/markerikson/react-redux-links/blob/master/react-performance.md#redux-performance)
+- [如何扩展 React 应用](https://www.smashingmagazine.com/2016/09/how-to-scale-react-applications/)（配套演讲：[Scaling React Applications](https://vimeo.com/168648012)）
+- [高性能 Redux](https://somebody32.github.io/high-performance-redux/)
+- [使用 Reselect 改善 React 和 Redux 性能](https://blog.rangle.io/react-and-redux-performance-with-reselect/)
+- [封装 Redux 状态树](https://randycoulman.com/blog/2016/09/13/encapsulating-the-redux-state-tree/)
+- [React/Redux 链接：性能 - Redux](https://github.com/markerikson/react-redux-links/blob/master/react-performance.md#redux-performance)
 
-**Discussions**
+**讨论**
 
-- [#310: Who uses Redux?](https://github.com/reduxjs/redux/issues/310)
-- [#1751: Performance issues with large collections](https://github.com/reduxjs/redux/issues/1751)
-- [React Redux #269: Connect could be used with a custom subscribe method](https://github.com/reduxjs/react-redux/issues/269)
-- [React Redux #407: Rewrite connect to offer an advanced API](https://github.com/reduxjs/react-redux/issues/407)
-- [React Redux #416: Rewrite connect for better performance and extensibility](https://github.com/reduxjs/react-redux/pull/416)
-- [Redux vs MobX TodoMVC Benchmark: #1](https://github.com/mweststrate/redux-todomvc/pull/1)
-- [Reddit: What's the best place to keep the initial state?](https://www.reddit.com/r/reactjs/comments/47m9h5/whats_the_best_place_to_keep_the_initial_state/)
-- [Reddit: Help designing Redux state for a single page app](https://www.reddit.com/r/reactjs/comments/48k852/help_designing_redux_state_for_a_single_page/)
-- [Reddit: Redux performance issues with a large state object?](https://www.reddit.com/r/reactjs/comments/41wdqn/redux_performance_issues_with_a_large_state_object/)
-- [Reddit: React/Redux for Ultra Large Scale apps](https://www.reddit.com/r/javascript/comments/49box8/reactredux_for_ultra_large_scale_apps/)
-- [Twitter: Redux scaling](https://twitter.com/NickPresta/status/684058236828266496)
-- [Twitter: Redux vs MobX benchmark graph - Redux state shape matters](https://twitter.com/dan_abramov/status/720219615041859584)
-- [Stack Overflow: How to optimize small updates to props of nested components?](https://stackoverflow.com/questions/37264415/how-to-optimize-small-updates-to-props-of-nested-component-in-react-redux)
-- [Chat log: React/Redux perf - updating a 10K-item Todo list](https://gist.github.com/markerikson/53735e4eb151bc228d6685eab00f5f85)
-- [Chat log: React/Redux perf - single connection vs many connections](https://gist.github.com/markerikson/6056565dd65d1232784bf42b65f8b2ad)
+- [#310：谁在用 Redux？](https://github.com/reduxjs/redux/issues/310)
+- [#1751：关于大集合的性能问题](https://github.com/reduxjs/redux/issues/1751)
+- [React Redux #269：Connect 可用自定义订阅方法](https://github.com/reduxjs/react-redux/issues/269)
+- [React Redux #407：改写 connect 以提供高级 API](https://github.com/reduxjs/react-redux/issues/407)
+- [React Redux #416：改写 connect 以提升性能和扩展性](https://github.com/reduxjs/react-redux/pull/416)
+- [Redux vs MobX TodoMVC 基准测试：#1](https://github.com/mweststrate/redux-todomvc/pull/1)
+- [Reddit：保存初始状态的最佳位置？](https://www.reddit.com/r/reactjs/comments/47m9h5/whats_the_best_place_to_keep_the_initial_state/)
+- [Reddit：设计单页应用的 Redux 状态](https://www.reddit.com/r/reactjs/comments/48k852/help_designing_redux_state_for_a_single_page/)
+- [Reddit：大型状态对象的 Redux 性能问题？](https://www.reddit.com/r/reactjs/comments/41wdqn/redux_performance_issues_with_a_large_state_object/)
+- [Reddit：用于超大规模应用的 React/Redux](https://www.reddit.com/r/javascript/comments/49box8/reactredux_for_ultra_large_scale_apps/)
+- [Twitter：Redux 扩展](https://twitter.com/NickPresta/status/684058236828266496)
+- [Twitter：Redux vs MobX 基准图 - Redux 状态形状重要](https://twitter.com/dan_abramov/status/720219615041859584)
+- [Stack Overflow：如何优化嵌套组件 props 的小更新？](https://stackoverflow.com/questions/37264415/how-to-optimize-small-updates-to-props-of-nested-component-in-react-redux)
+- [聊天记录：React/Redux 性能 - 更新 10K 条待办列表](https://gist.github.com/markerikson/53735e4eb151bc228d6685eab00f5f85)
+- [聊天记录：React/Redux 性能 - 单个连接 vs 多个连接](https://gist.github.com/markerikson/6056565dd65d1232784bf42b65f8b2ad)
 
-### Won't calling “all my reducers” for each action be slow?
+### 每个 action 都调用“所有 reducer”不会很慢吗？
 
-It's important to note that a Redux store really only has a single reducer function. The store passes the current state and dispatched action to that one reducer function, and lets the reducer handle things appropriately.
+重要的是要注意，Redux Store 实际上只有一个 reducer 函数。Store 会将当前状态和派发的 action 传给该 reducer 函数，并让它进行相应处理。
 
-Obviously, trying to handle every possible action in a single function does not scale well, simply in terms of function size and readability, so it makes sense to split the actual work into separate functions that can be called by the top-level reducer. In particular, the common suggested pattern is to have a separate sub-reducer function that is responsible for managing updates to a particular slice of state at a specific key. The `combineReducers()` that comes with Redux is one of the many possible ways to achieve this. It's also highly suggested to keep your store state as flat and as normalized as possible. Ultimately, though, you are in charge of organizing your reducer logic any way you want.
+显然，试图在单个函数中处理所有可能的 action，从函数大小和可读性上来说都不具备扩展性，因此把实际工作拆分成多个函数，由顶层 reducer 调用是合理的。常见的做法是为状态树中特定键下的状态片段建立独立的子 reducer 函数。Redux 自带的 `combineReducers()` 就是实现这种方式的多种方案之一。同时强烈建议将 store 状态保持为扁平且归一化的结构。最终，你可以按照自己的喜好组织 reducer 逻辑。
 
-However, even if you happen to have many different reducer functions composed together, and even with deeply nested state, reducer speed is unlikely to be a problem. JavaScript engines are capable of running a very large number of function calls per second, and most of your reducers are probably just using a `switch` statement and returning the existing state by default in response to most actions.
+即使你有多个 reducer 函数组合起来，状态也深度嵌套，reducer 的速度通常也不会是问题。JavaScript 引擎每秒能运行大量函数调用，大多数 reducer 只是简单的 `switch` 语句，默认对大多数 action 返回现有状态。
 
-If you actually are concerned about reducer performance, you can use a utility such as [redux-ignore](https://github.com/omnidan/redux-ignore) or [reduxr-scoped-reducer](https://github.com/chrisdavies/reduxr-scoped-reducer) to ensure that only certain reducers listen to specific actions. You can also use [redux-log-slow-reducers](https://github.com/michaelcontento/redux-log-slow-reducers) to do some performance benchmarking.
+如果你确实担心 reducer 性能，可以使用如 [redux-ignore](https://github.com/omnidan/redux-ignore) 或 [reduxr-scoped-reducer](https://github.com/chrisdavies/reduxr-scoped-reducer) 的工具，确保只有特定 reducer 监听特定 action。也可以用 [redux-log-slow-reducers](https://github.com/michaelcontento/redux-log-slow-reducers) 做性能基准测试。
 
-#### Further information
+#### 更多信息
 
-**Discussions**
+**讨论**
 
-- [#912: Proposal: action filter utility](https://github.com/reduxjs/redux/issues/912)
-- [#1303: Redux Performance with Large Store and frequent updates](https://github.com/reduxjs/redux/issues/1303)
-- [Stack Overflow: State in Redux app has the name of the reducer](https://stackoverflow.com/questions/35667775/state-in-redux-react-app-has-a-property-with-the-name-of-the-reducer/35674297)
-- [Stack Overflow: How does Redux deal with deeply nested models?](https://stackoverflow.com/questions/34494866/how-does-redux-deals-with-deeply-nested-models/34495397)
+- [#912：提案：action 过滤工具](https://github.com/reduxjs/redux/issues/912)
+- [#1303：大型 Store 和频繁更新的 Redux 性能](https://github.com/reduxjs/redux/issues/1303)
+- [Stack Overflow：Redux 应用中的状态具有 reducer 名称属性](https://stackoverflow.com/questions/35667775/state-in-redux-react-app-has-a-property-with-the-name-of-the-reducer/35674297)
+- [Stack Overflow：Redux 如何处理深度嵌套的模型？](https://stackoverflow.com/questions/34494866/how-does-redux-deals-with-deeply-nested-models/34495397)
 
-### Do I have to deep-clone my state in a reducer? Isn't copying my state going to be slow?
+### 我必须在 reducer 中深拷贝状态吗？复制状态会不会很慢？
 
-Immutably updating state generally means making shallow copies, not deep copies. Shallow copies are much faster than deep copies, because fewer objects and fields have to be copied, and it effectively comes down to moving some pointers around.
+不可变更新状态通常是浅拷贝，不是深拷贝。浅拷贝比深拷贝快得多，因为复制的对象和字段更少，实际上就是指针的移动。
 
-In addition, deep cloning state creates new references for every field. Since the React-Redux `connect` function relies on reference comparisons to determine if data has changed, this means that UI components will be forced to re-render unnecessarily even though the other data hasn't meaningfully changed.
+而且，深拷贝状态会为每个字段创建新的引用。React-Redux 的 `connect` 函数依赖引用比较来判断数据是否改变，这意味着即使数据没有实质变化，UI 组件也会被迫不必要地重新渲染。
 
-However, you _do_ need to create a copied and updated object for each level of nesting that is affected. Although that shouldn't be particularly expensive, it's another good reason why you should keep your state normalized and shallow if possible.
+不过，你确实需要为受影响的每个嵌套层级创建副本和更新对象。虽然不算特别昂贵，但这也是你应尽量保持状态归一化和扁平化的重要原因。
 
-> Common Redux misconception: you need to deeply clone the state. Reality: if something inside doesn't change, keep its reference the same!
+> 常见误区：你需要深度克隆状态。事实是：如果某部分不变，就保持原引用不变！
 
-#### Further information
+#### 更多信息
 
-**Documentation**
+**文档**
 
-- [Using Redux: Structuring Reducers - Prerequisite Concepts](../usage/structuring-reducers/PrerequisiteConcepts.md)
-- [Using Redux: Structuring Reducers - Immutable Update Patterns](../usage/structuring-reducers/ImmutableUpdatePatterns.md)
+- [使用 Redux：构建 Reducers - 先决概念](../usage/structuring-reducers/PrerequisiteConcepts.md)
+- [使用 Redux：构建 Reducers - 不可变更新模式](../usage/structuring-reducers/ImmutableUpdatePatterns.md)
 
-**Discussions**
+**讨论**
 
-- [#454: Handling big states in reducer](https://github.com/reduxjs/redux/issues/454)
-- [#758: Why can't state be mutated?](https://github.com/reduxjs/redux/issues/758)
-- [#994: How to cut the boilerplate when updating nested entities?](https://github.com/reduxjs/redux/issues/994)
-- [Twitter: common misconception - deep cloning](https://twitter.com/dan_abramov/status/688087202312491008)
+- [#454：在 reducer 中处理大状态](https://github.com/reduxjs/redux/issues/454)
+- [#758：为什么不能修改状态？](https://github.com/reduxjs/redux/issues/758)
+- [#994：更新嵌套实体时如何减少样板代码？](https://github.com/reduxjs/redux/issues/994)
+- [Twitter：常见误区 - 深拷贝](https://twitter.com/dan_abramov/status/688087202312491008)
 
-### How can I reduce the number of store update events?
+### 如何减少 store 更新事件的次数？
 
-Redux notifies subscribers after each successfully dispatched action (i.e. an action reached the store and was handled by reducers). In some cases, it may be useful to cut down on the number of times subscribers are called, particularly if an action creator dispatches multiple distinct actions in a row.
+Redux 会在每个成功派发的 action 后通知订阅者（即 action 到达 store 并被 reducer 处理后）。有时，尤其当 action 创建者连续派发多个不同 action 时，减少调用订阅者的次数会很有用。
 
-There are several addons that add batching capabilities in various ways, like: [redux-batched-actions](https://github.com/tshelburne/redux-batched-actions) (a higher-order reducer that lets you dispatch several actions as if it was one and “unpack” them in the reducer), [redux-batched-subscribe](https://github.com/tappleby/redux-batched-subscribe) (a store enhancer that lets you debounce subscriber calls for multiple dispatches), or [redux-batch](https://github.com/manaflair/redux-batch) (a store enhancer that handles dispatching an array of actions with a single subscriber notification).
+有几个插件以不同方式添加了批处理能力，比如：[redux-batched-actions](https://github.com/tshelburne/redux-batched-actions)（高阶 reducer，让你像处理单个 action 一样派发多个，并在 reducer 解包），[redux-batched-subscribe](https://github.com/tappleby/redux-batched-subscribe)（store 增强器，可对多次派发的订阅调用进行防抖），或 [redux-batch](https://github.com/manaflair/redux-batch)（store 增强器，处理数组派发，只触发一次订阅者通知）。
 
-For React-Redux specifically, starting in [React-Redux v7](https://github.com/reduxjs/react-redux/releases/tag/v7.0.1) a new `batch` public API is available to help minimize the number of React re-renders when dispatching actions outside of React event handlers. It wraps React's `unstable_batchedUpdate()` API, allows any React updates in an event loop tick to be batched together into a single render pass. React already uses this internally for its own event handler callbacks. This API is actually part of the renderer packages like ReactDOM and React Native, not the React core itself.
+对于 React-Redux，从 [React-Redux v7](https://github.com/reduxjs/react-redux/releases/tag/v7.0.1) 开始提供了新的 `batch` 公共 API，帮助在非 React 事件处理器中派发多个 action 时，将 React 重新渲染次数降到最低。它包装了 React 的 `unstable_batchedUpdate()` API，允许在同一事件循环中合并多个 React 更新为单次渲染。React 自身事件处理回调内部已使用该机制。这个 API 属于如 ReactDOM 和 React Native 这样的渲染包，而非 React 核心。
 
-Since React-Redux needs to work in both ReactDOM and React Native environments, we've taken care of importing this API from the correct renderer at build time for our own use. We also now re-export this function publicly ourselves, renamed to `batch()`. You can use it to ensure that multiple actions dispatched outside of React only result in a single render update, like this:
+由于 React-Redux 需同时支持 ReactDOM 和 React Native，我们在构建时已处理正确导入该 API，并重新导出为 `batch()`。你可以这样用，确保多次在 React 外派发的 action 只触发一次更新：
 
 ```js
 import { batch } from 'react-redux'
 
 function myThunk() {
   return (dispatch, getState) => {
-    // should only result in one combined re-render, not two
+    // 这里只会导致一次合并的重渲染，而非两次
     batch(() => {
       dispatch(increment())
       dispatch(increment())
@@ -117,57 +117,57 @@ function myThunk() {
 }
 ```
 
-#### Further information
+#### 更多信息
 
-**Discussions**
+**讨论**
 
-- [#125: Strategy for avoiding cascading renders](https://github.com/reduxjs/redux/issues/125)
-- [#542: Idea: batching actions](https://github.com/reduxjs/redux/issues/542)
-- [#911: Batching actions](https://github.com/reduxjs/redux/issues/911)
-- [#1813: Use a loop to support dispatching arrays](https://github.com/reduxjs/redux/pull/1813)
-- [React Redux #263: Huge performance issue when dispatching hundreds of actions](https://github.com/reduxjs/react-redux/issues/263)
-- [React-Redux #1177: Roadmap: v6, Context, Subscriptions, and Hooks](https://github.com/reduxjs/react-redux/issues/1177)
+- [#125：避免级联渲染的策略](https://github.com/reduxjs/redux/issues/125)
+- [#542：想法：批处理 actions](https://github.com/reduxjs/redux/issues/542)
+- [#911：批处理 actions](https://github.com/reduxjs/redux/issues/911)
+- [#1813：用循环支持派发数组](https://github.com/reduxjs/redux/pull/1813)
+- [React Redux #263：派发数百个 action 时的巨大性能问题](https://github.com/reduxjs/react-redux/issues/263)
+- [React-Redux #1177：路线图：v6，Context，订阅和 Hooks](https://github.com/reduxjs/react-redux/issues/1177)
 
-**Libraries**
+**库**
 
-- [Redux Addons Catalog: Store - Change Subscriptions](https://github.com/markerikson/redux-ecosystem-links/blob/master/store.md#store-change-subscriptions)
+- [Redux 附加组件目录：Store - 变更订阅](https://github.com/markerikson/redux-ecosystem-links/blob/master/store.md#store-change-subscriptions)
 
-### Will having “one state tree” cause memory problems? Will dispatching many actions take up memory?
+### 拥有“一棵状态树”会导致内存问题吗？派发大量 action 会占用内存吗？
 
-First, in terms of raw memory usage, Redux is no different than any other JavaScript library. The only difference is that all the various object references are nested together into one tree, instead of maybe saved in various independent model instances such as in Backbone. Second, a typical Redux app would probably have somewhat _less_ memory usage than an equivalent Backbone app because Redux encourages use of plain JavaScript objects and arrays rather than creating instances of Models and Collections. Finally, Redux only holds onto a single state tree reference at a time. Objects that are no longer referenced in that tree will be garbage collected, as usual.
+首先，就原始内存使用而言，Redux 与任何其它 JavaScript 库没有区别。唯一不同的是所有对象引用被嵌套在一棵树中，而不是像 Backbone 那样保存在各独立模型实例中。第二，典型 Redux 应用可能比等效 Backbone 应用内存使用更少，因为 Redux 鼓励使用普通 JS 对象和数组，而非创建模型和集合实例。最后，Redux 只保留某一时刻的单一状态树引用。未被引用的对象会被垃圾回收。
 
-Redux does not store a history of actions itself. However, the Redux DevTools do store actions so they can be replayed, but those are generally only enabled during development, and not used in production.
+Redux 本身不存储 action 历史，但 Redux DevTools 会存储 action 以支持重放，但它们通常只在开发时启用，生产环境不使用。
 
-#### Further information
+#### 更多信息
 
-**Documentation**
+**文档**
 
-- [Redux Fundamentals: Async Logic and Data Flow](../tutorials/fundamentals/part-6-async-logic.md)
+- [Redux 基础：异步逻辑和数据流](../tutorials/fundamentals/part-6-async-logic.md)
 
-**Discussions**
+**讨论**
 
-- [Stack Overflow: Is there any way to "commit" the state in Redux to free memory?](https://stackoverflow.com/questions/35627553/is-there-any-way-to-commit-the-state-in-redux-to-free-memory/35634004)
-- [Stack Overflow: Can a Redux store lead to a memory leak?](https://stackoverflow.com/questions/39943762/can-a-redux-store-lead-to-a-memory-leak/40549594#40549594)
-- [Stack Overflow: Redux and ALL the application state](https://stackoverflow.com/questions/42489557/redux-and-all-the-application-state/42491766#42491766)
-- [Stack Overflow: Memory Usage Concern with Controlled Components](https://stackoverflow.com/questions/44956071/memory-usage-concern-with-controlled-components?noredirect=1&lq=1)
-- [Reddit: What's the best place to keep initial state?](https://www.reddit.com/r/reactjs/comments/47m9h5/whats_the_best_place_to_keep_the_initial_state/)
+- [Stack Overflow：有没有方法“提交” Redux 状态以释放内存？](https://stackoverflow.com/questions/35627553/is-there-any-way-to-commit-the-state-in-redux-to-free-memory/35634004)
+- [Stack Overflow：Redux store 会导致内存泄漏吗？](https://stackoverflow.com/questions/39943762/can-a-redux-store-lead-to-a-memory-leak/40549594#40549594)
+- [Stack Overflow：Redux 和所有应用状态](https://stackoverflow.com/questions/42489557/redux-and-all-the-application-state/42491766#42491766)
+- [Stack Overflow：受控组件的内存使用问题](https://stackoverflow.com/questions/44956071/memory-usage-concern-with-controlled-components?noredirect=1&lq=1)
+- [Reddit：保存初始状态的最佳位置？](https://www.reddit.com/r/reactjs/comments/47m9h5/whats_the_best_place_to_keep_the_initial_state/)
 
-### Will caching remote data cause memory problems?
+### 缓存远程数据会导致内存问题吗？
 
-The amount of memory available to JavaScript applications running in a browser is finite. Caching data will cause performance problems when the size of the cache approaches the amount of available memory. This tends to be a problem when the cached data is exceptionally large or the session is exceptionally long-running. And while it is good to be aware of the potential for these problems, this awareness should not discourage you from efficiently caching reasonable amounts of data.
+浏览器中运行的 JavaScript 应用可用的内存有限。当缓存的数据量接近可用内存时，会导致性能问题。通常当缓存数据异常庞大或会话异常长时容易出现这种情况。尽管需要注意这些潜在问题，但这不应该阻止你合理高效地缓存数据。
 
-Here are a few approaches to caching remote data efficiently:
+下面几种方案有助于高效缓存远程数据：
 
-First, only cache as much data as the user needs. If your application displays a paginated list of records, you don't necessarily need to cache the entire collection. Instead, cache what is visible to the user and add to that cache when the user has (or will soon have) an immediate need for more data.
+首先，只缓存用户需要的数据。如果应用展示分页记录列表，不必缓存整个集合，而只缓存用户当前可见的内容，并在用户需要时增加缓存。
 
-Second, cache an abbreviated form of a record when possible. Sometimes a record includes data that is not relevant to the user. If the application does not depend on this data, it can be omitted from the cache.
+其次，尽可能缓存记录的简略形式。某些数据对用户无关紧要，若应用不依赖这些数据，则可从缓存中剔除。
 
-Third, only cache a single copy of a record. This is especially important when records contain copies of other records. Cache a unique copy for each record and replace each nested copy with a reference. This is called normalization. Normalization is the preferred approach to storing relational data for [several reasons](../usage/structuring-reducers/NormalizingStateShape.md#designing-a-normalized-state), including efficient memory consumption.
+第三，只缓存单一副本的记录。尤其当记录包含其他记录拷贝时，应缓存每条记录的唯一副本，并将嵌套副本替换为引用。这就是归一化。归一化是存储关系数据的推荐方案（[原因详见](../usage/structuring-reducers/NormalizingStateShape.md#designing-a-normalized-state)），包括对内存使用效率的提升。
 
-#### Further information
+#### 更多信息
 
-**Discussions**
+**讨论**
 
-- [Stack Overflow: How to choose the Redux state shape for an app with list/detail views and pagination?](https://stackoverflow.com/questions/33940015/how-to-choose-the-redux-state-shape-for-an-app-with-list-detail-views-and-pagina)
-- [Twitter: ...concerns over having "too much data in the state tree"...](https://twitter.com/acemarke/status/804071531844423683)
-- [Advanced Redux entity normalization](https://medium.com/@dcousineau/advanced-redux-entity-normalization-f5f1fe2aefc5)
+- [Stack Overflow：如何为带列表/详情视图和分页的应用选择 Redux 状态形状？](https://stackoverflow.com/questions/33940015/how-to-choose-the-redux-state-shape-for-an-app-with-list-detail-views-and-pagina)
+- [Twitter：…关于状态树中“太多数据”的担忧…](https://twitter.com/acemarke/status/804071531844423683)
+- [高级 Redux 实体归一化](https://medium.com/@dcousineau/advanced-redux-entity-normalization-f5f1fe2aefc5)

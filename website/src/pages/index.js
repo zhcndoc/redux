@@ -10,9 +10,7 @@ const features = [
   {
     content: (
       <p>
-        Redux helps you write applications that{' '}
-        <strong>behave consistently</strong>, run in different environments
-        (client, server, and native), and are <strong>easy to test</strong>.
+        Redux 帮助你编写<strong>行为一致</strong>的应用程序，可以在不同的环境（客户端、服务器和原生环境）中运行，并且<strong>易于开发环境测试</strong>。
       </p>
     ),
     image: (
@@ -25,14 +23,12 @@ const features = [
       </svg>
     ),
     imageAlign: 'top',
-    title: 'Predictable'
+    title: '行为一致'
   },
   {
     content: (
       <p>
-        Centralizing your application's state and logic enables powerful
-        capabilities like <strong>undo/redo</strong>,{' '}
-        <strong>state persistence</strong>, and much more.
+        将应用程序的状态和逻辑集中管理，可以实现强大的功能，如<strong>撤销/重做</strong>、<strong>状态持久化</strong>，以及更多其他功能。
       </p>
     ),
     image: (
@@ -45,18 +41,12 @@ const features = [
       </svg>
     ),
     imageAlign: 'top',
-    title: 'Centralized'
+    title: '集中管理'
   },
   {
     content: (
       <p>
-        The Redux DevTools make it easy to trace{' '}
-        <strong>
-          when, where, why, and how your application's state changed
-        </strong>
-        . Redux's architecture lets you log changes, use{' '}
-        <strong>"time-travel debugging"</strong>, and even send complete error
-        reports to a server.
+        Redux DevTools 让你轻松追踪<strong>你的应用程序状态何时、何地、为何以及如何发生了变化</strong>。Redux 的架构允许你记录更改，使用<strong>“时光旅行调试”</strong>，甚至可以将完整的错误报告发送到服务器。
       </p>
     ),
     image: (
@@ -73,13 +63,12 @@ const features = [
       </svg>
     ),
     imageAlign: 'top',
-    title: 'Debuggable'
+    title: '易于调试'
   },
   {
     content: (
       <p>
-        Redux <strong>works with any UI layer</strong>, and has{' '}
-        <strong>a large ecosystem of addons</strong> to fit your needs.
+        Redux <strong>可以与任何 UI 层配合使用</strong>，并且拥有<strong>庞大的插件生态系统</strong>，以满足您的需求。
       </p>
     ),
     image: (
@@ -92,13 +81,13 @@ const features = [
       </svg>
     ),
     imageAlign: 'top',
-    title: 'Flexible'
+    title: '灵活扩展'
   }
 ]
 
 const otherLibraries = [
   {
-    content: 'Official React bindings for Redux',
+    content: 'Redux 的官方 React 绑定',
     title: 'React-Redux',
     link: 'https://react-redux.js.org',
     image: (
@@ -115,7 +104,7 @@ const otherLibraries = [
   },
   {
     content:
-      'The official, opinionated, batteries-included toolset for efficient Redux development',
+      '官方、主张明确、内置多种功能的高效 Redux 开发工具集',
     title: 'Redux Toolkit',
     link: 'https://redux-toolkit.js.org',
     image: (
@@ -152,7 +141,7 @@ function Home() {
               )}
               to={useBaseUrl('introduction/getting-started')}
             >
-              Get Started
+              开始使用
             </Link>
           </div>
         </div>
@@ -180,18 +169,18 @@ function Home() {
             </div>
           </section>
         )}
-        <section className="course-callout home-mid">
+        {/* <section className="course-callout home-mid">
           <a href="https://redux.dev">
             <img src="/img/course-callout-mid.svg" alt="Redux.dev - a new course by Mark Erikson + ui.dev - Learn more" />
           </a>
-        </section>
+        </section> */}
         {otherLibraries && otherLibraries.length && (
           <section className={styles.features}>
             <div className="container">
               <div className="row">
                 <div className="col">
                   <h2 className={`text--center ${styles.secondTitle}`}>
-                    Other Libraries from the Redux Team
+                    Redux 团队的其他库
                   </h2>
                 </div>
               </div>

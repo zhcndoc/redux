@@ -1,69 +1,69 @@
 ---
 id: videos
-title: 'Videos'
-sidebar_label: 'Videos'
+title: '视频'
+sidebar_label: '视频'
 hide_title: true
 ---
 
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css'
 
-# Recommended Videos
+# 推荐视频
 
-Here are some excellent video tutorials that we can recommend. These videos show the same "modern Redux" approaches that we teach in our docs.
+这里有一些我们推荐的优秀视频教程。这些视频展示了我们文档中教授的相同“现代 Redux”方法。
 
-## Learn Modern Redux Livestream
+## 学习现代 Redux 直播课程
 
-Redux maintainer Mark Erikson appeared on the "Learn with Jason" show to explain how we recommend using Redux today. The show includes a live-coded example app that shows how to use Redux Toolkit and React-Redux hooks with TypeScript, as well as the new RTK Query data fetching APIs:
+Redux 维护者 Mark Erikson 出现在“Learn with Jason”节目中，讲解了我们今天推荐使用 Redux 的方式。该节目包括一个实时编码的示例应用，展示如何使用 Redux Toolkit 和 React-Redux hooks 结合 TypeScript，以及新的 RTK Query 数据获取 API：
 
 <LiteYouTubeEmbed
     id="9zySeP5vH9c"
-    title="Learn Modern Redux - Redux Toolkit, React-Redux Hooks, and RTK Query"
+    title="学习现代 Redux - Redux Toolkit，React-Redux Hooks 和 RTK Query"
 />
 
-## RTK Query Basics: Query Endpoints, Data Flow and TypeScript
+## RTK Query 基础：查询端点、数据流和 TypeScript
 
-A video course on RTK Query basics by Lenz Weber-Tronic, the creator of RTK Query.
+RTK Query 创造者 Lenz Weber-Tronic 的 RTK Query 基础视频课程。
 
-You can [watch this RTK Query video course for free at Egghead](https://egghead.io/courses/rtk-query-basics-query-endpoints-data-flow-and-typescript-57ea3c43?af=7pnhj6) or take a look at the first lesson right here:
+你可以[在 Egghead 免费观看这个 RTK Query 视频课程](https://egghead.io/courses/rtk-query-basics-query-endpoints-data-flow-and-typescript-57ea3c43?af=7pnhj6)，或者在这里查看第一课：
 
 <div style={{position:"relative",paddingTop:"56.25%"}}>
   <iframe 
     src="https://app.egghead.io/lessons/redux-course-introduction-and-application-walk-through-for-rtk-query-basics/embed?af=7pnhj6" 
-    title="RTK Query Video course at Egghead: Course Introduction and Application Walk through for RTK Query Basics"
+    title="Egghead 上的 RTK Query 视频课程：针对 RTK Query 基础的课程介绍和应用讲解"
     frameborder="0" 
     allowfullscreen
     style={{position:"absolute",top:0,left:0,width:"100%",height:"100%"}}
   ></iframe>
 </div>
 
-## Redux Toolkit Complete Tutorial with Dave Gray
+## Dave Gray 的 Redux Toolkit 完整教程
 
-This 4-hour tutorial video teaches how to use Redux Toolkit by showing how to build the same example app that's covered in [the "Redux Essentials" tutorial](./essentials/part-1-overview-concepts.md), and walks through how each piece of the app works.
+这个 4 小时的教程视频通过构建与[“Redux Essentials”教程](./essentials/part-1-overview-concepts.md)中相同的示例应用，讲解如何使用 Redux Toolkit，并详细介绍应用中各部分的工作原理。
 
 <LiteYouTubeEmbed
     id="NqzdVN2tyvQ"
-    title="Dave Gray - Redux Toolkit Complete Tutorial"
+    title="Dave Gray - Redux Toolkit 完整教程"
 />
 
-## Egghead Courses with Jamund Ferguson
+## Jamund Ferguson 的 Egghead 课程
 
-Jamund Ferguson has created several excellent "modern Redux" courses on Egghead.
+Jamund Ferguson 在 Egghead 上创建了几门优秀的“现代 Redux”课程。
 
-### Modern Redux with Redux Toolkit (RTK) and TypeScript
+### 使用 Redux Toolkit (RTK) 和 TypeScript 的现代 Redux
 
-[Egghead course: Modern Redux with Redux Toolkit and TypeScript](https://app.egghead.io/lessons/react-intro-to-modern-redux-with-rtk-and-typescript?pl=modern-redux-with-redux-toolkit-rtk-and-typescript-64f243c8&af=7pnhj6)
+[Egghead 课程：使用 Redux Toolkit 和 TypeScript 的现代 Redux](https://app.egghead.io/lessons/react-intro-to-modern-redux-with-rtk-and-typescript?pl=modern-redux-with-redux-toolkit-rtk-and-typescript-64f243c8&af=7pnhj6)
 
-This course takes a basic shopping cart application built with React and fully power it with Redux and RTK using TypeScript. It covers how Redux Toolkit simplifies the process of setting up your Redux application, including building slices, reducers, selectors and thunks, and all typed with TypeScript.
+本课程以一个用 React 构建的基础购物车应用为例，展示如何用 Redux 和 RTK 以及 TypeScript 为其赋能。涵盖了 Redux Toolkit 如何简化搭建 Redux 应用的过程，包括建立 slice、reducer、selector 和 thunk，并全部使用 TypeScript 进行类型定义。
 
-### Modernizing a Legacy Redux Application with React Hooks
+### 使用 React Hooks 现代化老旧的 Redux 应用
 
-[Egghead course: Modernizing a Legacy Redux Application with React Hooks](https://app.egghead.io/lessons/react-setup-the-currency-conversion-calculator?pl=modernizing-a-legacy-redux-application-with-react-hooks-c528&af=7pnhj6)
+[Egghead 课程：使用 React Hooks 现代化老旧的 Redux 应用](https://app.egghead.io/lessons/react-setup-the-currency-conversion-calculator?pl=modernizing-a-legacy-redux-application-with-react-hooks-c528&af=7pnhj6)
 
-A course that covers how to modernize existing React+Redux applications from older-style patterns like React class components and the React-Redux `connect` API, to modern patterns with React function components and the React-Redux `useSelector/useDispatch` hooks.
+本课程涵盖如何将现有的 React+Redux 应用从传统的 React 类组件和 React-Redux `connect` API 模式，现代化为使用 React 函数组件和 React-Redux `useSelector/useDispatch` hooks 的模式。
 
-### Confidently Testing Redux Applications with Jest & TypeScript
+### 使用 Jest & TypeScript 自信地测试 Redux 应用
 
-[Egghead course: Confidently Testing Redux Applications with Jest & TypeScript](https://app.egghead.io/lessons/jest-intro-to-confidently-testing-redux-applications-with-jest-typescript?pl=confidently-testing-redux-applications-with-jest-typescript-16e17d9b&af=7pnhj6)
+[Egghead 课程：使用 Jest & TypeScript 自信地测试 Redux 应用](https://app.egghead.io/lessons/jest-intro-to-confidently-testing-redux-applications-with-jest-typescript?pl=confidently-testing-redux-applications-with-jest-typescript-16e17d9b&af=7pnhj6)
 
-Best practices for building & testing Redux applications have changed dramatically over time. This course aims to be a comprehensive and up-to-date resource for those seeking to confidently test their Redux apps.
+构建和测试 Redux 应用的最佳实践随着时间发生了巨大变化。本课程旨在为希望自信测试 Redux 应用的开发者提供全面且最新的资源。

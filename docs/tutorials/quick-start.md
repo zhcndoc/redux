@@ -1,50 +1,50 @@
 ---
 id: quick-start
-title: Quick Start
-sidebar_label: Quick Start
+title: 快速开始
+sidebar_label: 快速开始
 ---
 
-# Redux Toolkit Quick Start
+# Redux Toolkit 快速开始
 
-:::tip What You'll Learn
+:::tip 你将学到的内容
 
-- How to set up and use Redux Toolkit with React-Redux
-
-:::
-
-:::info Prerequisites
-
-- Familiarity with [ES6 syntax and features](https://www.taniarascia.com/es6-syntax-and-feature-overview/)
-- Knowledge of React terminology: [JSX](https://reactjs.org/docs/introducing-jsx.html), [State](https://reactjs.org/docs/state-and-lifecycle.html), [Function Components, Props](https://reactjs.org/docs/components-and-props.html), and [Hooks](https://reactjs.org/docs/hooks-intro.html)
-- Understanding of [Redux terms and concepts](https://redux.js.org/tutorials/fundamentals/part-2-concepts-data-flow)
+- 如何设置并使用 Redux Toolkit 和 React-Redux
 
 :::
 
-## Introduction
+:::info 先决条件
 
-Welcome to the Redux Toolkit Quick Start tutorial! **This tutorial will briefly introduce you to Redux Toolkit and teach you how to start using it correctly**.
+- 熟悉 [ES6 语法和特性](https://www.taniarascia.com/es6-syntax-and-feature-overview/)
+- 了解 React 术语：[JSX](https://reactjs.org/docs/introducing-jsx.html)、[状态（State）](https://reactjs.org/docs/state-and-lifecycle.html)、[函数组件，属性（Props）](https://reactjs.org/docs/components-and-props.html) 以及 [Hooks](https://reactjs.org/docs/hooks-intro.html)
+- 理解 [Redux 术语和概念](https://redux.js.org/tutorials/fundamentals/part-2-concepts-data-flow)
 
-### How to Read This Tutorial
+:::
 
-This page will focus on just how to set up a Redux application with Redux Toolkit and the main APIs you'll use. For explanations of what Redux is, how it works, and full examples of how to use Redux Toolkit, [see the tutorials linked in the "Tutorials Index" page](./tutorials-index.md).
+## 简介
 
-For this tutorial, we assume that you're using Redux Toolkit with React, but you can also use it with other UI layers as well. The examples are based on [a typical Create-React-App folder structure](https://create-react-app.dev/docs/folder-structure) where all the application code is in a `src` folder, but the patterns can be adapted to whatever project or folder setup you're using.
+欢迎来到 Redux Toolkit 快速开始教程！**本教程将简要介绍 Redux Toolkit 并教你如何正确地开始使用它**。
 
-The [Redux+JS template for Create-React-App](https://github.com/reduxjs/cra-template-redux) comes with this same project setup already configured.
+### 如何阅读本教程
 
-## Usage Summary
+本页将重点介绍如何使用 Redux Toolkit 设置 Redux 应用和你将使用的主要 API。关于 Redux 是什么、它如何工作以及如何使用 Redux Toolkit 的完整示例，请参见[“教程索引”页面中的教程](./tutorials-index.md)。
 
-### Install Redux Toolkit and React-Redux
+本教程假设你正在将 Redux Toolkit 与 React 一起使用，但你也可以将其与其他 UI 层一起使用。示例基于[典型的 Create-React-App 文件夹结构](https://create-react-app.dev/docs/folder-structure)，所有应用代码都在 `src` 文件夹中，但这些模式可以适应你任何项目或文件夹结构。
 
-Add the Redux Toolkit and React-Redux packages to your project:
+[Create-React-App 的 Redux+JS 模板](https://github.com/reduxjs/cra-template-redux) 已预配置了相同的项目结构。
+
+## 使用摘要
+
+### 安装 Redux Toolkit 和 React-Redux
+
+将 Redux Toolkit 和 React-Redux 包添加到你的项目：
 
 ```sh
 npm install @reduxjs/toolkit react-redux
 ```
 
-### Create a Redux Store
+### 创建 Redux Store
 
-Create a file named `src/app/store.js`. Import the `configureStore` API from Redux Toolkit. We'll start by creating an empty Redux store, and exporting it:
+创建一个名为 `src/app/store.js` 的文件。从 Redux Toolkit 导入 `configureStore` API。我们先创建一个空的 Redux store 并导出它：
 
 ```js title="app/store.js"
 import { configureStore } from '@reduxjs/toolkit'
@@ -54,11 +54,11 @@ export default configureStore({
 })
 ```
 
-This creates a Redux store, and also automatically configures the Redux DevTools extension so that you can inspect the store while developing.
+这将创建一个 Redux store，并且自动配置 Redux DevTools 扩展，以便你在开发时可以检查 store。
 
-### Provide the Redux Store to React
+### 将 Redux Store 提供给 React
 
-Once the store is created, we can make it available to our React components by putting a React-Redux `<Provider>` around our application in `src/index.js`. Import the Redux store we just created, put a `<Provider>` around your `<App>`, and pass the store as a prop:
+store 创建之后，我们可以通过在 `src/index.js` 中用 React-Redux 的 `<Provider>` 包裹应用来为 React 组件提供 store。导入刚创建的 Redux store，用 `<Provider>` 包裹 `<App>`，并传入 store 作为 prop：
 
 ```js title="index.js"
 import React from 'react'
@@ -82,13 +82,13 @@ root.render(
 )
 ```
 
-### Create a Redux State Slice
+### 创建 Redux 状态切片（Slice）
 
-Add a new file named `src/features/counter/counterSlice.js`. In that file, import the `createSlice` API from Redux Toolkit.
+新增一个名为 `src/features/counter/counterSlice.js` 的文件。在该文件中，从 Redux Toolkit 导入 `createSlice` API。
 
-Creating a slice requires a string name to identify the slice, an initial state value, and one or more reducer functions to define how the state can be updated. Once a slice is created, we can export the generated Redux action creators and the reducer function for the whole slice.
+创建切片需要一个字符串名称来标识该切片，一个初始状态值，以及一个或多个定义如何更新状态的 reducer 函数。切片创建后，我们可以导出自动生成的 Redux action 创建函数以及整个切片的 reducer 函数。
 
-Redux requires that [we write all state updates immutably, by making copies of data and updating the copies](https://redux.js.org/tutorials/fundamentals/part-2-concepts-data-flow#immutability). However, Redux Toolkit's `createSlice` and `createReducer` APIs use [Immer](https://immerjs.github.io/immer/) inside to allow us to [write "mutating" update logic that becomes correct immutable updates](https://redux.js.org/tutorials/fundamentals/part-8-modern-redux#immutable-updates-with-immer).
+Redux 要求[我们以不可变方式写所有状态更新，即复制数据并更新副本](https://redux.js.org/tutorials/fundamentals/part-2-concepts-data-flow#immutability)。不过，Redux Toolkit 的 `createSlice` 和 `createReducer` API 内部使用了 [Immer](https://immerjs.github.io/immer/)，允许我们[写“可变”的更新逻辑，但实际上会转换成正确的不可变更新](https://redux.js.org/tutorials/fundamentals/part-8-modern-redux#immutable-updates-with-immer)。
 
 ```js title="features/counter/counterSlice.js"
 import { createSlice } from '@reduxjs/toolkit'
@@ -100,10 +100,9 @@ export const counterSlice = createSlice({
   },
   reducers: {
     increment: state => {
-      // Redux Toolkit allows us to write "mutating" logic in reducers. It
-      // doesn't actually mutate the state because it uses the Immer library,
-      // which detects changes to a "draft state" and produces a brand new
-      // immutable state based off those changes
+      // Redux Toolkit 允许我们在 reducer 中写“可变”逻辑。
+      // 它实际上不会改变状态，因为它使用 Immer 库，
+      // 该库检测对“草稿状态”的更改，并基于这些更改生成全新的不可变状态
       state.value += 1
     },
     decrement: state => {
@@ -115,15 +114,15 @@ export const counterSlice = createSlice({
   }
 })
 
-// Action creators are generated for each case reducer function
+// 为每个 case reducer 生成对应的 action 创建函数
 export const { increment, decrement, incrementByAmount } = counterSlice.actions
 
 export default counterSlice.reducer
 ```
 
-### Add Slice Reducers to the Store
+### 将切片 Reducer 添加到 Store 中
 
-Next, we need to import the reducer function from the counter slice and add it to our store. By defining a field inside the `reducer` parameter, we tell the store to use this slice reducer function to handle all updates to that state.
+接下来，我们需要导入该 counter 切片的 reducer 函数并将其添加到 store。通过在 `reducer` 参数中定义一个字段，我们告诉 store 使用此切片的 reducer 函数来处理该状态的所有更新。
 
 ```js title="app/store.js"
 import { configureStore } from '@reduxjs/toolkit'
@@ -138,9 +137,9 @@ export default configureStore({
 })
 ```
 
-### Use Redux State and Actions in React Components
+### 在 React 组件中使用 Redux 状态和动作
 
-Now we can use the React-Redux hooks to let React components interact with the Redux store. We can read data from the store with `useSelector`, and dispatch actions using `useDispatch`. Create a `src/features/counter/Counter.js` file with a `<Counter>` component inside, then import that component into `App.js` and render it inside of `<App>`.
+现在我们可以使用 React-Redux 的钩子让 React 组件与 Redux store 交互。我们可以用 `useSelector` 从 store 读取数据，用 `useDispatch` 派发动作。新建文件 `src/features/counter/Counter.js`，创建一个 `<Counter>` 组件，然后在 `App.js` 中导入该组件，并在 `<App>` 内渲染。
 
 ```jsx title="features/counter/Counter.js"
 import React from 'react'
@@ -156,17 +155,17 @@ export function Counter() {
     <div>
       <div>
         <button
-          aria-label="Increment value"
+          aria-label="增加值"
           onClick={() => dispatch(increment())}
         >
-          Increment
+          增加
         </button>
         <span>{count}</span>
         <button
-          aria-label="Decrement value"
+          aria-label="减少值"
           onClick={() => dispatch(decrement())}
         >
-          Decrement
+          减少
         </button>
       </div>
     </div>
@@ -174,37 +173,37 @@ export function Counter() {
 }
 ```
 
-Now, any time you click the "Increment" and "Decrement" buttons:
+现在，每次点击“增加”和“减少”按钮时：
 
-- The corresponding Redux action will be dispatched to the store
-- The counter slice reducer will see the actions and update its state
-- The `<Counter>` component will see the new state value from the store and re-render itself with the new data
+- 对应的 Redux 动作会被派发到 store
+- counter 切片的 reducer 会接收到动作并更新状态
+- `<Counter>` 组件会从 store 获取新的状态值并用新数据重新渲染自身
 
-## What You've Learned
+## 你学到了什么
 
-That was a brief overview of how to set up and use Redux Toolkit with React. Recapping the details:
+以上是如何使用 React 配置和使用 Redux Toolkit 的简要介绍，具体回顾如下：
 
-:::tip Summary
+:::tip 总结
 
-- **Create a Redux store with `configureStore`**
-  - `configureStore` accepts a `reducer` function as a named argument
-  - `configureStore` automatically sets up the store with good default settings
-- **Provide the Redux store to the React application components**
-  - Put a React-Redux `<Provider>` component around your `<App />`
-  - Pass the Redux store as `<Provider store={store}>`
-- **Create a Redux "slice" reducer with `createSlice`**
-  - Call `createSlice` with a string name, an initial state, and named reducer functions
-  - Reducer functions may "mutate" the state using Immer
-  - Export the generated slice reducer and action creators
-- **Use the React-Redux `useSelector/useDispatch` hooks in React components**
-  - Read data from the store with the `useSelector` hook
-  - Get the `dispatch` function with the `useDispatch` hook, and dispatch actions as needed
+- **用 `configureStore` 创建 Redux store**
+  - `configureStore` 接收一个名为 `reducer` 的函数参数
+  - `configureStore` 自动为 store 设置良好的默认配置
+- **为 React 应用组件提供 Redux store**
+  - 用 React-Redux 的 `<Provider>` 组件包裹 `<App />`
+  - 将 Redux store 作为 `<Provider store={store}>` 传入
+- **使用 `createSlice` 创建 Redux “切片” reducer**
+  - 调用 `createSlice`，传入字符串名称、初始状态和命名的 reducer 函数
+  - reducer 函数可以使用 Immer 来“修改”状态
+  - 导出生成的切片 reducer 和 action 创建函数
+- **在 React 组件中使用 React-Redux 的 `useSelector` 和 `useDispatch` 钩子**
+  - 使用 `useSelector` 钩子从 store 读取数据
+  - 使用 `useDispatch` 钩子获取 `dispatch` 函数，并根据需要派发动作
 
 :::
 
-### Full Counter App Example
+### 完整计数器应用示例
 
-Here's the complete counter application as a running CodeSandbox:
+下面是完整的计数器应用示例，可以在 CodeSandbox 中运行：
 
 <iframe
   class="codesandbox"
@@ -214,8 +213,8 @@ Here's the complete counter application as a running CodeSandbox:
   sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
 ></iframe>
 
-## What's Next?
+## 接下来怎么办？
 
-We recommend going through [**the full "Redux Essentials" tutorial**](./essentials/part-1-overview-concepts.md), which covers all of the key pieces included in Redux Toolkit, what problems they solve, and how to use them to build real-world applications.
+我们建议继续学习[**完整的“Redux Essentials”教程**](./essentials/part-1-overview-concepts.md)，它涵盖了 Redux Toolkit 中包含的所有关键部分、它们解决了哪些问题，以及如何使用它们构建真实世界的应用。
 
-You may also want to read through [the "Redux Fundamentals" tutorial](./fundamentals/part-1-overview.md), which will give you a complete understanding of how Redux works, what Redux Toolkit does, and how to use it correctly.
+你也可以阅读[“Redux 基础”教程](./fundamentals/part-1-overview.md)，它将让你全面了解 Redux 的工作原理、Redux Toolkit 的作用以及如何正确使用它。

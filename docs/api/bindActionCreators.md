@@ -2,40 +2,40 @@
 id: bindactioncreators
 title: bindActionCreators
 hide_title: true
-description: 'API > bindActionCreators: wrapping action creators for dispatching'
+description: 'API > bindActionCreators：包装 action creators 以便 dispatch 调用'
 ---
 
 &nbsp;
 
 # `bindActionCreators(actionCreators, dispatch)`
 
-## Overview
+## 概述
 
-Turns an object whose values are [action creators](../understanding/thinking-in-redux/Glossary.md#action-creator), into an object with the same keys, but with every action creator wrapped into a [`dispatch`](Store.md#dispatchaction) call so they may be invoked directly.
+将一个值为 [action creators](../understanding/thinking-in-redux/Glossary.md#action-creator) 的对象，转化为一个拥有相同键的对象，但每个 action creator 都被包装在一个 [`dispatch`](Store.md#dispatchaction) 调用中，这样它们可以直接被调用。
 
-Normally you should just call [`dispatch`](Store.md#dispatchaction) directly on your [`Store`](Store.md) instance. If you use Redux with React, [react-redux](https://github.com/gaearon/react-redux) will provide you with the [`dispatch`](Store.md#dispatchaction) function so you can call it directly, too.
+通常你应该直接对你的 [`Store`](Store.md) 实例调用 [`dispatch`](Store.md#dispatchaction)。如果你使用的是 React 绑定的 Redux，[react-redux](https://github.com/gaearon/react-redux) 会直接为你提供 [`dispatch`](Store.md#dispatchaction) 函数，你也可以直接调用它。
 
-The only use case for `bindActionCreators` is when you want to pass some action creators down to a component that isn't aware of Redux, and you don't want to pass [`dispatch`](Store.md#dispatchaction) or the Redux store to it.
+使用 `bindActionCreators` 的唯一场景是在你想将一些 action creators 传递给一个不理解 Redux 的组件时，而你又不想传递 [`dispatch`](Store.md#dispatchaction) 或 Redux store 给它。
 
-For convenience, you can also pass an action creator as the first argument, and get a dispatch wrapped function in return.
+为了方便，你也可以传入单个 action creator 作为第一个参数，并得到一个被 dispatch 包裹的函数。
 
-:::warning Warning
+:::warning 警告
 
-This was originally intended for use with the legacy React-Redux `connect` method. It still works, but is rarely needed.
+该方法最初是为搭配旧版 React-Redux 的 `connect` 方法设计的。它仍然可用，但很少需要。
 
 :::
 
-## Parameters
+## 参数
 
-1. `actionCreators` (_Function_ or _Object_): An [action creator](../understanding/thinking-in-redux/Glossary.md#action-creator), or an object whose values are action creators.
+1. `actionCreators`（_函数_ 或 _对象_）：一个 [action creator](../understanding/thinking-in-redux/Glossary.md#action-creator) ，或者一个值为 action creator 的对象。
 
-2. `dispatch` (_Function_): A [`dispatch`](Store.md#dispatchaction) function available on the [`Store`](Store.md) instance.
+2. `dispatch`（_函数_）：[`Store`](Store.md) 实例上的 [`dispatch`](Store.md#dispatchaction) 函数。
 
-### Returns
+### 返回值
 
-(_Function_ or _Object_): An object mimicking the original object, but with each function immediately dispatching the action returned by the corresponding action creator. If you passed a function as `actionCreators`, the return value will also be a single function.
+(_函数_ 或 _对象_)：返回一个模仿原始对象的对象，但其中的每个函数都会立即 dispatch 由对应 action creator 产生的 action。如果传入的是单个函数，则返回值也是一个函数。
 
-## Example
+## 示例
 
 #### `TodoActionCreators.js`
 
@@ -70,13 +70,13 @@ console.log(TodoActionCreators)
 // }
 
 function TodoListContainer(props) {
-  // Injected by react-redux:
+  // 由 react-redux 注入：
   const { dispatch, todos } = props
 
-  // Here's a good use case for bindActionCreators:
-  // You want a child component to be completely unaware of Redux.
-  // We create bound versions of these functions now so we can
-  // pass them down to our child later.
+  // 这是 bindActionCreators 的一个典型用例：
+  // 你想让一个子组件完全不知道 Redux。
+  // 我们现在创建这些函数的绑定版本，
+  // 以便稍后传递给子组件。
 
   const boundActionCreators = useMemo(
     () => bindActionCreators(TodoActionCreators, dispatch),
@@ -89,22 +89,22 @@ function TodoListContainer(props) {
   // }
 
   useEffect(() => {
-    // Note: this won't work:
+    // 注意：下面这样调用是不行的：
     // TodoActionCreators.addTodo('Use Redux')
 
-    // You're just calling a function that creates an action.
-    // You must dispatch the action, too!
+    // 你只是调用了一个返回 action 的函数。
+    // 你必须要把 action dispatch 出去！
 
-    // This will work:
+    // 下面这样是可以的：
     let action = TodoActionCreators.addTodo('Use Redux')
     dispatch(action)
   }, [])
 
   return <TodoList todos={todos} {...this.boundActionCreators} />
 
-  // An alternative to bindActionCreators is to pass
-  // just the dispatch function down, but then your child component
-  // needs to import action creators and know about them.
+  // bindActionCreators 的另一种替代方案是直接传递
+  // dispatch 函数，但这样的话，
+  // 你的子组件就需要导入并了解 action creators。
 
   // return <TodoList todos={todos} dispatch={dispatch} />
 }

@@ -1,101 +1,101 @@
 ---
 id: glossary
-title: Glossary
+title: 术语表
 ---
 
-# Glossary
+# 术语表
 
-This is a glossary of the core terms in Redux, along with their type signatures. The types are documented using [Flow notation](https://flow.org/en/docs/types).
+这是 Redux 核心术语的词汇表，以及它们的类型签名。类型使用的是 [Flow 语法](https://flow.org/en/docs/types)。
 
-## State
+## 状态（State）
 
 ```js
 type State = any
 ```
 
-_State_ (also called the _state tree_) is a broad term, but in the Redux API it usually refers to the single state value that is managed by the store and returned by [`getState()`](api/Store.md#getState). It represents the entire state of a Redux application, which is often a deeply nested object.
+_状态_（也称为 _状态树_）是一个广义的术语，但在 Redux API 中通常指的是由 store 管理并由 [`getState()`](api/Store.md#getState) 返回的单一状态值。它代表整个 Redux 应用的状态，通常是一个深度嵌套的对象。
 
-By convention, the top-level state is an object or some other key-value collection like a Map, but technically it can be any type. Still, you should do your best to keep the state serializable. Don't put anything inside it that you can't easily turn into JSON.
+按照惯例，顶层状态是一个对象或类似 Map 这样的键值集合，但从技术上讲，它可以是任何类型。不过，你应该尽力保持状态可序列化。不要把不能轻易转成 JSON 的东西放进去。
 
-## Action
+## Action（动作）
 
 ```js
 type Action = Object
 ```
 
-An _action_ is a plain object that represents an intention to change the state. Actions are the only way to get data into the store. Any data, whether from UI events, network callbacks, or other sources such as WebSockets needs to eventually be dispatched as actions.
+一个_动作_是一个普通对象，表示改变状态的意图。动作是将数据送入 store 的唯一途径。任何数据，不论是来自 UI 事件、网络回调，还是其他来源（例如 WebSocket），最终都需要被派发为动作。
 
-Actions must have a `type` field that indicates the type of action being performed. Types can be defined as constants and imported from another module. It's better to use strings for `type` than [Symbols](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Symbol) because strings are serializable.
+动作必须有一个 `type` 字段，表示正在执行的动作的类型。类型可以定义成常量并从别的模块导入。使用字符串作为 `type` 比使用 [Symbol](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Symbol) 更好，因为字符串是可序列化的。
 
-Other than `type`, the structure of an action object is really up to you. If you're interested, check out [Flux Standard Action](https://github.com/acdlite/flux-standard-action) for recommendations on how actions should be constructed.
+除了 `type`，动作对象的结构完全由你决定。如果感兴趣，可以看看 [Flux 标准动作](https://github.com/acdlite/flux-standard-action) 对动作构造的推荐。
 
-See also [async action](#async-action) below.
+参见下文的 [异步动作](#异步动作)。
 
-## Reducer
+## Reducer（纯函数）
 
 ```js
 type Reducer<S, A> = (state: S, action: A) => S
 ```
 
-A _reducer_ is a function that accepts an accumulation and a value and returns a new accumulation. They are used to reduce a collection of values down to a single value.
+_Reducer_ 是一个函数，接受一个累积值和一个新值，返回新的累积值。它们用于将一组值归约为单一值。
 
-Reducers are not unique to Redux—they are a fundamental concept in functional programming. Even most non-functional languages, like JavaScript, have a built-in API for reducing. In JavaScript, it's [`Array.prototype.reduce()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce).
+Reducer 并非 Redux 独有——它是函数式编程的基本概念。即使是非函数式语言，如 JavaScript 也内置了归约的 API，即 [`Array.prototype.reduce()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce)。
 
-In Redux, the accumulated value is the state object, and the values being accumulated are actions. Reducers calculate a new state given the previous state and an action. They must be _pure functions_—functions that return the exact same output for given inputs. They should also be free of side-effects. This is what enables exciting features like hot reloading and time travel.
+在 Redux 中，累积值就是状态对象，被归约的值是动作。Reducer 根据先前状态和动作计算出新的状态。它们必须是_纯函数_——对相同输入返回完全相同输出的函数，且应无副作用。这正是支持热重载和时间旅行等特性的基础。
 
-Reducers are the most important concept in Redux.
+Reducer 是 Redux 中最重要的概念。
 
-_Do not put API calls into reducers._
+_不要把 API 调用放进 reducer。_
 
-## Dispatching Function
+## 派发函数（Dispatching Function）
 
 ```js
 type BaseDispatch = (a: Action) => Action
 type Dispatch = (a: Action | AsyncAction) => any
 ```
 
-A _dispatching function_ (or simply _dispatch function_) is a function that accepts an action or an [async action](#async-action); it then may or may not dispatch one or more actions to the store.
+_派发函数_（或简称 _dispatch 函数_）是一个接受动作或[异步动作](#异步动作)的函数；它可能会也可能不会向 store 派发一个或多个动作。
 
-We must distinguish between dispatching functions in general and the base [`dispatch`](api/Store.md#dispatchaction) function provided by the store instance without any middleware.
+我们需要区分一般的派发函数以及没有任何中间件时由 store 实例提供的基础 [`dispatch`](api/Store.md#dispatchaction) 函数。
 
-The base dispatch function _always_ synchronously sends an action to the store's reducer, along with the previous state returned by the store, to calculate a new state. It expects actions to be plain objects ready to be consumed by the reducer.
+基础的 dispatch 函数_总是_同步地将动作连同 store 返回的之前的状态一并发送到 reducer 来计算新的状态。它期望动作是纯对象，能被 reducer 消费。
 
-[Middleware](#middleware) wraps the base dispatch function. It allows the dispatch function to handle [async actions](#async-action) in addition to actions. Middleware may transform, delay, ignore, or otherwise interpret actions or async actions before passing them to the next middleware. See below for more information.
+[中间件](#中间件)包装基础 dispatch 函数，使得 dispatch 函数能够处理[异步动作](#异步动作)和普通动作。中间件可以在传给下一个中间件之前，对动作或异步动作进行转换、延迟、忽略或其他处理。详情见下文。
 
-## Action Creator
+## Action 创建者（Action Creator）
 
 ```js
 type ActionCreator<A, P extends any[] = any[]> = (...args: P) => Action | AsyncAction
 ```
 
-An _action creator_ is, quite simply, a function that creates an action. Do not confuse the two terms—again, an action is a payload of information, and an action creator is a factory that creates an action.
+_动作创建者_ 简单说就是一个创建动作的函数。不要混淆这两个名词——动作是信息的载体，动作创建者是制造动作的“工厂”。
 
-Calling an action creator only produces an action, but does not dispatch it. You need to call the store's [`dispatch`](api/Store.md#dispatchaction) function to actually cause the mutation. Sometimes we say _bound action creators_ to mean functions that call an action creator and immediately dispatch its result to a specific store instance.
+调用动作创建者只是生成动作，并不会派发它。你需要调用 store 的 [`dispatch`](api/Store.md#dispatchaction) 函数来触发状态更新。我们有时说_绑定动作创建者_，指的是调用动作创建者并立即将其结果派发给特定 store 实例的函数。
 
-If an action creator needs to read the current state, perform an API call, or cause a side effect, like a routing transition, it should return an [async action](#async-action) instead of an action.
+如果动作创建者需要读取当前状态、执行 API 调用或产生副作用（比如路由跳转），它应该返回一个[异步动作](#异步动作)，而不是普通动作。
 
-## Async Action
+## 异步动作（Async Action）
 
 ```js
 type AsyncAction = any
 ```
 
-An _async action_ is a value that is sent to a dispatching function, but is not yet ready for consumption by the reducer. It will be transformed by [middleware](#middleware) into an action (or a series of actions) before being sent to the base [`dispatch()`](api/Store.md#dispatchaction) function. Async actions may have different types, depending on the middleware you use. They are often asynchronous primitives, like a Promise or a thunk, which are not passed to the reducer immediately, but trigger action dispatches once an operation has completed.
+_异步动作_ 是发送给派发函数的值，但还未准备好直接被 reducer 消费。它会被[中间件](#中间件)转换成一个（或一系列）动作，然后再发送给基础的 [`dispatch()`](api/Store.md#dispatchaction) 函数。异步动作的具体类型取决于你使用的中间件。它们通常是异步原语，比如 Promise 或 thunk，不会立刻传给 reducer，而是在某项操作完成后触发动作派发。
 
-## Middleware
+## 中间件（Middleware）
 
 ```js
 type MiddlewareAPI = { dispatch: Dispatch, getState: () => State }
 type Middleware = (api: MiddlewareAPI) => (next: Dispatch) => Dispatch
 ```
 
-A middleware is a higher-order function that composes a [dispatch function](#dispatching-function) to return a new dispatch function. It often turns [async actions](#async-action) into actions.
+中间件是高阶函数，组合一个[派发函数](#派发函数)来返回一个新的派发函数。它通常将[异步动作](#异步动作)转换成动作。
 
-Middleware is composable using function composition. It is useful for logging actions, performing side effects like routing, or turning an asynchronous API call into a series of synchronous actions.
+中间件可通过函数组合来组合。它对于记录动作日志、执行副作用（如路由）或将异步 API 调用转换为一系列同步动作非常有用。
 
-See [`applyMiddleware(...middlewares)`](../../api/applyMiddleware.md) for a detailed look at middleware.
+详细介绍请参阅 [`applyMiddleware(...middlewares)`](../../api/applyMiddleware.md)。
 
-## Store
+## Store（状态存储）
 
 ```js
 type Store = {
@@ -106,34 +106,34 @@ type Store = {
 }
 ```
 
-A store is an object that holds the application's state tree.
-There should only be a single store in a Redux app, as the composition happens on the reducer level.
+Store 是持有应用状态树的对象。
+Redux 应用中应该只有一个 store，因为组合操作发生在 reducer 层级。
 
-- [`dispatch(action)`](api/Store.md#dispatchaction) is the base dispatch function described above.
-- [`getState()`](api/Store.md#getState) returns the current state of the store.
-- [`subscribe(listener)`](api/Store.md#subscribelistener) registers a function to be called on state changes.
-- [`replaceReducer(nextReducer)`](api/Store.md#replacereducernextreducer) can be used to implement hot reloading and code splitting. Most likely you won't use it.
+- [`dispatch(action)`](api/Store.md#dispatchaction) 是上文描述的基础派发函数。
+- [`getState()`](api/Store.md#getState) 返回当前 store 的状态。
+- [`subscribe(listener)`](api/Store.md#subscribelistener) 注册一个回调函数，在状态改变时调用。
+- [`replaceReducer(nextReducer)`](api/Store.md#replacereducernextreducer) 可用于实现热重载和代码拆分。大多数情况下你不会用到它。
 
-See the complete [store API reference](api/Store.md#dispatchaction) for more details.
+详见完整的 [store API 参考](api/Store.md#dispatchaction)。
 
-## Store creator
+## Store 创建者（Store creator）
 
 ```js
 type StoreCreator = (reducer: Reducer, preloadedState: ?State) => Store
 ```
 
-A store creator is a function that creates a Redux store. Like with dispatching function, we must distinguish the base store creator, [`createStore(reducer, preloadedState)`](api/createStore.md) exported from the Redux package, from store creators that are returned from the store enhancers.
+Store 创建者是创建 Redux store 的函数。和派发函数一样，我们需要区分基础 store 创建者，即 Redux 包导出的 [`createStore(reducer, preloadedState)`](api/createStore.md)，与由 store 增强器返回的 store 创建者。
 
-## Store enhancer
+## Store 增强器（Store enhancer）
 
 ```js
 type StoreEnhancer = (next: StoreCreator) => StoreCreator
 ```
 
-A store enhancer is a higher-order function that composes a store creator to return a new enhanced store creator. This is similar to middleware in that it allows you to alter the store interface in a composable way.
+Store 增强器是高阶函数，它组合一个 store 创建者并返回一个增强后的 store 创建者。这与中间件类似，允许你以可组合的方式改变 store 的接口。
 
-Store enhancers are much the same concept as higher-order components in React, which are also occasionally called “component enhancers”.
+Store 增强器非常类似于 React 中的高阶组件（HOC），后者有时也称为“组件增强器”。
 
-Because a store is not an instance, but rather a plain-object collection of functions, copies can be easily created and modified without mutating the original store. There is an example in [`compose`](api/compose.md) documentation demonstrating that.
+因为 store 不是实例，而是包含函数的普通对象集合，可以轻松复制和修改而不改变原 store。[`compose`](api/compose.md) 文档中有相关示例。
 
-Most likely you'll never write a store enhancer, but you may use the one provided by the [developer tools](https://github.com/reduxjs/redux-devtools). It is what makes time travel possible without the app being aware it is happening. Amusingly, the [Redux middleware implementation](api/applyMiddleware.md) is itself a store enhancer.
+大多数情况下你不会编写 store 增强器，但你可能会用到开发者工具提供的那个。它让时间旅行得以实现，而应用本身无需知晓这一过程。有趣的是，[Redux 的中间件实现](api/applyMiddleware.md) 本身就是一个 store 增强器。

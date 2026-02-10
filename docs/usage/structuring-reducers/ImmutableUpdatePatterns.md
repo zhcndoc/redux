@@ -1,20 +1,20 @@
 ---
 id: immutable-update-patterns
-title: Immutable Update Patterns
-description: 'Structuring Reducers > Immutable Update Patterns: How to correctly update state immutably, with examples of common mistakes'
+title: 不可变更新模式
+description: '结构化 Reducers > 不可变更新模式：如何正确地不可变更新状态，并附带常见错误的示例'
 ---
 
-# Immutable Update Patterns
+# 不可变更新模式
 
-The articles listed in [Prerequisite Concepts#Immutable Data Management](PrerequisiteConcepts.md#immutable-data-management) give a number of good examples for how to perform basic update operations immutably, such as updating a field in an object or adding an item to the end of an array. However, reducers will often need to use those basic operations in combination to perform more complicated tasks. Here are some examples for some of the more common tasks you might have to implement.
+在文章 [先决概念#不可变数据管理](PrerequisiteConcepts.md#immutable-data-management) 中，列举了多种如何以不可变方式执行基本更新操作的好例子，比如更新对象中的某个字段或向数组末尾添加元素等。然而，reducers 通常需要将这些基本操作组合起来，以执行更复杂的任务。以下是一些常见任务的示例。
 
-## Updating Nested Objects
+## 更新嵌套对象
 
-The key to updating nested data is **that _every_ level of nesting must be copied and updated appropriately**. This is often a difficult concept for those learning Redux, and there are some specific problems that frequently occur when trying to update nested objects. These lead to accidental direct mutation, and should be avoided.
+更新嵌套数据的关键是**_每个_嵌套层级都必须被复制并适当更新**。这通常是刚学习 Redux 时比较难理解的概念，也经常出现特定问题导致对嵌套对象的直接意外修改，应当避免。
 
-##### Correct Approach: Copying All Levels of Nested Data
+##### 正确方法：复制所有嵌套层级的数据
 
-Unfortunately, the process of correctly applying immutable updates to deeply nested state can easily become verbose and hard to read. Here's what an example of updating `state.first.second[someId].fourth` might look like:
+不幸的是，对深层嵌套状态进行正确的不可变更新往往会变得冗长且难读。下面是更新 `state.first.second[someId].fourth` 的示例：
 
 ```js
 function updateVeryNestedField(state, action) {
@@ -34,16 +34,16 @@ function updateVeryNestedField(state, action) {
 }
 ```
 
-Obviously, each layer of nesting makes this harder to read, and gives more chances to make mistakes. This is one of several reasons why you are encouraged to keep your state flattened, and compose reducers as much as possible.
+显然，每加一层嵌套，代码的可读性就会降低，出错的机会也增多。这也是我们鼓励尽量让状态扁平化，以及尽量采用组合 reducers 的若干原因之一。
 
-##### Common Mistake #1: New variables that point to the same objects
+##### 常见错误 #1：新变量指向同一对象
 
-Defining a new variable does _not_ create a new actual object - it only creates another reference to the same object. An example of this error would be:
+定义新变量并不会创建新的实际对象——它只是创建了对同一对象的另一引用。举例来说：
 
 ```js
 function updateNestedState(state, action) {
   let nestedState = state.nestedState
-  // ERROR: this directly modifies the existing object reference - don't do this!
+  // 错误：直接修改了已有对象的引用——切勿这样做！
   nestedState.nestedField = action.data
 
   return {
@@ -53,29 +53,29 @@ function updateNestedState(state, action) {
 }
 ```
 
-This function does correctly return a shallow copy of the top-level state object, but because the `nestedState` variable was still pointing at the existing object, the state was directly mutated.
+该函数确实正确返回了顶层 state 对象的浅拷贝，但因为 `nestedState` 仍指向原对象，状态被直接修改了。
 
-##### Common Mistake #2: Only making a shallow copy of one level
+##### 常见错误 #2：只浅拷贝了一层
 
-Another common version of this error looks like this:
+另一个常见的错误表现形式是：
 
 ```js
 function updateNestedState(state, action) {
-  // Problem: this only does a shallow copy!
+  // 问题：这里只做了浅拷贝！
   let newState = { ...state }
 
-  // ERROR: nestedState is still the same object!
+  // 错误：nestedState 仍是同一个对象！
   newState.nestedState.nestedField = action.data
 
   return newState
 }
 ```
 
-Doing a shallow copy of the top level is _not_ sufficient - the `nestedState` object should be copied as well.
+只浅拷贝顶层是不够的——`nestedState` 对象也应该被复制。
 
-## Inserting and Removing Items in Arrays
+## 向数组中插入和删除元素
 
-Normally, a Javascript array's contents are modified using mutative functions like `push`, `unshift`, and `splice`. Since we don't want to mutate state directly in reducers, those should normally be avoided. Because of that, you might see "insert" or "remove" behavior written like this:
+一般情况下，JavaScript 数组内容的修改通过 `push`、`unshift`、`splice` 等变异操作完成。由于我们不想在 reducers 中直接变异状态，这些操作应避免使用。因此，你可能见过这样写“插入”或“删除”行为：
 
 ```js
 function insertItem(array, action) {
@@ -91,9 +91,9 @@ function removeItem(array, action) {
 }
 ```
 
-However, remember that the key is that the _original in-memory reference_ is not modified. **As long as we make a copy first, we can safely mutate the copy**. Note that this is true for both arrays and objects, but nested values still must be updated using the same rules.
+但请记住，关键是_原内存引用_未发生修改。**只要先复制，就可以安全地对副本进行变异**。这对数组和对象同样适用，但嵌套的值仍必须遵守同样的规则。
 
-This means that we could also write the insert and remove functions like this:
+这意味着我们也可以这样写插入和删除函数：
 
 ```js
 function insertItem(array, action) {
@@ -109,7 +109,7 @@ function removeItem(array, action) {
 }
 ```
 
-The remove function could also be implemented as:
+删除函数也可以写成：
 
 ```js
 function removeItem(array, action) {
@@ -117,19 +117,19 @@ function removeItem(array, action) {
 }
 ```
 
-## Updating an Item in an Array
+## 更新数组中的某个元素
 
-Updating one item in an array can be accomplished by using `Array.map`, returning a new value for the item we want to update, and returning the existing values for all other items:
+通过 `Array.map` 可以更新数组中的某个元素：对想更新的元素返回新的值，其他元素保持原样即可：
 
 ```js
 function updateObjectInArray(array, action) {
   return array.map((item, index) => {
     if (index !== action.index) {
-      // This isn't the item we care about - keep it as-is
+      // 不是我们关心的元素 - 保持原样
       return item
     }
 
-    // Otherwise, this is the one we want - return an updated value
+    // 这是我们想要更新的元素 - 返回更新后的值
     return {
       ...item,
       ...action.item
@@ -138,26 +138,26 @@ function updateObjectInArray(array, action) {
 }
 ```
 
-## Immutable Update Utility Libraries
+## 不可变更新的工具库
 
-Because writing immutable update code can become tedious, there are a number of utility libraries that try to abstract out the process. These libraries vary in APIs and usage, but all try to provide a shorter and more succinct way of writing these updates. For example, [Immer](https://github.com/mweststrate/immer) makes immutable updates a simple function and plain JavaScript objects:
+由于手写不可变更新代码容易枯燥，有许多工具库尝试抽象出这个过程。它们的 API 和用法各有差异，但都旨在提供更简短、简洁的写法。例如，[Immer](https://github.com/mweststrate/immer) 将不可变更新简化为普通函数和普通 JS 对象：
 
 ```js
 var usersState = [{ name: 'John Doe', address: { city: 'London' } }]
 var newState = immer.produce(usersState, draftState => {
   draftState[0].name = 'Jon Doe'
   draftState[0].address.city = 'Paris'
-  //nested update similar to mutable way
+  // 嵌套更新类似可变写法
 })
 ```
 
-Some, like [dot-prop-immutable](https://github.com/debitoor/dot-prop-immutable), take string paths for commands:
+还有像 [dot-prop-immutable](https://github.com/debitoor/dot-prop-immutable) 这样接收字符串路径的命令：
 
 ```js
 state = dotProp.set(state, `todos.${index}.complete`, true)
 ```
 
-Others, like [immutability-helper](https://github.com/kolodny/immutability-helper) (a fork of the now-deprecated React Immutability Helpers addon), use nested values and helper functions:
+以及 [immutability-helper](https://github.com/kolodny/immutability-helper)（React Immutability Helpers 的分支）这样使用嵌套值和辅助函数的：
 
 ```js
 var collection = [1, 2, { a: [12, 17, 15] }]
@@ -166,17 +166,16 @@ var newCollection = update(collection, {
 })
 ```
 
-They can provide a useful alternative to writing manual immutable update logic.
+它们为手写不可变更新逻辑提供了不错的替代方案。
 
-A list of many immutable update utilities can be found in the [Immutable Data#Immutable Update Utilities](https://github.com/markerikson/redux-ecosystem-links/blob/master/immutable-data.md#immutable-update-utilities) section of the [Redux Addons Catalog](https://github.com/markerikson/redux-ecosystem-links).
+大量不可变更新工具的列表可以查看 [Redux Addons Catalog](https://github.com/markerikson/redux-ecosystem-links) 中的 [Immutable Data#Immutable Update Utilities](https://github.com/markerikson/redux-ecosystem-links/blob/master/immutable-data.md#immutable-update-utilities) 一节。
 
-## Simplifying Immutable Updates with Redux Toolkit
+## 使用 Redux Toolkit 简化不可变更新
 
-Our **[Redux Toolkit](https://redux-toolkit.js.org/)** package includes a [`createReducer` utility](https://redux-toolkit.js.org/api/createReducer) that uses Immer internally.
-Because of this, you can write reducers that appear to "mutate" state, but the updates are actually applied immutably.
+我们的 **[Redux Toolkit](https://redux-toolkit.js.org/)** 包含了一个内部使用 Immer 的 [`createReducer` 工具](https://redux-toolkit.js.org/api/createReducer)。
+因此，你可以编写看似“变异”状态的 reducers，但其更新实际上是以不可变方式应用的。
 
-This allows immutable update logic to be written in a much simpler way. Here's what the [nested data example](#correct-approach-copying-all-levels-of-nested-data)
-might look like using `createReducer`:
+这使得不可变更新逻辑可以写得更简单。以下展示了使用 `createReducer` 后，[嵌套数据示例](#正确方法复制所有嵌套层级数据) 的写法：
 
 ```js
 import { createReducer } from '@reduxjs/toolkit'
@@ -197,18 +196,12 @@ const reducer = createReducer(initialState, {
 })
 ```
 
-This is clearly _much_ shorter and easier to read. However, **this _only_ works correctly if you are using the "magic"
-`createReducer` function from Redux Toolkit** that wraps this reducer in Immer's [`produce` function](https://immerjs.github.io/immer/produce).
-**If this reducer is used without Immer, it will actually mutate the state!**. It's also not obvious just by
-looking at the code that this function is actually safe and updates the state immutably. Please make sure you understand
-the concepts of immutable updates fully. If you do use this, it may help to add some comments to your code that explain
-your reducers are using Redux Toolkit and Immer.
+这明显更短更易读。但**这只有在你使用 Redux Toolkit 提供的“魔法”`createReducer` 函数时才有效**，该函数会将你的 reducer 包装到 Immer 的 [`produce` 函数](https://immerjs.github.io/immer/produce) 中。**如果在没有 Immer 的情况下使用这个 reducer，它实际上会直接修改状态！**此外，仅凭代码本身很难看出这个函数实际上是安全的，并且做了不可变更新。请务必深入理解不可变更新的概念。如果真的使用该方法，建议在代码中加注释说明该 reducer 是使用 Redux Toolkit 和 Immer 实现的。
 
-In addition, Redux Toolkit's [`createSlice` utility](https://redux-toolkit.js.org/api/createSlice) will auto-generate action creators
-and action types based on the reducer functions you provide, with the same Immer-powered update capabilities inside.
+另外，Redux Toolkit 的 [`createSlice` 工具](https://redux-toolkit.js.org/api/createSlice) 会基于你提供的 reducer 函数自动生成 action 创建器和 action 类型，同时仍具备 Immer 支持的更新能力。
 
-## Further Information
+## 进一步信息
 
-- [Dave Ceddia: The Complete Guide to Immutability in React and Redux](https://daveceddia.com/react-redux-immutability-guide/)
-- [React docs: Updating Objects in State](https://beta.reactjs.org/learn/updating-objects-in-state)
-- [React docs: Updating Arrays in State](https://beta.reactjs.org/learn/updating-arrays-in-state)
+- [Dave Ceddia：React 和 Redux 中不可变性的完整指南](https://daveceddia.com/react-redux-immutability-guide/)
+- [React 文档：更新 State 中的对象](https://beta.reactjs.org/learn/updating-objects-in-state)
+- [React 文档：更新 State 中的数组](https://beta.reactjs.org/learn/updating-arrays-in-state)

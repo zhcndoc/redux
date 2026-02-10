@@ -1,91 +1,91 @@
 ---
 id: writing-tests
-title: Writing Tests
-description: 'Usage > Writing Tests: recommended practices and setup for testing Redux apps'
+title: 编写测试
+description: '使用指南 > 编写测试：测试 Redux 应用的推荐实践和设置'
 ---
 
-# Writing Tests
+# 编写测试
 
-:::tip What You'll Learn
+:::tip 你将学习到
 
-- Recommended practices for testing apps using Redux
-- Examples of test configuration and setup
+- 使用 Redux 测试应用的推荐实践
+- 测试配置和设置示例
 
 :::
 
-## Guiding Principles
+## 指导原则
 
-The guiding principles for testing Redux logic closely follow that of React Testing Library:
+测试 Redux 逻辑的指导原则与 React Testing Library 非常一致：
 
-> [The more your tests resemble the way your software is used, the more confidence they can give you.](https://twitter.com/kentcdodds/status/977018512689455106) - Kent C. Dodds
+> [测试越接近软件的使用方式，给你的信心也越大。](https://twitter.com/kentcdodds/status/977018512689455106) - Kent C. Dodds
 
-Because most of the Redux code you write are functions, and many of them are pure, they are easy to test without mocking. However, you should consider whether each piece of your Redux code needs its own dedicated tests. **In the majority of scenarios, the end-user does not know, and does not care whether Redux is used within the application at all**. As such, the Redux code can be treated as an implementation detail of the app, without requiring explicit tests for the Redux code in many circumstances.
+因为你大多数写的 Redux 代码都是函数，且许多是纯函数，它们很容易测试，无需模拟。但你应该考虑你的 Redux 代码中的每一部分是否都需要专门的测试。**在大多数场景下，最终用户并不知道，也不关心应用里是否使用了 Redux**。因此，Redux 代码可以被视为应用的实现细节，在很多情况下不需要对 Redux 代码进行显式测试。
 
-Our general advice for testing an app using Redux is:
+我们对使用 Redux 测试应用的通用建议是：
 
-- **Prefer writing integration tests with everything working together**. For a React app using Redux, render a `<Provider>` with a real store instance wrapping the components being tested. Interactions with the page being tested should use real Redux logic, with API calls mocked out so app code doesn't have to change, and assert that the UI is updated appropriately.
-- _If_ needed, use basic unit tests for pure functions such as particularly complex reducers or selectors. However, in many cases, these are just implementation details that are covered by integration tests instead.
-- **Do _not_ try to mock selector functions or the React-Redux hooks!** Mocking imports from libraries is fragile, and doesn't give you confidence that your actual app code is working.
+- **优先编写集成测试，确保所有模块协同工作。** 对于使用 Redux 的 React 应用，渲染时用一个真实 store 实例包裹被测试组件的 `<Provider>`。对页面的交互应使用真实的 Redux 逻辑，API 调用则模拟处理，这样应用代码无需改变，断言 UI 得到正确更新。
+- 如有需要，可对纯函数（例如特别复杂的 reducer 或 selector）使用基础的单元测试。但很多时候，这些只是实现细节，集成测试已覆盖。
+- **切勿尝试模拟 selector 函数或 React-Redux hooks！** 模拟库的导入不稳定，而且不能让你确信实际的应用代码在工作。
 
 :::info
 
-For background on why we recommend integration-style tests, see:
+关于我们为何推荐集成测试风格，详见：
 
-- Kent C Dodds: [Testing Implementation Details](https://kentcdodds.com/blog/testing-implementation-details): thoughts on why he recommends avoiding testing implementation details.
-- Mark Erikson: [Blogged Answers: The Evolution of Redux Testing Approaches](https://blog.isquaredsoftware.com/2021/06/the-evolution-of-redux-testing-approaches/): thoughts on how Redux testing has evolved from 'isolation' to 'integration' over time.
+- Kent C Dodds: [测试实现细节](https://kentcdodds.com/blog/testing-implementation-details)：他为何建议避免测试实现细节的思考。
+- Mark Erikson: [博客回应：Redux 测试方法演进](https://blog.isquaredsoftware.com/2021/06/the-evolution-of-redux-testing-approaches/)：Redux 测试如何从“隔离”演进到“集成”的思考。
 
 :::
 
-## Setting Up a Test Environment
+## 设置测试环境
 
-### Test Runners
+### 测试运行器
 
-**Redux can be tested with any test runner**, since it's just plain JavaScript. An increasingly common choice is [Vitest](https://vitest.dev/) (used by the Redux library repos), though [Jest](https://jestjs.io/) is still used widely.
+**Redux 可使用任何测试运行器进行测试**，因为它只是普通的 JavaScript。一个越来越常用的选择是 [Vitest](https://vitest.dev/)（Redux 官方库仓库使用），但 [Jest](https://jestjs.io/) 仍广泛使用。
 
-Typically, your test runner needs to be configured to compile JavaScript/TypeScript syntax. If you're going to be testing UI components **without a browser**, you will likely need to configure the test runner to use [JSDOM](https://github.com/jsdom/jsdom) to provide a mock DOM environment.
+通常，测试运行器需配置以编译 JavaScript/TypeScript 语法。如果你要测试 UI 组件 **无浏览器情况下**，很可能需要配置测试运行器使用 [JSDOM](https://github.com/jsdom/jsdom)，以提供模拟 DOM 环境。
 
-The examples in this page will assume you're using Vitest, but the same patterns apply no matter what test runner you're using.
+本文示例假设你使用 Vitest，但无论使用什么测试运行器，模式都类似。
 
-See these resources for typical test runner configuration instructions:
+参考以下资源了解测试运行器的典型配置：
 
 - **Vitest**
-  - [Vitest: Getting Started](https://vitest.dev/guide/)
-  - [Vitest: Browser Mode](https://vitest.dev/guide/browser)
-  - [Vitest: Configuration - Test Environment](https://vitest.dev/config/#environment)
+  - [Vitest：快速开始](https://vitest.dev/guide/)
+  - [Vitest：浏览器模式](https://vitest.dev/guide/browser)
+  - [Vitest：配置 - 测试环境](https://vitest.dev/config/#environment)
 - **Jest**:
-  - [Jest: Getting Started](https://jestjs.io/docs/getting-started)
-  - [Jest: Configuration - Test Environment](https://jestjs.io/docs/configuration#testenvironment-string)
+  - [Jest：快速开始](https://jestjs.io/docs/getting-started)
+  - [Jest：配置 - 测试环境](https://jestjs.io/docs/configuration#testenvironment-string)
 
-### UI and Network Testing Tools
+### UI 与网络测试工具
 
-**The Redux team recommends using either [Vitest Browser Mode](https://vitest.dev/guide/browser/) or [React Testing Library (RTL)](https://testing-library.com/docs/react-testing-library/intro) to test React components that connect to Redux**.
+**Redux 团队推荐使用 [Vitest Browser Mode](https://vitest.dev/guide/browser/) 或 [React Testing Library (RTL)](https://testing-library.com/docs/react-testing-library/intro) 来测试连接 Redux 的 React 组件。**
 
-React Testing Library is a simple and complete React DOM testing utility that encourages good testing practices. It uses ReactDOM's `render` function and `act` from react-dom/tests-utils. (The Testing Library family of tools also includes [adapters for many other popular frameworks as well](https://testing-library.com/docs/dom-testing-library/intro).)
+React Testing Library 是一个简单且功能完整的 React DOM 测试工具，鼓励良好的测试实践。它使用 ReactDOM 的 `render` 函数和 react-dom/tests-utils 中的 `act`。 (Testing Library 家族工具也包括 [很多流行框架的适配器](https://testing-library.com/docs/dom-testing-library/intro)。)
 
-Vitest Browser Mode runs integration tests in a real browser, removing the need for a "mock" DOM environment (and allowing for visual feedback and regression testing). When using React, you'll also need `vitest-browser-react`, which includes a `render` utility similar to RTL's.
+Vitest Browser Mode 在真实浏览器中运行集成测试，无需“模拟”DOM（并允许可视反馈和回归测试）。使用 React 时，你还需要 `vitest-browser-react`，它包括类似 RTL 的 `render` 工具。
 
-We also **recommend using [Mock Service Worker (MSW)](https://mswjs.io/) to mock network requests**, as this means your application logic does not need to be changed or mocked when writing tests.
+我们也**推荐使用 [Mock Service Worker (MSW)](https://mswjs.io/) 来模拟网络请求**，这样编写测试时不需要修改或模拟应用逻辑。
 
-- **Vitest Browser Mode**
-  - [Vitest: Browser Mode Setup](https://vitest.dev/guide/browser)
+- **Vitest 浏览器模式**
+  - [Vitest：浏览器模式设置](https://vitest.dev/guide/browser)
 - **DOM/React Testing Library**
-  - [DOM Testing Library: Setup](https://testing-library.com/docs/dom-testing-library/setup)
-  - [React Testing Library: Setup](https://testing-library.com/docs/react-testing-library/setup)
-  - [Testing Library Jest-DOM Matchers](https://testing-library.com/docs/ecosystem-jest-dom)
-  - [Testing Library User Events](https://testing-library.com/docs/user-event)
+  - [DOM Testing Library：设置](https://testing-library.com/docs/dom-testing-library/setup)
+  - [React Testing Library：设置](https://testing-library.com/docs/react-testing-library/setup)
+  - [Testing Library Jest-DOM 匹配器](https://testing-library.com/docs/ecosystem-jest-dom)
+  - [Testing Library 用户事件](https://testing-library.com/docs/user-event)
 - **Mock Service Worker**
-  - [MSW: Installation](https://mswjs.io/docs/getting-started/install)
-  - [MSW: Setting up mock requests](https://mswjs.io/docs/getting-started/mocks/rest-api)
-  - [MSW: Mock server configuration for Node](https://mswjs.io/docs/getting-started/integrate/node)
-  - [MSW: Mock server configuration for Vitest Browser Mode](https://mswjs.io/docs/recipes/vitest-browser-mode/)
+  - [MSW：安装](https://mswjs.io/docs/getting-started/install)
+  - [MSW：设置模拟请求](https://mswjs.io/docs/getting-started/mocks/rest-api)
+  - [MSW：Node 模拟服务器配置](https://mswjs.io/docs/getting-started/integrate/node)
+  - [MSW：Vitest 浏览器模式模拟服务器配置](https://mswjs.io/docs/recipes/vitest-browser-mode/)
 
-## Integration Testing Connected Components and Redux Logic
+## 集成测试连接组件与 Redux 逻辑
 
-**Our recommendation for testing Redux-connected React components is via integration tests that include everything working together**, with assertions aimed at verifying that the app behaves the way you expect when the user interacts with it in a given manner.
+**我们推荐用集成测试来测试 Redux 连接的 React 组件，确保所有模块协同工作**，断言验证在用户按预期交互时，应用表现符合预期。
 
-### Example App Code
+### 示例应用代码
 
-Consider the following `userSlice` slice, store, and `App` component:
+考虑以下 `userSlice` 切片、store 和 `App` 组件：
 
 ```ts title="features/users/usersSlice.ts"
 // file: app/store.ts noEmit
@@ -155,7 +155,7 @@ export default userSlice.reducer
 // file: app/store.ts
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import userReducer from '../features/users/userSlice'
-// Create the root reducer independently to obtain the RootState and PreloadedState type
+// 独立创建根 reducer 方便获得 RootState 和 PreloadedState 类型
 const rootReducer = combineReducers({
   user: userReducer
 })
@@ -203,7 +203,7 @@ export type AppDispatch = AppStore['dispatch']
 import { useDispatch, useSelector } from 'react-redux'
 import type { AppDispatch, RootState } from './store'
 
-// Use throughout your app instead of plain `useDispatch` and `useSelector`
+// 在应用中替代普通的 `useDispatch` 和 `useSelector`
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>()
 export const useAppSelector = useSelector.withTypes<RootState>()
 ```
@@ -234,7 +234,7 @@ export type AppDispatch = AppStore['dispatch']
 // file: app/hooks.ts noEmit
 import { useDispatch, useSelector } from 'react-redux'
 import type { AppDispatch, RootState } from './store'
-// Use throughout your app instead of plain `useDispatch` and `useSelector`
+// 在应用中替代普通的 `useDispatch` 和 `useSelector`
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>()
 export const useAppSelector = useSelector.withTypes<RootState>()
 // file: features/users/userSlice.ts noEmit
@@ -277,46 +277,46 @@ export default function UserDisplay() {
 
   return (
     <div>
-      {/* Display the current user name */}
+      {/* 显示当前用户名 */}
       <div>{userName}</div>
-      {/* On button click, dispatch a thunk action to fetch a user */}
+      {/* 点击按钮时，派发 thunk 动作获取用户 */}
       <button onClick={() => dispatch(fetchUser())}>Fetch user</button>
-      {/* At any point if we're fetching a user, display that on the UI */}
+      {/* 只要正在加载用户，显示加载状态 */}
       {userFetchStatus === 'loading' && <div>Fetching user...</div>}
     </div>
   )
 }
 ```
 
-This app involves thunks, reducers and selectors. All of these can be tested by writing an integration test with the following in mind:
+这个应用涉及 thunk、reducer 和 selector。所有这些都可以通过集成测试进行测试，重点关注：
 
-- Upon first loading the app, there should be no user yet - we should see 'No user' on the screen.
-- After clicking the button that says 'Fetch user', we expect it to start fetching the user. We should see 'Fetching user...' displayed on the screen.
-- After some time, the user should be received. We should no longer see 'Fetching user...', but instead should see the expected user's name based on the response from our API.
+- 应用初次加载时应无用户，屏幕显示“无用户”。
+- 点击“Fetch user”按钮后，开始加载用户，屏幕应显示“Fetching user...”。
+- 过一段时间后，接收到用户，应显示 API 返回的用户名，不再显示“Fetching user...”。
 
-Writing our tests to focus on the above as a whole, we can avoid mocking as much of the app as possible. We will also have confidence that the critical behavior of our app does what we expect it to when interacted with in the way we expect the user to use the app.
+编写测试聚焦以上整体流程，可以最大限度避免模拟应用内容。我们也能确认应用交互时能按预期工作。
 
-To test the component, we `render` it into the DOM, and assert that the app responds to interactions in the way we expect the user to use the app.
+要测试组件，我们将其 `render` 到 DOM，并断言应用对交互的响应符合预期。
 
-### Setting Up a Reusable Test Render Function
+### 设置可复用的测试渲染函数
 
-React Testing Library's `render` function accepts a tree of React elements and renders those components. Just like in a real app, any Redux-connected components will need [a React-Redux `<Provider>` component wrapped around them](https://react-redux.js.org/tutorials/quick-start#provide-the-redux-store-to-react), with a real Redux store set up and provided.
+React Testing Library 的 `render` 接受 React 元素树并渲染。正如真实应用中，任何连接 Redux 的组件都需要被 [React-Redux `<Provider>` 组件包裹](https://react-redux.js.org/tutorials/quick-start#provide-the-redux-store-to-react)，且提供真实的 Redux store。
 
-Additionally, **the test code should create a separate Redux store instance for every test, rather than reusing the same store instance and resetting its state**. That ensures no values accidentally leak between tests.
+此外，**测试代码应为每个测试创建独立的 Redux store 实例，而不是复用相同实例并重置状态**，以避免值在测试间泄漏。
 
-Instead of copy-pasting the same store creation and `Provider` setup in every test, we can use the `wrapper` option in the `render` function and **export our own customized `renderWithProviders` function that creates a new Redux store and renders a `<Provider>`**, as explained in [React Testing Library's setup docs](https://testing-library.com/docs/react-testing-library/setup#custom-render).
+我们替代在每个测试复制粘贴 store 创建及 `Provider` 设置，使用 `render` 函数的 `wrapper` 选项，并 **导出自己定制的 `renderWithProviders` 函数，它创建新的 Redux store 并渲染 `<Provider>`**，详见 [React Testing Library 的设置文档](https://testing-library.com/docs/react-testing-library/setup#custom-render)。
 
-The custom render function should let us:
+自定义渲染函数应允许：
 
-- Create a new Redux store instance every time it's called, with an optional `preloadedState` value that can be used for an initial value
-- Alternately pass in an already-created Redux store instance
-- Pass through additional options to RTL's original `render` function
-- Automatically wrap the component being tested with a `<Provider store={store}>`
-- Return the store instance in case the test needs to dispatch more actions or check state
+- 每次调用时创建新的 Redux store，支持传入可选的 `preloadedState` 初始值
+- 或传入已创建的 Redux store 实例
+- 透传额外选项给 RTL 原始 `render` 函数
+- 自动给测试组件包裹 `<Provider store={store}>`
+- 返回 store 实例，以便测试时使用 dispatch 或检查状态
 
-For convenience, let's also set up a [user instance](https://testing-library.com/docs/user-event/setup).
+方便起见，我们也设置一个 [用户事件实例](https://testing-library.com/docs/user-event/setup)。
 
-A typical custom render function setup could look like this:
+典型自定义渲染函数示例如下：
 
 ```tsx title="utils/test-utils.tsx"
 // file: features/users/userSlice.ts noEmit
@@ -355,8 +355,7 @@ import { Provider } from 'react-redux'
 import type { AppStore, RootState, PreloadedState } from '../app/store'
 import { setupStore } from '../app/store'
 
-// This type interface extends the default options for render from RTL, as well
-// as allows the user to specify other things such as preloadedState, store.
+// 该接口扩展了 RTL 渲染的默认选项，并允许指定 preloadedState 和 store。
 interface ExtendedRenderOptions
   extends Omit<RenderOptions, 'queries' | 'wrapper'> {
   preloadedState?: PreloadedState
@@ -369,7 +368,7 @@ export function renderWithProviders(
 ) {
   const {
     preloadedState = {},
-    // Automatically create a store instance if no store was passed in
+    // 如果未传 store，自动创建 store 实例
     store = setupStore(preloadedState),
     ...renderOptions
   } = extendedRenderOptions
@@ -378,7 +377,7 @@ export function renderWithProviders(
     <Provider store={store}>{children}</Provider>
   )
 
-  // Return an object with the store, user, and all of RTL's query functions
+  // 返回 store、user 和 RTL 的所有查询函数
   return {
     store,
     user: userEvent.setup(),
@@ -387,9 +386,9 @@ export function renderWithProviders(
 }
 ```
 
-### Writing Integration Tests With Components
+### 使用组件编写集成测试
 
-The actual test files should use the custom `render` function to actually render our Redux-connected components. If the code that we're testing involves making network requests, we should also configure MSW to mock the expected requests with appropriate test data.
+实际测试文件应使用自定义 `render` 法渲染 Redux 连接组件。如果被测代码涉及网络请求，应配置 MSW 模拟相应请求并返回测试数据。
 
 ```tsx title="features/users/tests/UserDisplay.test.tsx"
 // file: setup.ts noEmit
@@ -466,7 +465,7 @@ export function renderWithProviders(
 // file: app/hooks.tsx noEmit
 import { useDispatch, useSelector } from 'react-redux'
 import type { AppDispatch, RootState } from './store'
-// Use throughout your app instead of plain `useDispatch` and `useSelector`
+// 在应用中替代普通的 `useDispatch` 和 `useSelector`
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>()
 export const useAppSelector = useSelector.withTypes<RootState>()
 // file: features/users/UserDisplay.tsx noEmit
@@ -481,11 +480,11 @@ export default function UserDisplay() {
 
   return (
     <div>
-      {/* Display the current user name */}
+      {/* 显示当前用户名 */}
       <div>{userName}</div>
-      {/* On button click, dispatch a thunk action to fetch a user */}
+      {/* 点击按钮时，派发 thunk 动作获取用户 */}
       <button onClick={() => dispatch(fetchUser())}>Fetch user</button>
-      {/* At any point if we're fetching a user, display that on the UI */}
+      {/* 只要正在加载用户，显示加载状态 */}
       {userFetchStatus === 'loading' && <div>Fetching user...</div>}
     </div>
   )
@@ -496,13 +495,12 @@ import { beforeAll, afterEach, afterAll, test, expect } from 'vitest'
 import { http, HttpResponse, delay } from 'msw'
 import { setupServer } from 'msw/node'
 import { screen } from '@testing-library/react'
-// We're using our own custom render function and not RTL's render.
+// 使用自定义渲染函数而非 RTL 的 render
 import { renderWithProviders } from '../../../utils/test-utils'
 import UserDisplay from '../UserDisplay'
 
-// We use msw to intercept the network request during the test,
-// and return the response 'John Smith' after 150ms
-// when receiving a get request to the `/api/user` endpoint
+// 利用 msw 拦截测试时的网络请求
+// 当收到对 `/api/user` 的 GET 请求时，150ms 后返回 'John Smith'
 export const handlers = [
   http.get('/api/user', async () => {
     await delay(150)
@@ -512,44 +510,44 @@ export const handlers = [
 
 const server = setupServer(...handlers)
 
-// Enable API mocking before tests.
+// 启用请求模拟
 beforeAll(() => server.listen())
 
-// Reset any runtime request handlers we may add during the tests.
+// 重置运行时请求处理器，避免测试间影响
 afterEach(() => server.resetHandlers())
 
-// Disable API mocking after the tests are done.
+// 测试结束关闭请求模拟
 afterAll(() => server.close())
 
-test('fetches & receives a user after clicking the fetch user button', async () => {
+test('点击获取用户按钮后，能成功取回用户', async () => {
   const { user } = renderWithProviders(<UserDisplay />)
 
-  // should show no user initially, and not be fetching a user
+  // 初始应显示无用户，且不处于加载状态
   expect(screen.getByText(/no user/i)).toBeInTheDocument()
   expect(screen.queryByText(/Fetching user\.\.\./i)).not.toBeInTheDocument()
 
-  // after clicking the 'Fetch user' button, it should now show that it is fetching the user
+  // 点击“Fetch user”按钮后，应显示正在加载用户
   await user.click(screen.getByRole('button', { name: /Fetch user/i }))
   expect(screen.queryByText(/no user/i)).not.toBeInTheDocument()
   expect(screen.getByText(/Fetching user\.\.\./i)).toBeInTheDocument()
 
-  // after some time, the user should be received
+  // 过一段时间，接收到用户信息
   expect(await screen.findByText(/John Smith/i)).toBeInTheDocument()
   expect(screen.queryByText(/no user/i)).not.toBeInTheDocument()
   expect(screen.queryByText(/Fetching user\.\.\./i)).not.toBeInTheDocument()
 })
 ```
 
-In this test, **we have completely avoided testing any Redux code directly, treating it as an implementation detail**. As a result, we are free to re-factor the _implementation_, while our tests will continue to pass and avoid false negatives (tests that fail despite the app still behaving how we want it to). We might change our state structure, convert our slice to use [RTK-Query](https://redux-toolkit.js.org/rtk-query/overview), or remove Redux entirely, and our tests will still pass. We have a strong degree of confidence that if we change some code and our tests report a failure, then our app really _is_ broken.
+在这项测试中，**我们完全避免了直接测试任何 Redux 代码，将其视为实现细节**。这样就可以自由重构 *实现*，测试依然通过，不会出现假阴性（应用仍正常但测试失败）。无论我们如何改变状态结构，是否用 [RTK-Query](https://redux-toolkit.js.org/rtk-query/overview)，甚至移除 Redux，测试都能正常工作。我们可以有很强的信心：如果测试报告失败，说明我们的应用真的有问题。
 
-### Preparing Initial Test State
+### 准备初始测试状态
 
-Many tests require that certain pieces of state already exist in the Redux store before the component is rendered. With the custom render function, there are a couple different ways you can do that.
+很多测试需要在组件渲染前，Redux store 中已有特定状态。通过自定义渲染函数，你可以用下面两种方式做到。
 
-One option is to pass a `preloadedState` argument in to the custom render function:
+一种是向自定义渲染函数传入 `preloadedState`：
 
 ```tsx title="TodoList.test.tsx" no-transpile
-test('Uses preloaded state to render', () => {
+test('使用预加载状态进行渲染', () => {
   const initialTodos = [{ id: 5, text: 'Buy Milk', completed: false }]
 
   const { getByText } = renderWithProviders(<TodoList />, {
@@ -560,10 +558,10 @@ test('Uses preloaded state to render', () => {
 })
 ```
 
-Another option is to create a custom Redux store first and dispatch some actions to build up the desired state, then pass in that specific store instance:
+另一种是先创建自定义 Redux store，派发一些动作准备好状态，再传入该 store 实例：
 
 ```tsx title="TodoList.test.tsx" no-transpile
-test('Sets up initial state state with actions', () => {
+test('通过派发动作设置初始状态', () => {
   const store = setupStore()
   store.dispatch(todoAdded('Buy milk'))
 
@@ -571,15 +569,15 @@ test('Sets up initial state state with actions', () => {
 })
 ```
 
-You can also extract `store` from the object returned by the custom render function, and dispatch more actions later as part of the test.
+你也可以从自定义渲染函数返回的对象中取出 `store`，测试中后续再派发动作。
 
-### Vitest Browser Mode
+### Vitest 浏览器模式
 
-#### Setting Up a Reusable Test Render Function
+#### 设置可复用的测试渲染函数
 
-Similar to RTL, Vitest Browser Mode provides a `render` function that can be used to render a component in a real browser. However, since we're testing a React-Redux app, we need to ensure that the `<Provider>` is included in the rendered tree.
+类似 RTL，Vitest 浏览器模式提供了 `render` 函数可在真实浏览器中渲染组件。但因为我们测试的是 React-Redux 应用，必须确保渲染树中包含 `<Provider>`。
 
-We can create a custom render function that wraps the component in a `<Provider>` and sets up a Redux store, similar to the RTL custom render function shown above.
+我们可以创建自定义渲染函数，包裹 `<Provider>` 并配置 Redux store，类似前文 RTL 的自定义渲染函数。
 
 ```tsx title="utils/test-utils.tsx"
 // file: features/users/userSlice.ts noEmit
@@ -617,8 +615,7 @@ import { Provider } from 'react-redux'
 import type { AppStore, RootState, PreloadedState } from '../app/store'
 import { setupStore } from '../app/store'
 
-// This type interface extends the default options for render from vitest-browser-react, as well
-// as allows the user to specify other things such as preloadedState, store.
+// 该接口扩展了 vitest-browser-react 渲染的默认选项，并允许指定 preloadedState 和 store。
 interface ExtendedRenderOptions extends Omit<RenderOptions, 'wrapper'> {
   preloadedState?: PreloadedState
   store?: AppStore
@@ -630,7 +627,7 @@ export async function renderWithProviders(
 ) {
   const {
     preloadedState = {},
-    // Automatically create a store instance if no store was passed in
+    // 自动创建 store 实例（无传入时）
     store = setupStore(preloadedState),
     ...renderOptions
   } = extendedRenderOptions
@@ -640,7 +637,7 @@ export async function renderWithProviders(
   )
 
   const screen = await render(ui, { wrapper: Wrapper, ...renderOptions })
-  // Return an object with the store, and the result of rendering
+  // 返回 store 和渲染结果
   return {
     store,
     ...screen
@@ -648,7 +645,7 @@ export async function renderWithProviders(
 }
 ```
 
-For convenience, we can also attach this to `page` in our setup file:
+为了方便，我们也可以在 setup 文件中把它挂载到 `page`：
 
 ```ts title="setup.ts"
 // file: vitest.config.ts noEmit
@@ -725,7 +722,7 @@ declare module 'vitest/browser' {
 }
 ```
 
-Then we can use it in our tests, similarly to RTL:
+然后我们可像 RTL 测试一样使用它：
 
 ```tsx title="features/users/tests/UserDisplay.test.tsx"
 // file: vitest.config.ts noEmit
@@ -813,7 +810,7 @@ export async function renderWithProviders(
 // file: app/hooks.tsx noEmit
 import { useDispatch, useSelector } from 'react-redux'
 import type { AppDispatch, RootState } from './store'
-// Use throughout your app instead of plain `useDispatch` and `useSelector`
+// 在应用中替代普通的 `useDispatch` 和 `useSelector`
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>()
 export const useAppSelector = useSelector.withTypes<RootState>()
 // file: features/users/UserDisplay.tsx noEmit
@@ -828,11 +825,11 @@ export default function UserDisplay() {
 
   return (
     <div>
-      {/* Display the current user name */}
+      {/* 显示当前用户名 */}
       <div>{userName}</div>
-      {/* On button click, dispatch a thunk action to fetch a user */}
+      {/* 点击按钮时，派发 thunk 动作获取用户 */}
       <button onClick={() => dispatch(fetchUser())}>Fetch user</button>
-      {/* At any point if we're fetching a user, display that on the UI */}
+      {/* 只要正在加载用户，显示加载状态 */}
       {userFetchStatus === 'loading' && <div>Fetching user...</div>}
     </div>
   )
@@ -843,40 +840,40 @@ import { test, expect } from 'vitest'
 import { page } from 'vitest/browser'
 import UserDisplay from '../UserDisplay'
 
-test('fetches & receives a user after clicking the fetch user button', async () => {
+test('点击获取用户按钮后，能成功取回用户', async () => {
   const { store, ...screen } = await page.renderWithProviders(<UserDisplay />)
 
   const noUserText = screen.getByText(/no user/i)
   const fetchingUserText = screen.getByText(/Fetching user\.\.\./i)
   const userNameText = screen.getByText(/John Smith/i)
 
-  // should show no user initially, and not be fetching a user
+  // 初始应显示无用户，且不处于加载状态
   await expect.element(noUserText).toBeInTheDocument()
   await expect.element(fetchingUserText).not.toBeInTheDocument()
 
-  // after clicking the 'Fetch user' button, it should now show that it is fetching the user
+  // 点击“Fetch user”按钮后，应显示正在加载用户
   await screen.getByRole('button', { name: /fetch user/i }).click()
   await expect.element(noUserText).not.toBeInTheDocument()
   await expect.element(fetchingUserText).toBeInTheDocument()
 
-  // after some time, the user should be received
+  // 过一段时间，接收到用户信息
   await expect.element(userNameText).toBeInTheDocument()
   await expect.element(noUserText).not.toBeInTheDocument()
   await expect.element(fetchingUserText).not.toBeInTheDocument()
 })
 ```
 
-## Unit Testing Individual Functions
+## 单元测试单个函数
 
-While we recommend using integration tests by default, since they exercise all the Redux logic working together, you may sometimes want to write unit tests for individual functions as well.
+虽默认推荐集成测试，因它们测试全部 Redux 逻辑的协作，但你有时也可能想对单个函数编写单元测试。
 
-### Reducers
+### Reducer
 
-Reducers are pure functions that return the new state after applying the action to the previous state. In the majority of cases, the reducer is an implementation detail that does not need explicit tests. However, if your reducer contains particularly complex logic that you would like the confidence of having unit tests for, reducers can be easily tested.
+reducer 是纯函数，根据前一个状态和动作返回新的状态。大多数情况下，reducer 是实现细节，无需显式测试。但如 reducer 逻辑特别复杂，想单元测试获取信心，也是可以的。
 
-Because reducers are pure functions, testing them should be straightforward. Call the reducer with a specific input `state` and `action`, and assert that the result state matches expectations.
+因 reducer 是纯函数，测试直接调用 reducer，传入特定 `state` 和 `action`，断言返回状态符合预期即可。
 
-#### Example
+#### 示例
 
 ```ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
@@ -908,7 +905,7 @@ export const { todoAdded } = todosSlice.actions
 export default todosSlice.reducer
 ```
 
-can be tested like:
+可测试为：
 
 ```ts
 // file: todosSlice.ts noEmit
@@ -945,13 +942,13 @@ export default todosSlice.reducer
 import { test, expect } from 'vitest'
 import reducer, { todoAdded, Todo } from './todosSlice'
 
-test('should return the initial state', () => {
+test('应返回初始状态', () => {
   expect(reducer(undefined, { type: 'unknown' })).toEqual([
     { text: 'Use Redux', completed: false, id: 0 }
   ])
 })
 
-test('should handle a todo being added to an empty list', () => {
+test('应能向空列表添加 todo', () => {
   const previousState: Todo[] = []
 
   expect(reducer(previousState, todoAdded('Run the tests'))).toEqual([
@@ -959,7 +956,7 @@ test('should handle a todo being added to an empty list', () => {
   ])
 })
 
-test('should handle a todo being added to an existing list', () => {
+test('应能向已有列表添加 todo', () => {
   const previousState: Todo[] = [
     { text: 'Run the tests', completed: true, id: 0 }
   ]
@@ -971,37 +968,37 @@ test('should handle a todo being added to an existing list', () => {
 })
 ```
 
-### Selectors
+### Selector
 
-Selectors are also generally pure functions, and thus can be tested using the same basic approach as reducers: set up an initial value, call the selector function with those inputs, and assert that the result matches the expected output.
+Selector 通常也是纯函数，同样适用 reducer 的测试方法：准备初始值，调用 selector，断言输出符合预期。
 
-However, since [most selectors are memoized to remember their last inputs](./deriving-data-selectors.md), you may need to watch for cases where a selector is returning a cached value when you expected it to generate a new one depending on where it's being used in the test.
+但由于[大多数 selector 都会记忆上次输入](./deriving-data-selectors.md)，可能会遇到由于缓存而返回旧值的情况，注意测试中使用场景。
 
-### Action Creators & Thunks
+### Action Creator 和 Thunk
 
-In Redux, action creators are functions which return plain objects. Our recommendation is not to write action creators manually, but instead have them generated automatically by [`createSlice`](https://redux-toolkit.js.org/api/createSlice#return-value), or created via [`createAction`](https://redux-toolkit.js.org/api/createAction) from [`@reduxjs/toolkit`](https://redux-toolkit.js.org/introduction/getting-started). As such, **you should not feel the need to test action creators by themselves** (the Redux Toolkit maintainers have already done that for you!).
+Redux 中，action creator 是返回普通对象的函数。我们建议不要手写 action creators，而是使用 [`createSlice`](https://redux-toolkit.js.org/api/createSlice#return-value) 自动生成，或通过 [`createAction`](https://redux-toolkit.js.org/api/createAction) 创建。因此，**无需单独测 action creator**（Redux Toolkit 维护者已测试过！）。
 
-The return value of action creators is considered an implementation detail within your application, and when following an integration testing style, do not need explicit tests.
+action creator 返回值被视为应用的实现细节，使用集成测试风格时无需显式测试。
 
-Similarly for thunks using [Redux Thunk](https://github.com/reduxjs/redux-thunk), our recommendation is not to write them manually, but instead use [`createAsyncThunk`](https://redux-toolkit.js.org/api/createAsyncThunk) from [`@reduxjs/toolkit`](https://redux-toolkit.js.org/introduction/getting-started). The thunk handles dispatching the appropriate `pending`, `fulfilled` and `rejected` action types for you based on the lifecycle of the thunk.
+使用 [Redux Thunk](https://github.com/reduxjs/redux-thunk) 的 thunk 也最好通过 [`createAsyncThunk`](https://redux-toolkit.js.org/api/createAsyncThunk) 创建。该 thunk 会根据生命周期派发 `pending`、`fulfilled` 和 `rejected` 动作类型。
 
-We consider thunk behavior to be an implementation detail of the application, and recommend that it be covered by testing the group of components (or whole app) using it, rather than testing the thunk in isolation.
+我们认为 thunk 行为是应用的实现细节，推荐通过测试组件（或整个应用）来覆盖，而非单独测试 thunk。
 
-Our recommendation is to mock async requests at the `fetch/xhr` level using tools like [`msw`](https://mswjs.io/), [`miragejs`](https://miragejs.com/), [`jest-fetch-mock`](https://github.com/jefflau/jest-fetch-mock#readme), [`fetch-mock`](https://www.wheresrhys.co.uk/fetch-mock/), or similar. By mocking requests at this level, none of the thunk logic has to change in a test - the thunk still tries to make a "real" async request, it just gets intercepted. See the ["Integration Test" example](#writing-integration-tests-with-components) for an example of testing a component which internally includes the behavior of a thunk.
+建议在 `fetch/xhr` 层使用 [`msw`](https://mswjs.io/)、[`miragejs`](https://miragejs.com/)、[`jest-fetch-mock`](https://github.com/jefflau/jest-fetch-mock#readme)、[`fetch-mock`](https://www.wheresrhys.co.uk/fetch-mock/) 等工具模拟异步请求。这样测试时 thunk 仍尝试真实请求，只是被拦截。参阅["编写集成测试"示例](#使用组件编写集成测试)查看组件中内含 thunk 行为的测试示例。
 
 :::info
 
-If you prefer, or are otherwise required to write unit tests for your action creators or thunks, refer to the tests that Redux Toolkit uses for [`createAction`](https://github.com/reduxjs/redux-toolkit/blob/635d6d5e513e13dd59cd717f600d501b30ca2381/src/tests/createAction.test.ts) and [`createAsyncThunk`](https://github.com/reduxjs/redux-toolkit/blob/635d6d5e513e13dd59cd717f600d501b30ca2381/src/tests/createAsyncThunk.test.ts).
+如果你更愿意，或者必须为 action creator 或 thunk 写单元测试，可参考 Redux Toolkit 为 [`createAction`](https://github.com/reduxjs/redux-toolkit/blob/635d6d5e513e13dd59cd717f600d501b30ca2381/src/tests/createAction.test.ts) 和 [`createAsyncThunk`](https://github.com/reduxjs/redux-toolkit/blob/635d6d5e513e13dd59cd717f600d501b30ca2381/src/tests/createAsyncThunk.test.ts) 写的测试。
 
 :::
 
 ### Middleware
 
-Middleware functions wrap behavior of `dispatch` calls in Redux, so to test this modified behavior we need to mock the behavior of the `dispatch` call.
+Middleware 函数包装了 Redux 中的 `dispatch` 调用行为，因此测试时需模拟 `dispatch` 的行为。
 
-#### Example
+#### 示例
 
-First, we'll need a middleware function. This is similar to the real [redux-thunk](https://github.com/reduxjs/redux-thunk/blob/master/src/index.ts).
+先写个 middleware 函数，类似真实的 [redux-thunk](https://github.com/reduxjs/redux-thunk/blob/master/src/index.ts)。
 
 ```js
 const thunkMiddleware =
@@ -1016,9 +1013,9 @@ const thunkMiddleware =
   }
 ```
 
-We need to create fake `getState`, `dispatch`, and `next` functions. We use `jest.fn()` to create stubs, but with other test frameworks you would likely use [Sinon](https://sinonjs.org/).
+我们需要创建假的 `getState`、`dispatch` 和 `next` 函数。这里用的是 `jest.fn()` 来创建存根，其他测试框架可能用 [Sinon](https://sinonjs.org/)。
 
-The invoke function runs our middleware in the same way Redux does.
+invoke 函数模拟 Redux 的调用流程运行中间件。
 
 ```js
 const create = () => {
@@ -1034,24 +1031,24 @@ const create = () => {
 }
 ```
 
-We test that our middleware is calling the `getState`, `dispatch`, and `next` functions at the right time.
+我们测试中间件正确调用了 `getState`, `dispatch` 和 `next`。
 
 ```js
-test('passes through non-function action', () => {
+test('非函数动作正常传递', () => {
   const { next, invoke } = create()
   const action = { type: 'TEST' }
   invoke(action)
   expect(next).toHaveBeenCalledWith(action)
 })
 
-test('calls the function', () => {
+test('函数动作被调用', () => {
   const { invoke } = create()
   const fn = jest.fn()
   invoke(fn)
   expect(fn).toHaveBeenCalled()
 })
 
-test('passes dispatch and getState', () => {
+test('传入 dispatch 和 getState', () => {
   const { store, invoke } = create()
   invoke((dispatch, getState) => {
     dispatch('TEST DISPATCH')
@@ -1062,10 +1059,10 @@ test('passes dispatch and getState', () => {
 })
 ```
 
-In some cases, you will need to modify the `create` function to use different mock implementations of `getState` and `next`.
+有时你需要修改 `create` 函数，使用不同的 `getState` 和 `next` 模拟实现。
 
-## Further Information
+## 更多信息
 
-- [React Testing Library](https://testing-library.com/docs/react-testing-library/intro): React Testing Library is a very light-weight solution for testing React components. It provides light utility functions on top of react-dom and react-dom/test-utils, in a way that encourages better testing practices. Its primary guiding principle is: "The more your tests resemble the way your software is used, the more confidence they can give you."
-- [Blogged Answers: The Evolution of Redux Testing Approaches](https://blog.isquaredsoftware.com/2021/06/the-evolution-of-redux-testing-approaches/): Mark Erikson's thoughts on how Redux testing has evolved from 'isolation' to 'integration'.
-- [Testing Implementation Details](https://kentcdodds.com/blog/testing-implementation-details): Blog post by Kent C. Dodds on why he recommends to avoid testing implementation details.
+- [React Testing Library](https://testing-library.com/docs/react-testing-library/intro)：轻量级 React 组件测试工具，基于 react-dom 和 react-dom/test-utils，鼓励更好的测试实践。核心原则是：“越接近软件的使用方式，测试越可信。”
+- [博客回应：Redux 测试方法演进](https://blog.isquaredsoftware.com/2021/06/the-evolution-of-redux-testing-approaches/)：Mark Erikson 关于 Redux 测试从“隔离”到“集成”演进的看法。
+- [测试实现细节](https://kentcdodds.com/blog/testing-implementation-details)：Kent C. Dodds 表达为何建议避免测试实现细节的博客。

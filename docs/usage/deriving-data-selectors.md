@@ -1,103 +1,103 @@
 ---
 id: deriving-data-selectors
-title: Deriving Data with Selectors
-description: 'Usage > Redux Logic > Selectors: deriving data from the Redux state'
+title: 使用 Selector 派生数据
+description: '用法 > Redux 逻辑 > Selectors：从 Redux state 派生数据'
 ---
 
-:::tip What You'll Learn
+:::tip 你将学到
 
-- Why good Redux architecture keeps state minimal and derives additional data
-- Principles of using selector functions to derive data and encapsulate lookups
-- How to use the Reselect library to write memoized selectors for optimization
-- Advanced techniques for using Reselect
-- Additional tools and libraries for creating selectors
-- Best practices for writing selectors
+- 为什么良好的 Redux 架构保持 state 最小化，并尽可能派生额外数据
+- 使用 selector 函数派生数据和封装查找的原则
+- 如何使用 Reselect 库编写带缓存优化的 memoized selectors
+- 使用 Reselect 的高级技巧
+- 创建 selectors 的其他工具和库
+- 编写 selectors 的最佳实践
 
 :::
 
-## Deriving Data
+## 派生数据
 
-We specifically recommend that Redux apps should [keep the Redux state minimal, and derive additional values from that state whenever possible](../style-guide/style-guide.md#keep-state-minimal-and-derive-additional-values).
+我们特别推荐 Redux 应用应当[保持 Redux 状态最小化，并尽可能从该状态中派生附加数据](../style-guide/style-guide.md#keep-state-minimal-and-derive-additional-values)。
 
-This includes things like calculating filtered lists or summing up values. As an example, a todo app would keep an original list of todo objects in state, but derive a filtered list of todos outside the state whenever the state is updated. Similarly, a check for whether all todos have been completed, or number of todos remaining, can be calculated outside the store as well.
+这包括计算过滤后的列表或汇总数值。例如，一个待办事项 (todo) 应用会在状态中保存一份原始的 todo 对象列表，但在每次状态更新时，在状态之外派生一个过滤后的 todo 列表。类似地，是否所有 todos 都完成的检查，或未完成的 todos 数量，也可以在 store 外部计算。
 
-This has several benefits:
+这有几个好处：
 
-- The actual state is easier to read
-- Less logic is needed to calculate those additional values and keep them in sync with the rest of the data
-- The original state is still there as a reference and isn't being replaced
+- 实际状态更易于阅读
+- 计算这些附加值并保持其与数据同步所需逻辑更少
+- 原始状态仍保留作为参考且不会被替换
 
 :::tip
 
-This is _also_ a good principle for React state as well! Many times users tried to define a `useEffect` hook that waits for a state value to change, and then sets state with some derived value like `setAllCompleted(allCompleted)`. Instead, that value can be derived during the rendering process and used directly, without having to save the value into state at all:
+这对 React 状态同样是一个好原则！许多用户曾尝试定义一个 `useEffect` 钩子，监听某个状态值变化，然后调用派生的值如 `setAllCompleted(allCompleted)` 更新状态。其实，这个值可以在渲染过程中直接派生和使用，无需存入状态：
 
 ```js
 function TodoList() {
   const [todos, setTodos] = useState([])
 
   // highlight-start
-  // Derive the data while rendering
+  // 渲染期间派生数据
   const allTodosCompleted = todos.every(todo => todo.completed)
   // highlight-end
 
-  // render with this value
+  // 使用该值渲染
 }
 ```
 
 :::
 
-## Calculating Derived Data with Selectors
+## 使用 Selectors 计算派生数据
 
-In a typical Redux application, the logic for deriving data is usually written as functions we call **_selectors_**.
+在典型的 Redux 应用中，用于派生数据的逻辑通常写成称为**_selectors_**的函数。
 
-Selectors are primarily used to encapsulate logic for looking up specific values from state, logic for actually deriving values, and improving performance by avoiding unnecessary recalculations.
+Selectors 主要用来封装从 state 中查找特定值的逻辑、派生值的逻辑，以及通过避免不必要的重复计算来提升性能。
 
-You are not _required_ to use selectors for all state lookups, but they are a standard pattern and widely used.
+你并非_必须_使用 selectors 来查询所有状态数据，但它们是标准模式且被广泛使用。
 
-### Basic Selector Concepts
+### 基础 Selector 概念
 
-**A "selector function" is any function that accepts the Redux store state (or part of the state) as an argument, and returns data that is based on that state.**
+**“selector 函数”是任何接受 Redux store 状态（或状态的一部分）作为参数、并返回基于该状态的数据的函数。**
 
-**Selectors don't have to be written using a special library**, and it doesn't matter whether you write them as arrow functions or the `function` keyword. For example, all of these are valid selector functions:
+**selectors 不必用特定库编写**，也无所谓采用箭头函数或传统 `function` 关键字。比如，以下都是有效的 selector 函数示例：
 
 ```js
-// Arrow function, direct lookup
+// 箭头函数，直接查找
 const selectEntities = state => state.entities
 
-// Function declaration, mapping over an array to derive values
+// 函数声明，通过映射数组派生值
 function selectItemIds(state) {
   return state.items.map(item => item.id)
 }
 
-// Function declaration, encapsulating a deep lookup
+// 函数声明，封装深层查找
 function selectSomeSpecificField(state) {
   return state.some.deeply.nested.field
 }
 
-// Arrow function, deriving values from an array
+// 箭头函数，从数组派生值
 const selectItemsWhoseNamesStartWith = (items, namePrefix) =>
   items.filter(item => item.name.startsWith(namePrefix))
 ```
 
-A selector function can have any name you want. However, [**we recommend prefixing selector function names with the word `select` combined with a description of the value being selected**](../style-guide/style-guide.md#name-selector-functions-as-selectthing). Typical examples of this would look like **`selectTodoById`**, **`selectFilteredTodos`**, and **`selectVisibleTodos`**.
+selector 函数可以任意命名。但[**我们推荐给 selector 函数命名加前缀 `select`，并结合所选择值的描述**](../style-guide/style-guide.md#name-selector-functions-as-selectthing)。典型例子有 **`selectTodoById`**、**`selectFilteredTodos`** 和 **`selectVisibleTodos`**。
 
-If you've used [the `useSelector` hook from React-Redux](../tutorials/fundamentals/part-5-ui-and-react.md), you're probably already familiar with the basic idea of a selector function - the functions that we pass to `useSelector` must be selectors:
+如果你用过 [React-Redux 的 `useSelector` 钩子](../tutorials/fundamentals/part-5-ui-and-react.md)，你可能已经熟悉 selector 函数的基本含义——传给 `useSelector` 的函数必须是 selectors：
 
 ```js
 function TodoList() {
   // highlight-start
-  // This anonymous arrow function is a selector!
+  // 这个匿名箭头函数就是一个 selector！
   const todos = useSelector(state => state.todos)
   // highlight-end
 }
 ```
 
-Selector functions are typically defined in two different parts of a Redux application:
+selector 函数通常定义在 Redux 应用的两个不同部分：
 
-- In slice files, alongside the reducer logic
-- In component files, either outside the component, or inline in `useSelector` calls
+- 在 slice 文件中，与 reducer 逻辑并列
+- 在组件文件中，在组件外部或直接内联于 `useSelector` 调用
 
-A selector function can be used anywhere you have access to the entire Redux root state value. This includes the `useSelector` hook, the `mapState` function for `connect`, middleware, thunks, and sagas. For example, thunks and middleware have access to the `getState` argument, so you can call a selector there:
+只要你能访问整个 Redux 根状态，selector 函数就可以使用。例如 `useSelector` 钩子、`connect` 的 `mapState` 函数、中间件、thunks 和 sagas 都能调用 selector。thunk 和中间件中的 `getState` 也允许调用 selectors：
 
 ```js
 function addTodosIfAllowed(todoText) {
@@ -112,39 +112,41 @@ function addTodosIfAllowed(todoText) {
 }
 ```
 
-It's not typically possible to use selectors inside of reducers, because a slice reducer only has access to its own slice of the Redux state, and most selectors expect to be given the _entire_ Redux root state as an argument.
+通常不建议在 reducers 内部使用 selectors，因为 slice reducer 只能访问自己的状态分片，而大多数 selectors 都期望得到完整的 Redux 根状态。
 
-### Encapsulating State Shape with Selectors
+### 用 Selectors 封装状态结构
 
-The first reason to use selector functions is for encapsulation and reusability when dealing with your Redux state shape.
+使用 selector 函数的首要原因，是封装和复用 Redux 状态结构相关的知识。
 
-Let's say that one of your `useSelector` hooks makes a very specific lookup into part of your Redux state:
+假设某个 `useSelector` 钩子这样执行特定深层状态的查找：
 
 ```js
 const data = useSelector(state => state.some.deeply.nested.field)
 ```
 
-That is legal code, and will run fine. But, it might not be the best idea architecturally. Imagine that you've got several components that need to access that field. What happens if you need to make a change to where that piece of state lives? You would now have to go change _every_ `useSelector` hook that references that value. So, in the same way that [we recommend using action creators to encapsulate details of creating actions](../style-guide/style-guide.md#use-action-creators), we recommend defining reusable selectors to encapsulate the knowledge of where a given piece of state lives. Then, you can use a given selector function many times in the codebase, anywhere that your app needs to retrieve that particular data.
+这段代码合法且能运行。但从架构角度可能不是最佳实践。想象有多个组件都需要访问该字段。如果状态结构发生改变，你必须修改所有包含该查询的 `useSelector` 调用。
 
-**Ideally, only your reducer functions and selectors should know the exact state structure, so if you change where some state lives, you would only need to update those two pieces of logic**.
+因此，就像[推荐用 action creators 封装创建 action 细节](../style-guide/style-guide.md#use-action-creators)一样，我们建议定义可复用 selector 函数，封装某块状态的获取细节。然后在代码库中任何需要该数据的地方，都使用对应的 selector 函数。
 
-Because of this, it's often a good idea to define reusable selectors directly inside slice files, rather than always defining them inside of a component.
+**理想情况下，只有 reducer 函数和 selectors 知道确切状态结构；如果状态位置更改，只需更新这两部分逻辑。**
 
-One common description of selectors is that they're like **"queries into your state"**. You don't care about exactly how the query came up with the data you needed, just that you asked for the data and got back a result.
+基于此，通常建议将可复用 selectors 定义在 slice 文件中，而不是分散定义在组件内。
 
-### Optimizing Selectors with Memoization
+selector 常被描绘为对状态的**“查询”**——关心的是你请求了数据并得到了结果，而不是查询实现细节。
 
-Selector functions often need to perform relatively "expensive" calculations, or create derived values that are new object and array references. This can be a concern for application performance, for several reasons:
+### 用缓存优化 Selectors
 
-- Selectors used with `useSelector` or `mapState` will be re-run after every dispatched action, regardless of what section of the Redux root state was actually updated. Re-running expensive calculations when the input state sections didn't change is a waste of CPU time, and it's very likely that the inputs won't have changed most of the time anyway.
-- `useSelector` and `mapState` rely on `===` reference equality checks of the return values to determine if the component needs to re-render. If a selector _always_ returns new references, it will force the component to re-render even if the derived data is effectively the same as last time. This is especially common with array operations like `map()` and `filter()`, which return new array references.
+selector 函数通常需要执行相对“昂贵”的计算，或构造新的对象和数组引用的派生值。出于性能考虑，有几个原因：
 
-As an example, this component is written badly, because its `useSelector` call _always_ returns a new array reference. That means the component will re-render after _every_ dispatched action, even if the input `state.todos` slice hasn't changed:
+- 用于 `useSelector` 或 `mapState` 的 selectors 在每次派发 action 后都会运行，无论实际更新的是哪个状态分片。重复执行昂贵计算浪费 CPU 时间，而大多数情况下输入数据是未改变的。
+- `useSelector` 和 `mapState` 依赖返回值的 `===` 引用相等性判断，决定组件是否重新渲染。如果 selector _总是_ 返回新引用，即使派生数据相同，也会强制组件重新渲染。对数组操作如 `map()` 和 `filter()` 特别常见，因为它们始终返回新数组引用。
+
+例如，下面这个组件写法不当，`useSelector` 调用_总是_返回新数组引用，导致组件 _每次_ 派发 action 后重渲染，即使 `state.todos` 没变：
 
 ```js
 function TodoList() {
   // highlight-start
-  // ❌ WARNING: this _always_ returns a new reference, so it will _always_ re-render!
+  // ❌ 警告：这里 _总是_ 返回新引用，会导致组件 _总是_ 重渲染！
   const completedTodos = useSelector(state =>
     state.todos.filter(todo => todo.completed)
   )
@@ -152,7 +154,7 @@ function TodoList() {
 }
 ```
 
-Another example is a component that needs to do some "expensive" work to transform data:
+另一个示例涉及“昂贵”的数据转换工作：
 
 ```js
 function ExampleComplexComponent() {
@@ -167,25 +169,25 @@ function ExampleComplexComponent() {
 }
 ```
 
-Similarly, this "expensive" logic will re-run after _every_ dispatched action. Not only will it probably create new references, but it's work that doesn't need to be done unless `state.data` actually changes.
+同样，这些昂贵逻辑会在每次派发 action 后执行，不论 `state.data` 是否变化。
 
-Because of this, we need a way to write optimized selectors that can avoid recalculating results if the same inputs are passed in. This is where the idea of **_memoization_** comes in.
+因此，我们需要通过**_memoization（记忆化）_** 执行优化写法。
 
-**Memoization is a form of caching**. It involves tracking inputs to a function, and storing the inputs and the results for later reference. If a function is called with the same inputs as before, the function can skip doing the actual work, and return the same result it generated the last time it received those input values. This optimizes performance by only doing work if inputs have changed, and consistently returning the same result references if the inputs are the same.
+**Memoization 是缓存的一种**。它记录函数输入参数，并存储输入与结果。如果函数用相同输入被调用，则跳过实际计算，直接返回缓存结果。这样优化性能，只在输入变化时做工作，且对相同输入稳定返回同一输出引用。
 
-Next, we'll look at some options for writing memoized selectors.
+接下来，我们看看如何用 Reselect 编写带缓存的 selectors。
 
-## Writing Memoized Selectors with Reselect
+## 用 Reselect 编写缓存 Selector
 
-The Redux ecosystem has traditionally used a library called [**Reselect**](https://github.com/reduxjs/reselect) to create memoized selector functions. There also are other similar libraries, as well as multiple variations and wrappers around Reselect - we'll look at those later.
+Redux 生态圈传统上使用 [**Reselect**](https://github.com/reduxjs/reselect) 库创建带缓存的 selector 函数。除此之外，还有类似库和很多变体包装器，我们稍后讨论。
 
-### `createSelector` Overview
+### `createSelector` 概览
 
-Reselect provides a function called [`createSelector`](https://github.com/reduxjs/reselect#createselectorinputselectors--inputselectors-resultfunc) to generate memoized selectors. `createSelector` accepts one or more "input selector" functions, plus an "output selector" function, and returns a new selector function for you to use.
+Reselect 提供 [`createSelector`](https://github.com/reduxjs/reselect#createselectorinputselectors--inputselectors-resultfunc) 函数生成带缓存的 selectors。它接受一个或多个“输入 selector”函数，以及一个“输出 selector”函数，返回一个新的 selector 函数供你使用。
 
-`createSelector` is included as part of [our official Redux Toolkit package](https://redux-toolkit.js.org), and is re-exported for ease of use.
+`createSelector` 已包含在 [Redux Toolkit 官方包](https://redux-toolkit.js.org) 中，并被重新导出以便使用。
 
-`createSelector` can accept multiple input selectors, which can be provided as separate arguments or as an array. The results from all the input selectors are provided as separate arguments to the output selector:
+`createSelector` 支持多个输入 selectors，可以传入数组也可以作为多个参数形式。所有输入 selectors 的返回结果将被作为参数依次传递给输出 selector：
 
 ```js
 const selectA = state => state.a
@@ -193,42 +195,43 @@ const selectB = state => state.b
 const selectC = state => state.c
 
 const selectABC = createSelector([selectA, selectB, selectC], (a, b, c) => {
-  // do something with a, b, and c, and return a result
+  // 处理 a、b、c，并返回结果
   return a + b + c
 })
 
-// Call the selector function and get a result
+// 调用 selector 函数获取结果
 const abc = selectABC(state)
 
-// could also be written as separate arguments, and works exactly the same
+// 也可写作单独参数形式，效果相同
 const selectABC2 = createSelector(selectA, selectB, selectC, (a, b, c) => {
-  // do something with a, b, and c, and return a result
+  // 处理 a、b、c，并返回结果
   return a + b + c
 })
 ```
 
-When you call the selector, Reselect will run your input selectors with all of the arguments you gave, and looks at the returned values. If any of the results are `===` different than before, it will re-run the output selector, and pass in those results as the arguments. If all of the results are the same as the last time, it will skip re-running the output selector, and just return the cached final result from before.
+调用 selector 时，Reselect 会调用各输入 selectors 并对比返回值。如果任何一个结果较上次不同 (`!==`)，则重算输出 selector 并返回新值；否则，跳过输出 selector，直接返回缓存的最终结果。
 
-This means that **"input selectors" should usually just extract and return values, and the "output selector" should do the transformation work**.
+因此，**“输入 selectors”通常只负责提取/返回值，“输出 selector”负责转换计算。**
 
 :::caution
 
-A somewhat common mistake is to write an "input selector" that extracts a value or does some derivation, and an "output selector" that just returns its result:
+一种常见错误是写出“输入 selector”执行派生运算，“输出 selector”仅单纯返回输入：
 
 ```js
-// ❌ BROKEN: this will not memoize correctly, and does nothing useful!
+// ❌ 错误示例：不会正确缓存，且无实际作用！
 const brokenSelector = createSelector(
   state => state.todos,
   todos => todos
 )
 ```
 
-**Any "output selector" that just returns its inputs is incorrect!** The output selector should always have the transformation logic.
+**任何“输出 selector”若仅原样返回输入，都是错误的！** 输出 selector 应含有转换逻辑。
 
-Similarly, a memoized selector should _never_ use `state => state` as an input! That will force the selector to always recalculate.
+同样，memoized selector _绝不应_ 使用 `state => state` 作为输入，否则总会重新计算。
+
 :::
 
-In typical Reselect usage, you write your top-level "input selectors" as simple functions that just return values nested somewhere inside the state object. Then, you use `createSelector` to create memoized selectors that take one or more of these values as input and produce new derived values:
+典型用法是将顶层输入 selectors 写成简单返回 state 中值的函数，再用 `createSelector` 组合一个或多个输入产生派生输出：
 
 ```js
 const selectTodos = state => state.todos.items
@@ -237,35 +240,35 @@ const selectCurrentUser = state => state.users.currentUser
 const selectTodosForCurrentUser = createSelector(
   [selectTodos, selectCurrentUser],
   (todos, currentUser) => {
-    console.log('Output selector running')
+    console.log('输出 selector 执行')
     return todos.filter(todo => todo.ownerId === currentUser.userId)
   }
 )
 
 const todosForCurrentUser1 = selectTodosForCurrentUser(state)
-// Log: "Output selector running"
+// 控制台打印："输出 selector 执行"
 
 const todosForCurrentUser2 = selectTodosForCurrentUser(state)
-// No log output
+// 无打印
 
 console.log(todosForCurrentUser1 === todosForCurrentUser2)
 // true
 ```
 
-Note that the second time we called `selectTodosForCurrentUser`, the "output selector" didn't execute. Because the results of `selectTodos` and `selectCurrentUser` were the same as the first call, `selectTodosForCurrentUser` was able to return the memoized result from the first call.
+第二次调用时，输出 selector 未执行，因为输入 selectors 返回值未变，直接复用缓存结果。
 
-### `createSelector` Behavior
+### `createSelector` 行为细节
 
-It's important to note that by default, **`createSelector` only memoizes the most recent set of parameters**. That means that if you call a selector repeatedly with different inputs, it will still return a result, but it will have to keep re-running the output selector to produce the result:
+默认情况下，**`createSelector` 只缓存最近一次调用的参数和结果**。当你用不同参数连续调用时，缓存失效，需要重新计算：
 
 ```js
-const a = someSelector(state, 1) // first call, not memoized
-const b = someSelector(state, 1) // same inputs, memoized
-const c = someSelector(state, 2) // different inputs, not memoized
-const d = someSelector(state, 1) // different inputs from last time, not memoized
+const a = someSelector(state, 1) // 首次调用，未缓存
+const b = someSelector(state, 1) // 相同参数，缓存命中
+const c = someSelector(state, 2) // 不同参数，未缓存
+const d = someSelector(state, 1) // 再次使用 1，已非最近一次，未缓存
 ```
 
-Also, you can pass multiple arguments into a selector. Reselect will call all of the input selectors with those exact inputs:
+selector 可以接受多个参数，Reselect 会用这些参数调用所有输入 selectors：
 
 ```js
 const selectItems = state => state.items
@@ -279,25 +282,24 @@ const selectItemById = createSelector(
 const item = selectItemById(state, 42)
 
 /*
-Internally, Reselect does something like this:
+Reselect 内部执行：
 
 const firstArg = selectItems(state, 42);  
 const secondArg = selectItemId(state, 42);  
   
-const result = outputSelector(firstArg, secondArg);  
-return result;  
+const result = outputSelector(firstArg, secondArg);  // 返回最终结果
 */
 ```
 
-Because of this, **it's important that all of the "input selectors" you provide should accept the same types of parameters**. Otherwise, the selectors will break.
+这意味着所有输入 selectors 应接受相同参数类型，否则会出错。例如：
 
 ```js
 const selectItems = state => state.items
 
-// expects a number as the second argument
+// 预计第二个参数为数字
 const selectItemId = (state, itemId) => itemId
 
-// expects an object as the second argument
+// 预计第二个参数为对象
 const selectOtherField = (state, someObject) => someObject.someField
 
 const selectItemById = createSelector(
@@ -306,13 +308,13 @@ const selectItemById = createSelector(
 )
 ```
 
-In this example, `selectItemId` expects that its second argument will be some simple value, while `selectOtherField` expects that the second argument is an object. If you call `selectItemById(state, 42)`, `selectOtherField` will break because it's trying to access `42.someField`.
+若调用 `selectItemById(state, 42)`，`selectOtherField` 会报错，因为试图访问 `42.someField`。
 
-### Reselect Usage Patterns and Limitations
+### Reselect 的使用模式和限制
 
-#### Nesting Selectors
+#### Selector 嵌套
 
-It's possible to take selectors generated with `createSelector`, and use them as inputs for other selectors as well. In this example, the `selectCompletedTodos` selector is used as an input to `selectCompletedTodoDescriptions`:
+可以把一个由 `createSelector` 创建的 selector 用作另一个 selector 的输入。例如：
 
 ```js
 const selectTodos = state => state.todos
@@ -327,38 +329,38 @@ const selectCompletedTodoDescriptions = createSelector(
 )
 ```
 
-#### Passing Input Parameters
+#### 传递输入参数
 
-A Reselect-generated selector function can be called with as many arguments as you want: `selectThings(a, b, c, d, e)`. However, what matters for re-running the output is not the number of arguments, or whether the arguments themselves have changed to be new references. Instead, it's about the "input selectors" that were defined, and whether _their_ results have changed. Similarly, the arguments for the "output selector" are solely based on what the input selectors return.
+生成的 selector 函数可接受任意参数，比如 `selectThings(a, b, c, d, e)`。实际是否再次运行输出 selector，取决于定义的 **输入 selectors 是否返回了不同结果**，而非参数本身。
 
-This means that if you want to pass additional parameters through to the output selector, you must define input selectors that extract those values from the original selector arguments:
+若要传递额外参数给输出 selector，必须定义对应输入 selector，从原始参数中提取这些值：
 
 ```js
 const selectItemsByCategory = createSelector(
   [
-    // Usual first input - extract value from `state`
+    // 第一个输入 - 从 state 中提取
     state => state.items,
-    // Take the second arg, `category`, and forward to the output selector
+    // 将第二个参数 category 直接传给输出 selector
     (state, category) => category
   ],
-  // Output selector gets (`items, category)` as args
+  // 输出 selector 接收 (items, category)
   (items, category) => items.filter(item => item.category === category)
 )
 ```
 
-You can then use the selector like this:
+调用示例：
 
 ```js
 const electronicItems = selectItemsByCategory(state, "electronics");
 ```
 
-For consistency, you may want to consider passing additional parameters to a selector as a single object, such as `selectThings(state, otherArgs)`, and then extracting values from the `otherArgs` object.
+为了统一，可以考虑把额外参数用对象形式传递，如 `selectThings(state, otherArgs)`，再从 `otherArgs` 中提取。
 
-#### Selector Factories
+#### Selector 工厂
 
-**`createSelector` only has a default cache size of 1, and this is per each unique instance of a selector**. This creates problems when a single selector function needs to get reused in multiple places with differing inputs.
+**`createSelector` 默认只缓存一个最近调用的结果（缓存大小为 1），这是每个 selector 实例独立的。** 当同一个 selector 被多处传入不同参数重复调用，会导致缓存效用降低。
 
-One option is to create a "selector factory" - a function that runs `createSelector()` and generates a new unique selector instance every time it's called:
+解决方法是使用“selector 工厂”——函数运行 `createSelector()`，每次调用都生成唯一的 selector 实例：
 
 ```js
 const makeSelectItemsByCategory = () => {
@@ -370,17 +372,17 @@ const makeSelectItemsByCategory = () => {
 }
 ```
 
-This is particularly useful when multiple similar UI components need to derive different subsets of the data based on props.
+这种做法有利于多个组件基于其 Props 派生不同数据子集。
 
-## Alternative Selector Libraries
+## 其他 Selector 库
 
-While Reselect is the most widely used selector library with Redux, there are many other libraries that solve similar problems, or expand on Reselect's capabilities.
+虽然 Reselect 是 Redux 中最常用的选择器库，但也有其他库解决类似问题，或增强 Reselect 功能。
 
 ### `proxy-memoize`
 
-`proxy-memoize` is a relatively new memoized selector library that uses a unique implementation approach. It relies on ES2015 `Proxy` objects to track attempted reads of nested values, then compares only the nested values on later calls to see if they've changed. This can provide better results than Reselect in some cases.
+`proxy-memoize` 是一个较新的缓存 selector 库，采用独特方案：利用 ES2015 `Proxy` 跟踪嵌套值的访问，后续调用时仅比较访问过的嵌套字段是否发生改变。这在某些场景下比 Reselect 效果更好。
 
-A good example of this is a selector that derives an array of todo descriptions:
+比如用 Reselect 的选择一个 todo 描述数组：
 
 ```js
 import { createSelector } from 'reselect'
@@ -391,9 +393,9 @@ const selectTodoDescriptionsReselect = createSelector(
 )
 ```
 
-Unfortunately, this will recalculate the derived array if any other value inside of `state.todos` changes, such as toggling a `todo.completed` flag. The _contents_ of the derived array are identical, but because the input `todos` array changed, it has to calculate a new output array, and that has a new reference.
+只要 `state.todos` 中任意值变化（例如 `todo.completed`），该 selector 就会重新计算，尽管派生数组内容没有变，因为生成了新的数组引用。
 
-The same selector with `proxy-memoize` might look like:
+而用 `proxy-memoize`：
 
 ```js
 import { memoize } from 'proxy-memoize'
@@ -403,88 +405,87 @@ const selectTodoDescriptionsProxy = memoize(state =>
 )
 ```
 
-Unlike Reselect, `proxy-memoize` can detect that only the `todo.text` fields are being accessed, and will only recalculate the rest if one of the `todo.text` fields changed.
+`proxy-memoize` 只比较被访问的 `todo.text` 字段，只有当它们变化时才重算。
 
-It also has a built-in `size` option, which lets you set the desired cache size for a single selector instance.
+此外支持配置缓存大小 `size`。
 
-It has some tradeoffs and differences from Reselect:
+缺点和区别包括：
 
-- All values are passed in as a single object argument
-- It requires that the environment supports ES2015 `Proxy` objects (no IE11)
-- It's more magical, whereas Reselect is more explicit
-- There are some edge cases regarding the `Proxy`-based tracking behavior
-- It's newer and less widely used
+- 只接收单一对象参数
+- 需要支持 ES2015 `Proxy` (无 IE11)
+- 更“神奇”，不如 Reselect 明确可见
+- 存在少数边界情况
+- 较新且使用率较低
 
-All that said, **we officially encourage considering using `proxy-memoize` as a viable alternative to Reselect**.
+总体而言，**我们官方鼓励考虑将 `proxy-memoize` 作为 Reselect 的合理替代方案**。
 
 ### `re-reselect`
 
-https://github.com/toomuchdesign/re-reselect improves Reselect's caching behavior, by allowing you to define a "key selector". This is used to manage multiple instances of Reselect selectors internally, which can help simplify usage across multiple components.
+https://github.com/toomuchdesign/re-reselect 改善了 Reselect 缓存行为，允许定义“key selector”来内部管理多个 selector 实例，有利于支持跨多个组件的缓存。
 
 ```js
 import { createCachedSelector } from 're-reselect'
 
 const getUsersByLibrary = createCachedSelector(
-  // inputSelectors
+  // 输入 selectors
   getUsers,
   getLibraryId,
 
-  // resultFunc
+  // 结果函数
   (users, libraryId) => expensiveComputation(users, libraryId)
 )(
-  // re-reselect keySelector (receives selectors' arguments)
-  // Use "libraryName" as cacheKey
+  // re-reselect 的 keySelector（接收输入的参数）
+  // 用 "libraryName" 作为缓存键
   (_state_, libraryName) => libraryName
 )
 ```
 
 ### `reselect-tools`
 
-Sometimes it can be hard to trace how multiple Reselect selectors relate to each other, and what caused a selector to recalculate. https://github.com/skortchmark9/reselect-tools provides a way to trace selector dependencies, and its own DevTools to help visualize those relationships and check selector values.
+https://github.com/skortchmark9/reselect-tools 解决追踪多个 Reselect selectors 之间依赖关系和计算原因的难题，提供一套 DevTools 以可视化和检查 selector 值。
 
 ### `redux-views`
 
-https://github.com/josepot/redux-views is similar to `re-reselect`, in that it provides a way to select unique keys for each item for consistent caching. It was designed as a near-drop-in replacement for Reselect, and actually proposed as an option for a potential Reselect version 5.
+https://github.com/josepot/redux-views 类似 `re-reselect`，支持为每条数据选择唯一键以做一致缓存。设计为几乎可无缝替换 Reselect，甚至曾作为 Reselect v5 可能选项。
 
-### Reselect v5 Proposal
+### Reselect v5 提案
 
-We've opened up a roadmap discussion in the Reselect repo to figure out potential enhancements to a future version of Reselect, such as improving the API to better support larger cache sizes, rewriting the codebase in TypeScript, and other possible improvements. We'd welcome additional community feedback in that discussion:
+我们在 Reselect 仓库开启了路线图讨论，商讨未来版本 Reselect 的改进方向，如支持更大缓存、用 TypeScript 重写、API 设计改进等，欢迎社区参与：
 
-[**Reselect v5 Roadmap Discussion: Goals and API Design**](https://github.com/reduxjs/reselect/discussions/491)
+[**Reselect v5 路线图讨论：目标和 API 设计**](https://github.com/reduxjs/reselect/discussions/491)
 
-## Using Selectors with React-Redux
+## 在 React-Redux 中使用 Selectors
 
-### Calling Selectors with Parameters
+### 带参数调用 Selector
 
-It's common to want to pass additional arguments to a selector function. However, `useSelector` always calls the provided selector function with one argument - the Redux root `state`.
+常见需求是给 selector 函数传递额外参数，但 `useSelector` 只会用 state 做单一参数调用 selector。
 
-The simplest solution is to pass an anonymous selector to `useSelector`, and then immediately call the real selector with both `state` and any additional arguments:
+最简单方案是传入匿名 selector 给 `useSelector`，并立即调用真正的 selector，传入 state 和其它参数：
 
 ```js
 import { selectTodoById } from './todosSlice'
 
 function TodoListitem({ todoId }) {
   // highlight-start
-  // Captures `todoId` from scope, gets `state` as an arg, and forwards both
-  // to the actual selector function to extract the result
+  // 捕获作用域中的 todoId，接收 state 做参数，转发两者调用真实 selector
   const todo = useSelector(state => selectTodoById(state, todoId))
   // highlight-end
 }
 ```
 
-### Creating Unique Selector Instances
+### 创建唯一 Selector 实例
 
-There are many cases where a selector function needs to be reused across multiple components. If the components will all be calling the selector with different arguments, it will break memoization - the selector never sees the same arguments multiple times in a row, and thus can never return a cached value.
+如果一个 selector 需要在多个组件复用且带不同参数调用，会破坏缓存——因为 selector 从不会连续收到相同参数。
 
-The standard approach here is to create a unique instance of a memoized selector in the component, and then use that with `useSelector`. That allows each component to consistently pass the same arguments to its own selector instance, and that selector can correctly memoize the results.
+标准做法是在组件内创建 selector 的唯一缓存实例，再用于 `useSelector`。这样每个组件持续用相同参数调用自己的 selector，保证缓存命中。
 
-For function components, this is normally done with `useMemo` or `useCallback`:
+在函数组件里，通常用 `useMemo` 或 `useCallback` 做：
 
 ```js
 import { makeSelectItemsByCategory } from './categoriesSlice'
 
 function CategoryList({ category }) {
-  // Create a new memoized selector, for each component instance, on mount
+  // 每个组件实例挂载时创建一个缓存 selector
   const selectItemsByCategory = useMemo(makeSelectItemsByCategory, [])
 
   const itemsByCategory = useSelector(state =>
@@ -493,14 +494,13 @@ function CategoryList({ category }) {
 }
 ```
 
-For class components with `connect`, this can be done with an advanced "factory function" syntax for `mapState`. If the `mapState` function returns a new function on its first call, that will be used as the real `mapState` function. This provides a closure where you can create a new selector instance:
+用 `connect` 的类组件可用高级的“工厂函数（factory）”语法，实现类似效果：
 
 ```js
 import { makeSelectItemsByCategory } from './categoriesSlice'
 
 const makeMapState = (state, ownProps) => {
-  // Closure - create a new unique selector instance here,
-  // and this will run once for every component instance
+  // 闭包中创建唯一 selector 实例（每个组件实例）
   const selectItemsByCategory = makeSelectItemsByCategory()
 
   const realMapState = (state, ownProps) => {
@@ -509,23 +509,22 @@ const makeMapState = (state, ownProps) => {
     }
   }
 
-  // Returning a function here will tell `connect` to use it as
-  // `mapState` instead of the original one given to `connect`
+  // 返回函数替代原 mapState，connect 会使用它
   return realMapState
 }
 
 export default connect(makeMapState)(CategoryList)
 ```
 
-## Using Selectors Effectively
+## 有效使用 Selectors
 
-While selectors are a common pattern in Redux applications, they are often misused or misunderstood. Here are some guidelines for using selector functions correctly.
+虽然 selectors 是 Redux 中常用模式，但经常被误用或误解。以下是正确使用的指南。
 
-### Define Selectors Alongside Reducers
+### 将 Selector 与 Reducer 放在一起定义
 
-Selector functions are often defined in the UI layer, directly inside of `useSelector` calls. However, this means that there can be repetition between selectors defined in different files, and the functions are anonymous.
+selector 函数通常定义在 UI 层，直接内联在 `useSelector`。但这可能导致重复定义匿名函数。
 
-Like any other function, you can extract an anonymous function outside the component to give it a name:
+可以把匿名函数抽离并命名：
 
 ```js
 // highlight-next-line
@@ -537,9 +536,9 @@ function TodoList() {
 }
 ```
 
-However, multiple parts of the application may want to use the same lookups. Also, conceptually, we may want to keep the knowledge of how the `todos` state is organized as an implementation detail inside the `todosSlice` file, so that it's all in one place.
+多个地方可能用同样查询。此外，想把 state 组织细节封装在 `todosSlice` 文件里，集中管理。
 
-Because of this, **it's a good idea to define reusable selectors alongside their corresponding reducers**. In this case, we could export `selectTodos` from the `todosSlice` file:
+所以，**最好把可复用 selector 定义在对应 reducer 同文件中**，比如导出 `selectTodos`：
 
 ```js title="src/features/todos/todosSlice.js"
 import { createSlice } from '@reduxjs/toolkit'
@@ -558,30 +557,28 @@ export const { todoAdded } = todosSlice.actions
 export default todosSlice.reducer
 
 // highlight-start
-// Export a reusable selector here
+// 导出可复用 selector
 export const selectTodos = state => state.todos
 // highlight-end
 ```
 
-That way, if we happen to make an update to the structure of the todos slice state, the relevant selectors are right here and can be updated at the same time, with minimal changes to any other parts of the app.
+这样如果之后要改 todos 状态结构，只需修改这些 selector，其他代码改动最小。
 
-### Balance Selector Usage
+### 选择性使用 Selector
 
-It's possible to add _too many_ selectors to an application. **Adding a separate selector function for every single field is not a good idea!** That ends up turning Redux into something resembling a Java class with getter/setter functions for every field. It's not going to _improve_ the code, and it's probably going to make the code _worse_ - maintaining all those extra selectors is a lot of additional effort, and it will be harder to trace what values are being used where.
+过度使用 selector 不好。**为每个字段都写一个 selector 会让 Redux 像 Java 类里到处是 getter/setter**。这不会提升代码质量，反而增加维护难度，难以追踪数据使用位置。
 
-Similarly, **don't make every single selector memoized!**. Memoization is only needed if the selector returns a new reference every time it runs, or if the calculation logic it executes is expensive. **A selector function that does a direct lookup and return of a value should be a plain function, not memoized**.
+同时，**不必所有 selector 都 memoized**。只有每次调用都会返回新引用，或计算昂贵时，才需要 cache。**直接查找返回值的 selector 应该普通函数，不做缓存**。
 
-Some examples of when and when not to memoize:
+示例：
 
 ```js
-// ❌ DO NOT memoize: will always return a consistent reference
+// ❌ 不缓存：总返回一致引用
 const selectTodos = state => state.todos
 const selectNestedValue = state => state.some.deeply.nested.field
 const selectTodoById = (state, todoId) => state.todos[todoId]
 
-// 🤔 MAYBE memoize: deriving data, but will return a consistent result.
-//    Memoization might be useful if the selector is used in many places
-//    or the list being iterated over is long.
+// 🤔 可考虑缓存：派生数据但结果稳定，或者时常被使用、大列表遍历
 const selectItemsTotal = state => {
   return state.items.reduce((result, item) => {
     return result + item.total
@@ -589,55 +586,55 @@ const selectItemsTotal = state => {
 }
 const selectAllCompleted = state => state.todos.every(todo => todo.completed)
 
-// ✅ SHOULD memoize: returns new references when called
+// ✅ 应缓存：每次都返回新引用
 const selectTodoDescriptions = state => state.todos.map(todo => todo.text)
 ```
 
-### Reshape State as Needed for Components
+### 按需重塑状态
 
-Selectors do not have to limit themselves to direct lookups - they can perform _any_ needed transformation logic inside. This is especially valuable to help prepare data that is needed by specific components.
+selectors 不必仅限直接映射查询，也可做各种转换，尤其方便准备组件所需的数据格式。
 
-A Redux state often has data in a "raw" form, because [the state should be kept minimal](#deriving-data), and many components may need to present the same data differently. You can use selectors to not only _extract_ state, but to _reshape_ it as needed for this specific component's needs. That could include pulling data from multiple slices of the root state, extracting specific values, merging different pieces of the data together, or any other transformations that are helpful.
+Redux 状态通常是“原始”形态，[因为状态应当保持最简](#deriving-data)，而多个组件可能需要不同呈现形式。你可以用 selector 名字来抽取、转换多份 slice 数据，或合并、筛选等。
 
-It's fine if a component has some of this logic too, but it can be beneficial to pull all of this transformation logic out into separate selectors for better reuse and testability.
+组件中也可部分实现转换逻辑，但抽取为 selectors 有利于复用和测试。
 
-### Globalize Selectors if Needed
+### 需要时全局化 selectors
 
-There's an inherent imbalance between writing slice reducers and selectors. Slice reducers only know about their one portion of the state - to the reducer, its `state` is all that exists, such as the array of todos in a `todoSlice`. Selectors, on the other hand, _usually_ are written to take the entire Redux root state as their argument. This means that they have to know where in the root state this slice's data is kept, such as `state.todos`, even though that's not really defined until the root reducer is created (typically in the app-wide store setup logic).
+写 slice reducer 时，只知道自己的状态片段，对应的 `state` 就是那片数据（如 todoSlice 中的 todo 数组）。但 selectors 通常接收整个根状态作为参数，必须知道 slice 状态在根状态里的位置，比如 `state.todos`。
 
-A typical slice file often has both of these patterns side-by-side. That's fine, especially in small or midsize apps. But, depending on your app's architecture, you may want to further abstract the selectors so that they _don't_ know where the slice state is kept - it has to be handed to them.
+通常 slice 文件里既有局部的 reducer 逻辑，也有“全局化”的 selectors，接受根状态并内部查找对应 slice。
 
-We refer to this pattern as "globalizing" selectors. A **"globalized" selector** is one that accepts the Redux root state as an argument, and knows how to find the relevant slice of state to perform the real logic. A **"localized" selector** is one that expects _just a piece_ of the state as an argument, without knowing or caring where that is in the root state:
+这种做“全局化”的 selector，叫做“globalized selectors”；而仅期望接受部分状态作为参数的，叫“localized selectors”：
 
 ```js
-// "Globalized" - accepts root state, knows to find data at `state.todos`
+// “全局化” - 接受根状态，知道在 state.todos 取值
 const selectAllTodosCompletedGlobalized = state =>
   state.todos.every(todo => todo.completed)
 
-// "Localized" - only accepts `todos` as argument, doesn't know where that came from
+// “局部化” - 只接受 todos 数据，不知道数据在哪
 const selectAllTodosCompletedLocalized = todos =>
   todos.every(todo => todo.completed)
 ```
 
-"Localized" selectors can be turned into "globalized" selectors by wrapping them in a function that knows how to retrieve the right slice of state and pass it onwards.
+“局部化” selectors 可通过包装成函数，添加查找 slice 的逻辑，变成“全局化”。
 
-Redux Toolkit's [`createEntityAdapter` API](https://redux-toolkit.js.org/api/createEntityAdapter#selector-functions) is an example of this pattern. If you call `todosAdapter.getSelectors()`, with no argument, it returns a set of "localized" selectors that expect the _entity slice state_ as their argument. If you call `todosAdapter.getSelectors(state => state.todos)`, it returns a set of "globalized" selectors that expect to be called with the _Redux root state_ as their argument.
+Redux Toolkit 的 [`createEntityAdapter` API](https://redux-toolkit.js.org/api/createEntityAdapter#selector-functions) 就体现了这一点。如果调用 `todosAdapter.getSelectors()` 不传参数，返回的就是“局部化” selectors；传入 `state => state.todos`，则返回“全局化”版本。
 
-There may also be other benefits to having "localized" versions of selectors as well. For example, say we have an advanced scenario of keeping multiple copies of `createEntityAdapter` data nested in the store, such as a `chatRoomsAdapter` that tracks rooms, and each room definition then has a `chatMessagesAdapter` state to store the messages. We can't directly look up the messages for each room - we first have to retrieve the room object, then select the messages out of that. This is easier if we have a set of "localized" selectors for the messages.
+有时有“局部化” selectors 更有用。例如，若有多个 `createEntityAdapter` 嵌套存储，按域划分聊天室和消息数据，要先选聊天室，再取得消息，这时“局部化” selectors 很方便。
 
-## Further Information
+## 更多信息
 
-- Selector libraries:
-  - Reselect: https://github.com/reduxjs/reselect
-  - `proxy-memoize`: https://github.com/dai-shi/proxy-memoize
-  - `re-reselect`: https://github.com/toomuchdesign/re-reselect
-  - `reselect-tools`: https://github.com/skortchmark9/reselect-tools
-  - `redux-views`: https://github.com/josepot/redux-views
-- [Reselect v5 Roadmap Discussion: Goals and API Design](https://github.com/reduxjs/reselect/discussions/491)
-- Randy Coulman has an excellent series of blog posts on selector architecture and different approaches for globalizing Redux selectors, with tradeoffs:
-  - [Encapsulating the Redux State Tree](https://randycoulman.com/blog/2016/09/13/encapsulating-the-redux-state-tree/)
-  - [Redux Reducer/Selector Asymmetry](https://randycoulman.com/blog/2016/09/20/redux-reducer-selector-asymmetry/)
-  - [Modular Reducers and Selectors](https://randycoulman.com/blog/2016/09/27/modular-reducers-and-selectors/)
-  - [Globalizing Redux Selectors](https://randycoulman.com/blog/2016/11/29/globalizing-redux-selectors/)
-  - [Globalizing Curried Selectors](https://randycoulman.com/blog/2016/12/27/globalizing-curried-selectors/)
-  - [Solving Circular Dependencies in Modular Redux](https://randycoulman.com/blog/2018/06/12/solving-circular-dependencies-in-modular-redux/)
+- selector 相关库：
+  - Reselect：https://github.com/reduxjs/reselect
+  - `proxy-memoize`：https://github.com/dai-shi/proxy-memoize
+  - `re-reselect`：https://github.com/toomuchdesign/re-reselect
+  - `reselect-tools`：https://github.com/skortchmark9/reselect-tools
+  - `redux-views`：https://github.com/josepot/redux-views
+- [Reselect v5 路线图讨论：目标与 API 设计](https://github.com/reduxjs/reselect/discussions/491)
+- Randy Coulman 有篇优秀系列博文，讨论 selector 架构及 Redux selector 全局化等多方法及权衡：
+  - [封装 Redux 状态树](https://randycoulman.com/blog/2016/09/13/encapsulating-the-redux-state-tree/)
+  - [Redux Reducer/Selector 非对称性](https://randycoulman.com/blog/2016/09/20/redux-reducer-selector-asymmetry/)
+  - [模块化 Reducers 和 Selectors](https://randycoulman.com/blog/2016/09/27/modular-reducers-and-selectors/)
+  - [Redux Selectors 全局化](https://randycoulman.com/blog/2016/11/29/globalizing-redux-selectors/)
+  - [柯里化 selectors 的全局化](https://randycoulman.com/blog/2016/12/27/globalizing-curried-selectors/)
+  - [解决模块化 Redux 的循环依赖](https://randycoulman.com/blog/2018/06/12/solving-circular-dependencies-in-modular-redux/)

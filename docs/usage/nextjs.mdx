@@ -1,72 +1,72 @@
 ---
 id: nextjs
-title: Redux Toolkit Setup with Next.js
-sidebar_label: Setup with Next.js
+title: 使用 Next.js 配置 Redux Toolkit
+sidebar_label: 使用 Next.js 配置
 hide_title: true
-description: 'Instructions on setting up Redux in a Next.js project'
+description: '在 Next.js 项目中设置 Redux 的说明'
 ---
 
-# Redux Toolkit Setup with Next.js
+# 使用 Next.js 配置 Redux Toolkit
 
-:::tip What You'll Learn
+:::tip 您将学到的内容
 
-- How to set up and use Redux Toolkit with the [Next.js framework](https://nextjs.org/docs)
-
-:::
-
-:::info Prerequisites
-
-- Familiarity with [ES2015 syntax and features](https://www.taniarascia.com/es6-syntax-and-feature-overview/)
-- Knowledge of React terminology: [JSX](https://reactjs.org/docs/introducing-jsx.html), [State](https://reactjs.org/docs/state-and-lifecycle.html), [Function Components, Props](https://reactjs.org/docs/components-and-props.html), and [Hooks](https://reactjs.org/docs/hooks-intro.html)
-- Understanding of [Redux terms and concepts](https://redux.js.org/tutorials/fundamentals/part-2-concepts-data-flow)
-- Working through the [Quick Start tutorial](../tutorials/quick-start.md) and [TypeScript Quick Start tutorial](../tutorials/typescript.md) is recommended, and ideally the full [Redux Essentials](https://redux.js.org/tutorials/essentials/part-1-overview-concepts) tutorial as well
+- 如何使用 [Next.js 框架](https://nextjs.org/docs) 设置和使用 Redux Toolkit
 
 :::
 
-## Introduction
+:::info 前置知识
 
-[Next.js](https://nextjs.org/docs) is a popular server side rendering framework for React that presents some unique challenges for using Redux properly. These challenges include:
+- 熟悉 [ES2015 语法和特性](https://www.taniarascia.com/es6-syntax-and-feature-overview/)
+- 了解 React 术语：[JSX](https://reactjs.org/docs/introducing-jsx.html)、[State](https://reactjs.org/docs/state-and-lifecycle.html)、[函数组件和 Props](https://reactjs.org/docs/components-and-props.html)，以及[Hooks](https://reactjs.org/docs/hooks-intro.html)
+- 理解 [Redux 术语和概念](https://redux.js.org/tutorials/fundamentals/part-2-concepts-data-flow)
+- 推荐完成 [快速开始教程](../tutorials/quick-start.md) 和 [TypeScript 快速开始教程](../tutorials/typescript.md)，最好还要完整学习 [Redux Essentials 教程](https://redux.js.org/tutorials/essentials/part-1-overview-concepts)
 
-- **Per-request safe Redux store creation**: A Next.js server can handle multiple requests simultaneously. This means that the Redux store should be created per request and that the store should not be shared across requests.
-- **SSR-friendly store hydration**: Next.js applications are rendered twice, first on the server and again on the client. Failure to render the same page contents on both the client and the server will result in a "hydration error". So the Redux store will have to be initialized on the server and then re-initialized on the client with the same data in order to avoid hydration issues.
-- **SPA routing support**: Next.js supports a hybrid model for client side routing. A customer's first page load will get an SSR result from the server. Subsequent page navigation will be handled by the client. This means that with a singleton store defined in the layout, route-specific data will need to be selectively reset on route navigation, while non-route-specific data will need to be retained in the store.
-- **Server caching friendly**: Recent versions of Next.js (specifically applications using the App Router architecture) support aggressive server caching. The ideal store architecture should be compatible with this caching.
+:::
 
-There are two architectures for a Next.js application: the [Pages Router](https://nextjs.org/docs/pages/building-your-application/routing/pages-and-layouts) and the [App Router](https://nextjs.org/docs/app/building-your-application/routing).
+## 介绍
 
-The Pages Router is the original architecture for Next.js. If you're using the Pages Router, Redux setup is primarily handled by using the [`next-redux-wrapper` library](https://github.com/kirill-konshin/next-redux-wrapper), which integrates a Redux store with the Pages Router data fetching methods like `getServerSideProps`.
+[Next.js](https://nextjs.org/docs) 是一个流行的 React 服务器端渲染框架，正确使用 Redux 需要克服一些独特挑战。这些挑战包括：
 
-**This guide will focus on the App Router architecture**, as it is the new default architecture option for Next.js.
+- **按请求安全地创建 Redux store**：Next.js 服务器可以同时处理多个请求。这意味着 Redux store 应该为每个请求单独创建，而不应在请求间共享。
+- **支持 SSR 的 store 水合（hydration）**：Next.js 应用先在服务器渲染一次，然后在客户端再次渲染。如果客户端和服务器呈现的页面内容不一致，将导致“水合错误”。因此，Redux store 需要在服务器侧初始化，然后在客户端使用相同数据重新初始化以避免水合问题。
+- **支持 SPA 路由**：Next.js 支持客户端路由的混合模式。用户首次页面加载会从服务器获得 SSR 结果，后续页面导航由客户端处理。这意味着如果在布局中定义了单例 store，路由特定的数据需要在路由切换时选择性重置，而非路由特定的数据需保留。
+- **支持服务器缓存**：Next.js 的新版本（尤其是采用 App Router 架构的应用）支持积极的服务器缓存。理想的 store 架构应兼容此类缓存。
 
-### How to Read This Guide
+Next.js 应用有两种架构：[Pages Router](https://nextjs.org/docs/pages/building-your-application/routing/pages-and-layouts) 和 [App Router](https://nextjs.org/docs/app/building-your-application/routing)。
 
-This page assumes that you already have an existing Next.js application based on the App Router architecture.
+Pages Router 是 Next.js 的原始架构。如果你使用 Pages Router，Redux 配置主要通过 [`next-redux-wrapper` 库](https://github.com/kirill-konshin/next-redux-wrapper) 实现，它将 Redux store 集成到 Pages Router 的数据获取方法（如 `getServerSideProps`）中。
 
-If you want to follow along, you can create a new empty Next project with `npx create-next-app my-app` - the default prompts will set up a new project with the App Router enabled. Then, add `@reduxjs/toolkit` and `react-redux` as dependencies.
+**本指南聚焦于 App Router 架构**，因为它是 Next.js 的新默认架构选项。
 
-You can also create a new Next+Redux project with `npx create-next-app --example with-redux my-app`, which includes the initial setup pieces described in this page.
+### 如何阅读本指南
 
-## The App Router Architecture and Redux
+本页假定你已有基于 App Router 架构的 Next.js 应用。
 
-The primary new feature of the Next.js App Router is the addition of support for React Server Components (RSCs). RSCs are a special type of React component that only renders on the server, as opposed to "client" components that render on **both** the client and the server. RSCs can be defined as `async` functions and return promises during rendering as they make async requests for data to render.
+如果想跟着做，可以用 `npx create-next-app my-app` 创建一个新的空 Next 项目，默认配置即启用 App Router。然后，添加 `@reduxjs/toolkit` 和 `react-redux` 作为依赖。
 
-RSCs ability to block for data requests means that with the App Router you no longer have `getServerSideProps` to fetch data for rendering. Any component in the tree can make asynchronous requests for data. While this is very convenient it also means thats if you define global variables (like the Redux store) they will be shared across requests. This is a problem because the Redux store could be contaminated with data from other requests.
+你也可以使用 `npx create-next-app --example with-redux my-app` 创建一个包含本页所述初始配置步骤的 Next+Redux 项目。
 
-Based on the architecture of the App Router we have these general recommendations for appropriate use of Redux:
+## App Router 架构与 Redux
 
-- **No global stores** - Because the Redux store is shared across requests, it should not be defined as a global variable. Instead, the store should be created per request.
-- **RSCs should not read or write the Redux store** - RSCs cannot use hooks or context. They aren't meant to be stateful. Having an RSC read or write values from a global store violates the architecture of the Next.js App Router.
-- **The store should only contain mutable data** - We recommend that you use your Redux sparingly for data intended to be global and mutable.
+Next.js App Router 的主要新特性是支持 React Server Components（RSCs）。RSC 是一种只在服务器端渲染的 React 组件，与在客户端和服务器端都渲染的“客户端”组件不同。RSC 可以定义为 `async` 函数，并在渲染时返回 Promise，以异步请求渲染所需数据。
 
-These recommendations are specific to applications written with the Next.js App Router. Single Page Applications (SPAs) don't execute on the server and therefore can define stores as global variables. SPAs don't need to worry about RSCs since they don't exist in SPAs. And singleton stores can store whatever data you want.
+RSC 阻塞数据请求的能力意味着在 App Router 下，不再使用 `getServerSideProps` 来获取渲染数据。树中的任何组件都可以异步请求数据。虽然这很方便，但意味着如果定义了全局变量（比如 Redux store），它们将在请求间共享。这会导致 Redux store 被其它请求的数据污染。
 
-### Folder Structure
+基于 App Router 架构，针对 Redux 的一般建议有：
 
-Next apps can be created to have the `/app` folder either at the root, or nested under `/src/app`. Your Redux logic should go in a separate folder, alongside the `/app` folder. It's common to put the Redux logic in a folder named `/lib`, but not required.
+- **不要使用全局 store** — 由于 Redux store 会跨请求共享，不应定义为全局变量。应为每个请求创建新的 store。
+- **RSC 不应读写 Redux store** — RSC 不能使用 hooks 或 context，也不应有状态。让 RSC 读写全局 store 违背了 Next.js App Router 的架构设计。
+- **store 应仅包含可变数据** — 推荐将 Redux 限用于全局共享且可变的数据。
 
-The file and folder structure inside of that `/lib` folder is up to you, but we generally recommend [a "feature folder"-based structure](https://redux.js.org/style-guide/#structure-files-as-feature-folders-with-single-file-logic) for the Redux logic.
+这些建议针对使用 Next.js App Router 实现的应用。单页应用（SPA）不在服务器执行，可将 store 定义为全局变量。SPA 无需考虑 RSC，因此单例 store 可存储任意数据。
 
-A typical example might look like:
+### 目录结构
+
+Next 应用的 `/app` 文件夹可位于根目录或 `/src/app` 下。你的 Redux 相关逻辑应放在与 `/app` 同级的独立文件夹，常见命名如 `/lib`，但非强制。
+
+`/lib` 内的文件和文件夹结构自行决定，但通常推荐 [基于“特性文件夹”的结构](https://redux.js.org/style-guide/#structure-files-as-feature-folders-with-single-file-logic) 编写 Redux 逻辑。
+
+典型示例结构如下：
 
 ```
 /app
@@ -80,17 +80,17 @@ A typical example might look like:
       todosSlice.ts
 ```
 
-We'll use that approach for this guide.
+本指南将采用此方案。
 
-## Initial Setup
+## 初始配置
 
-Similar to the [RTK TypeScript Tutorial](../tutorials/typescript.md), we need to create a file for the Redux store, as well as the inferred `RootState` and `AppDispatch` types.
+类似于[RTK TypeScript 教程](../tutorials/typescript.md)，需要创建一个 Redux store 文件，以及推断的 `RootState` 和 `AppDispatch` 类型。
 
-However, Next's multi-page architecture requires some differences from that single-page app setup.
+不过，由于 Next 的多页面架构，需要与单页应用不同的处理方式。
 
-### Creating a Redux Store per Request
+### 为每个请求创建 Redux Store
 
-The first change is to move from defining `store` as a global or module-singleton variable, to defining a `makeStore` function that returns a new store for each request:
+第一点变化是，不再将 `store` 设为全局或模块单例变量，而是定义一个 `makeStore` 函数，为每个请求返回一个新 store：
 
 ```ts title="lib/store.ts"
 import { configureStore } from '@reduxjs/toolkit'
@@ -101,18 +101,18 @@ export const makeStore = () => {
   })
 }
 
-// Infer the type of makeStore
+// 推断 makeStore 的返回类型
 export type AppStore = ReturnType<typeof makeStore>
-// Infer the `RootState` and `AppDispatch` types from the store itself
+// 从 store 本身推断 `RootState` 和 `AppDispatch` 类型
 export type RootState = ReturnType<AppStore['getState']>
 export type AppDispatch = AppStore['dispatch']
 ```
 
-Now we have a function, `makeStore`, that we can use to create a store instance per-request while retaining the strong type safety (if you choose to use TypeScript) that Redux Toolkit provides.
+现在我们有了 `makeStore` 函数，可用来为每个请求创建 store 实例，同时保留 Redux Toolkit（若使用 TypeScript）的强类型安全。
 
-We don't have a `store` variable exported, but we can infer the `RootState` and `AppDispatch` types from the return type of `makeStore`.
+我们没导出 `store` 变量，但可通过 `makeStore` 返回类型推断 `RootState` 和 `AppDispatch`。
 
-You'll also want to create and export [pre-typed versions of the React-Redux hooks as well](../tutorials/typescript.md#define-typed-hooks), to simplify usage later:
+你还可以创建并导出经过预设类型的 React-Redux hooks（参见[定义类型化的 hooks](../tutorials/typescript.md#define-typed-hooks)），便于后续使用：
 
 ```ts title="lib/hooks.ts"
 // file: lib/store.ts noEmit
@@ -144,9 +144,9 @@ export const useAppStore = useStore.withTypes<AppStore>()
 // highlight-end
 ```
 
-### Providing the Store
+### 提供 Store
 
-To use this new `makeStore` function we need to create a new "client" component that will create the store and share it using the React-Redux `Provider` component.
+要使用新 `makeStore`，需要创建一个“客户端”组件，负责创建 store 并用 React-Redux 的 `Provider` 共享：
 
 ```ts title="app/StoreProvider.tsx"
 // file: lib/store.ts noEmit
@@ -191,19 +191,19 @@ export default function StoreProvider({
 }
 ```
 
-In this example code we are ensuring that this client component is re-render safe by checking the value of the reference to ensure that the store is only created once. This component will only be rendered once per request on the server, but might be re-rendered multiple times on the client if there are stateful client components located above this component in the tree, or if this component also contains other mutable state that causes a re-render.
+示例中，我们用一个引用变量确保该客户端组件的重渲染安全，store 只创建一次。此组件在服务器端每个请求只渲染一次，但在客户端可能因上层有状态组件或自身有可变状态，导致多次重渲染。
 
-:::tip Why Client Components?
+:::tip 为什么是客户端组件？
 
-Any component that interacts with the Redux store (creating it, providing it, reading from it, or writing to it) needs to be a client component. This is because **accessing the store requires React context, and context is only available in client components.**
+任何与 Redux store 交互（创建、提供、读取或写入）的组件都必须是客户端组件。因为 **访问 store 需要 React context，而 context 仅在客户端组件中可用。**
 
 :::
 
-The next step is to **include the `StoreProvider` anywhere in the tree above where the store is used**. You can locate the store in the layout component if all the routes using that layout need the store. Or if the store is only used in a specific route you can create and provide the store in that route handler. In all client components further down the tree, you can use the store exactly as you would normally using the hooks provided by `react-redux`.
+下一步就是 **在组件树中 store 使用位置之上的任何地方包裹 `StoreProvider`**。如若所有使用该布局的路由都需要 store，可放在布局组件中。如果仅特定路由使用 store，亦可在该路由处理器中创建和提供。在后续所有客户端组件中，可以照常使用 `react-redux` 提供的 hooks 使用 store。
 
-### Loading Initial Data
+### 加载初始数据
 
-If you need to initialize the store with data from the parent component, then define that data as a prop on the client `StoreProvider` component and use a Redux action on the slice to set the data in the store as shown below.
+如果需要用父组件的初始数据初始化 store，则在客户端的 `StoreProvider` 组件中定义该数据为 prop，并通过 slice 的 Redux action 设置到 store 中，如下示例：
 
 ```ts title="app/StoreProvider.tsx"
 // file: lib/features/counter/counterSlice.ts noEmit
@@ -273,13 +273,15 @@ export default function StoreProvider({
 }
 ```
 
-## Additional Configuration
+## 其他配置
 
-### Per-route state
+### 按路由状态
 
-If you use Next.js's support for client side SPA-style navigation by using `next/navigation`, then when customers navigate from page to page only the route component will be re-rendered. This means that if you have a Redux store created and provided in the layout component it will be preserved across route changes. This is not a problem if you are only using the store for global, mutable data. However, if you are using the store for per-route data then you will need to reset the route-specific data in the store when the route changes.
+如果使用 Next.js 的客户端 SPA 风格导航（使用 `next/navigation`），用户在页面间导航时，仅路由组件会重新渲染。这意味着如果在布局组件中创建并提供了同一个 Redux store，路由切换时该 store 会保留下来。
 
-Shown below is a `ProductName` example component that uses the Redux store to manage the mutable name of a product. The `ProductName` component part of a product detail route. In order to ensure that we have the correct name in the store we need to set the value in the store any time the `ProductName` component is initially rendered, which happens on any route change to the product detail route.
+这对只存储全局可变数据没问题，但如果将路由特定数据存储在 store 中，则需要在路由切换时重置这些数据。
+
+以下示例展示一个 `ProductName` 组件，它通过 Redux store 管理产品的可变名称。此组件是产品详情路由的一部分。为了保证 store 中名称的正确性，需要在 `ProductName` 初次渲染时（每次路由切换到此路由时）设置 store 的值。
 
 ```ts title="app/ProductName.tsx"
 // file: lib/features/product/productSlice.ts noEmit
@@ -371,59 +373,63 @@ export default function ProductName({ product }: { product: Product }) {
 }
 ```
 
-Here we are using the same initialization pattern as before, of dispatching actions to the store, to set the route-specific data. The `initialized` ref is used to ensure that the store is only initialized once per route change.
+这里使用了和之前相同的初始化模式，即派发 action 向 store 设置路由特定数据。`initialized` 引用用来保证每次路由切换后只初始化一次。
 
-It is worth noting that initializing the store with a `useEffect` would not work because `useEffect` only runs on the client. This would result in hydration errors or flicker because the result from a server side render would not match the result from the client side render.
+注意，用 `useEffect` 初始化 store 不起作用，因为 `useEffect` 只在客户端执行。这样会导致水合错误或页面闪烁，因为服务器端渲染和客户端渲染的结果不一致。
 
-### Caching
+### 缓存
 
-The App Router has four separate caches including `fetch` request and route caches. The most likely cache to cause issues is the route cache. If you have an application that accepts login you may have routes (e.g. the home route, `/`) that render different data based on the user you will need to disable the route cache by using the [`dynamic` export from the route handler](https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic):
+App Router 有四种缓存，包括 `fetch` 请求缓存和路由缓存。最容易出问题的是路由缓存。
+
+如果你的应用需要登录，某些路由（如首页 `/`）可能基于用户渲染不同数据，则需要在路由处理器中通过导出 [`dynamic` 配置](https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic) 禁用路由缓存：
 
 ```ts
 export const dynamic = 'force-dynamic'
 ```
 
-After a mutation you should also invalidate the cache by calling [`revalidatePath`](https://nextjs.org/docs/app/api-reference/functions/revalidatePath) or [`revalidateTag`](https://nextjs.org/docs/app/api-reference/functions/revalidateTag) as appropriate.
+执行变更后，使用 [`revalidatePath`](https://nextjs.org/docs/app/api-reference/functions/revalidatePath) 或 [`revalidateTag`](https://nextjs.org/docs/app/api-reference/functions/revalidateTag) 适时地使缓存失效。
 
 ### RTK Query
 
-We recommend using RTK Query for data fetching **on the client only**. Data fetching on the server should use `fetch` requests from `async` RSCs.
+建议仅 **在客户端** 使用 RTK Query 进行数据请求。服务器端的数据请求应该用异步的 React Server Components 中的 `fetch`。
 
-You can learn more about Redux Toolkit Query in the [Redux Toolkit Query tutorial](https://redux-toolkit.js.org/tutorials/rtk-query).
+你可以在 [Redux Toolkit Query 教程](https://redux-toolkit.js.org/tutorials/rtk-query) 学习更多。
 
 :::note
 
-In the future, RTK Query may be able to receive data fetched on the server via React Server Components, but that is a future capability that will require changes to both React and RTK Query.
+未来，RTK Query 可能支持通过 React Server Components 接收服务器端获取的数据，但这需要 React 和 RTK Query 双方的进一步更改，是未来的功能。
 
 :::
 
-## Checking Your Work
+## 检查你的成果
 
-There are three key areas that you should check to ensure that you have set up Redux Toolkit correctly:
+确保你的 Redux Toolkit 配置正确，需要重点检查以下三点：
 
-- **Server Side Rendering** - Check the HTML output of the server to ensure that the data in the Redux store is present in the server side rendered output.
-- **Route Change** - Navigate between pages on the same route as well as between different routes to ensure that route-specific data is initialized properly.
-- **Mutations** - Check that the store is compatible with the Next.js App Router caches by performing a mutation and then navigating away from the route and back to the original route to ensure that the data is updated.
+- **服务器端渲染** — 检查服务器输出的 HTML，确保 Redux store 中的数据已经存在于 SSR 内容中。
+- **路由切换** — 访问同一路由下不同页面以及不同路由页面，确保路由特定数据被正确初始化。
+- **变更** — 检查 store 与 Next.js App Router 缓存兼容性，执行数据变更后离开路由再返回，确认数据得到更新。
 
-## Overall Recommendations
+## 综合建议
 
-The App Router presents a dramatically different architecture for React applications from either the Pages Router or a SPA application. We recommend rethinking your approach to state management in the light of this new architecture. In SPA applications it's not unusual to have a large store that contains all the data, both mutable and immutable, required to drive the application. For App Router applications we recommend that you should:
+App Router 相较于 Pages Router 或 SPA，引入了截然不同的 React 应用架构设计。我们建议结合此新架构重新思考状态管理策略。
 
-- **only use Redux for globally shared, mutable data**
-- use a combination of Next.js state (search params, route parameters, form state, etc.), React context and React hooks for all other state management.
+SPA 中常见将全部需要驱动应用的可变及不可变数据装入大型 store。但对 App Router 应用，推荐：
 
-## What You've Learned
+- **仅使用 Redux 管理全局共享且可变数据**
+- 对于其他状态管理，结合 Next.js 状态（如搜索参数、路由参数、表单状态等）、React context 和 React hooks 使用
 
-That was a brief overview of how to set up and use Redux Toolkit with the App Router:
+## 你已学到的内容
 
-:::tip Summary
+以上是如何使用 App Router 设置和使用 Redux Toolkit 的简要介绍：
 
-- **Create a Redux store per request by using `configureStore` wrapped in a `makeStore` function**
-- **Provide the Redux store to the React application components using a "client" component**
-- **Only interact with the Redux store in client components** because only client components have access to React context
-- **Use the store as you normally would using the hooks provided in React-Redux**
-- **You need to account for the case where you have per-route state in a global store located in the layout**
+:::tip 总结
 
-## What's Next?
+- **利用封装在 `makeStore` 函数中的 `configureStore`，为每个请求创建 Redux store**
+- **使用“客户端”组件将 Redux store 提供给 React 组件**
+- **仅在客户端组件中与 Redux store 交互**，因为只有客户端组件能访问 React context
+- **使用 React-Redux 提供的 hooks 按常规方式使用 store**
+- **处理全局 store 中的按路由状态，确保路由相关数据正确初始化**
 
-We recommend going through [**the "Redux Essentials" and "Redux Fundamentals" tutorials in the Redux core docs**](https://redux.js.org/tutorials/index), which will give you a complete understanding of how Redux works, what Redux Toolkit does, and how to use it correctly.
+## 接下来做什么？
+
+推荐完成 [**Redux 核心文档中的“Redux Essentials”及“Redux Fundamentals”教程**](https://redux.js.org/tutorials/index)，它们将全面讲解 Redux 的工作原理、Redux Toolkit 功能及正确使用方法。

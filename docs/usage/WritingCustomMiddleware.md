@@ -1,44 +1,44 @@
 ---
 id: writing-custom-middleware
-title: Writing Custom Middleware
+title: 编写自定义中间件
 ---
 
-# Writing Custom Middleware
+# 编写自定义中间件
 
-:::tip What You'll Learn
+:::tip 你将学到什么
 
-- When to use custom middleware
-- Standard patterns for middleware
-- How to make sure that your middleware is compatible with other Redux projects
+- 何时使用自定义中间件
+- 中间件的标准模式
+- 如何确保你的中间件与其他 Redux 项目兼容
 
 :::
 
-Middleware in Redux can be mainly used to either
+Redux 中的中间件主要用于：
 
-- create side effects for actions,
-- modify or cancel actions, or to
-- modify the input accepted by dispatch.
+- 为动作创建副作用，
+- 修改或取消动作，或
+- 修改 dispatch 接受的输入。
 
-Most use cases fall into the first category: For example [Redux-Saga](https://github.com/redux-saga/redux-saga/), [redux-observable](https://github.com/redux-observable/redux-observable), and [RTK listener middleware](https://redux-toolkit.js.org/api/createListenerMiddleware) all create side effects that react to actions. These examples also show that this is a very common need: To be able to react to an action other than with a state change.
+大多数使用场景属于第一类：例如，[Redux-Saga](https://github.com/redux-saga/redux-saga/)、[redux-observable](https://github.com/redux-observable/redux-observable) 和 [RTK 监听器中间件](https://redux-toolkit.js.org/api/createListenerMiddleware) 都是创建响应动作的副作用。这些例子也表明，这是一种非常常见的需求：能够响应动作，而不仅仅是通过状态变更。
 
-Modifying actions can be used to e.g. enhance an action with information from the state or from an external input, or to throttle, debounce or gate them.
+修改动作可以用于例如增强动作，添加来自状态或外部输入的信息，或者对动作进行节流、防抖或门控。
 
-The most obvious example for modifying the input of dispatch is [Redux Thunk](https://github.com/reduxjs/redux-thunk), which transforms a function returning an action into an action by calling it.
+修改 dispatch 输入的最明显示例是 [Redux Thunk](https://github.com/reduxjs/redux-thunk)，它通过调用函数将返回动作的函数转变为动作。
 
-## When to use custom middleware
+## 何时使用自定义中间件
 
-Most of the time, you won't actually need custom middleware. The most likely use case for middleware is side effects, and there is plenty of packages who nicely package side effects for Redux and have been in use long enough to get rid of the subtle problems you would run into when building this yourself. A good starting point is [RTK Query](https://redux-toolkit.js.org/rtk-query/overview) for managing server-side state and [RTK listener middleware](https://redux-toolkit.js.org/api/createListenerMiddleware) for other side effects.
+大多数情况下，你实际上不需要自定义中间件。中间件最可能的用途是处理副作用，并且市场上有许多以良好方式封装副作用的包，这些包经过长时间的使用，解决了你自己构建时可能遇到的微妙问题。一个很好的起点是用于管理服务器端状态的 [RTK Query](https://redux-toolkit.js.org/rtk-query/overview) 和用于其他副作用的 [RTK 监听器中间件](https://redux-toolkit.js.org/api/createListenerMiddleware)。
 
-You might still want to use custom middleware in one of two cases:
+但你可能仍会在以下两种情况下想使用自定义中间件：
 
-1. If you only have a single, very simple side effect, it might not be worth it to add a full additional framework. Just make sure that you switch to an existing framework once your application grows instead of growing your own custom solution.
-2. If you need to modify or cancel actions.
+1. 如果你只需要一个单一且非常简单的副作用，添加一个完整的额外框架可能不值得。但请确保当你的应用增长时切换到现成框架，而不是扩展自己的解决方案。
+2. 如果你需要修改或取消动作。
 
-## Standard patterns for middleware
+## 中间件的标准模式
 
-### Create side effects for actions
+### 为动作创建副作用
 
-This is the most common middleware. Here's what it looks like for [rtk listener middleware](https://github.com/reduxjs/redux-toolkit/blob/0678c2e195a70c34cd26bddbfd29043bc36d1362/packages/toolkit/src/listenerMiddleware/index.ts#L427):
+这是最常见的中间件。下面是 [rtk 监听器中间件](https://github.com/reduxjs/redux-toolkit/blob/0678c2e195a70c34cd26bddbfd29043bc36d1362/packages/toolkit/src/listenerMiddleware/index.ts#L427) 的示例：
 
 ```ts
 const middleware: ListenerMiddleware<S, D, ExtraArgument> =
@@ -56,15 +56,15 @@ const middleware: ListenerMiddleware<S, D, ExtraArgument> =
       return stopListening(action.payload)
     }
 
-    // Need to get this state _before_ the reducer processes the action
+    // 需要在 reducer 处理 action 之前获取此状态
     let originalState: S | typeof INTERNAL_NIL_TOKEN = api.getState()
 
-    // `getOriginalState` can only be called synchronously.
+    // `getOriginalState` 只能同步调用。
     // @see https://github.com/reduxjs/redux-toolkit/discussions/1648#discussioncomment-1932820
     const getOriginalState = (): S => {
       if (originalState === INTERNAL_NIL_TOKEN) {
         throw new Error(
-          `${alm}: getOriginalState can only be called synchronously`
+          `${alm}: getOriginalState 只能同步调用`
         )
       }
 
@@ -74,12 +74,12 @@ const middleware: ListenerMiddleware<S, D, ExtraArgument> =
     let result: unknown
 
     try {
-      // Actually forward the action to the reducer before we handle listeners
+      // 实际上先将 action 传给 reducer，再处理监听器
       result = next(action)
 
       if (listenerMap.size > 0) {
         let currentState = api.getState()
-        // Work around ESBuild+TS transpilation issue
+        // 解决 ESBuild + TS 转译问题
         const listenerEntries = Array.from(listenerMap.values())
         for (let entry of listenerEntries) {
           let runListener = false
@@ -102,7 +102,7 @@ const middleware: ListenerMiddleware<S, D, ExtraArgument> =
         }
       }
     } finally {
-      // Remove `originalState` store from this scope.
+      // 从此作用域移除 `originalState` 存储
       originalState = INTERNAL_NIL_TOKEN
     }
 
@@ -110,58 +110,58 @@ const middleware: ListenerMiddleware<S, D, ExtraArgument> =
   }
 ```
 
-In the first part, it listens to `addListener`, `clearAllListeners` and `removeListener` actions to change which listeners should be invoked later on.
+第一部分监听 `addListener`、`clearAllListeners` 和 `removeListener` 动作，以决定后续应调用哪些监听器。
 
-In the second part, the code mainly calculates the state after passing the action through the other middlewares and the reducer, and then passes both the original state as well as the new state coming from the reducer to the listeners.
+第二部分主要计算通过其他中间件和 reducer 后的状态，然后将原始状态和来自 reducer 的新状态传递给监听器。
 
-It is common to have side effects after dispatching the action, because this allows taking into account both the original and the new state, and because the interaction coming from the side effects shouldn't influence the current action execution anyways (otherwise, it wouldn't be a side effect).
+通常在分发动作之后做副作用，因为这允许同时考虑原始状态和新状态，并且来自副作用的交互不应影响当前动作的执行（否则就不算是副作用了）。
 
-### Modify or cancel actions, or modify the input accepted by dispatch
+### 修改或取消动作，或修改 dispatch 接受的输入
 
-While these patterns are less common, most of them (except for cancelling actions) are used by [redux thunk middleware](https://github.com/reduxjs/redux-thunk/blob/587a85b1d908e8b7cf2297bec6e15807d3b7dc62/src/index.ts#L22):
+虽然这些模式较少见，但其中大多数（取消动作除外）都被 [redux thunk 中间件](https://github.com/reduxjs/redux-thunk/blob/587a85b1d908e8b7cf2297bec6e15807d3b7dc62/src/index.ts#L22) 使用：
 
 ```ts
 const middleware: ThunkMiddleware<State, BasicAction, ExtraThunkArg> =
   ({ dispatch, getState }) =>
   next =>
   action => {
-    // The thunk middleware looks for any functions that were passed to `store.dispatch`.
-    // If this "action" is really a function, call it and return the result.
+    // thunk 中间件查找传递给 `store.dispatch` 的函数。
+    // 如果这个“动作”真的是一个函数，就调用它并返回结果。
     if (typeof action === 'function') {
-      // Inject the store's `dispatch` and `getState` methods, as well as any "extra arg"
+      // 注入 store 的 `dispatch` 和 `getState` 方法，及任何“额外参数”
       return action(dispatch, getState, extraArgument)
     }
 
-    // Otherwise, pass the action down the middleware chain as usual
+    // 否则按常规将动作传递给中间件链
     return next(action)
   }
 ```
 
-Usually, `dispatch` can only handle JSON actions. This middleware adds the ability to also handle actions in the form of functions. It also changes the return type of the dispatch function itself by passing the return value of the function-action to be the return value of the dispatch function.
+通常，`dispatch` 只能处理 JSON 格式的动作。这个中间件添加了处理函数形式动作的能力。它还通过将函数动作的返回值传递为 dispatch 函数的返回值来改变 dispatch 本身的返回类型。
 
-## Rules to make compatible middleware
+## 使中间件兼容的规则
 
-In principle, middleware is a very powerful pattern and can do whatever it wants with an action. Existing middleware might have assumptions about what happens in the middleware around it, though, and being aware of these assumptions will make it easier to ensure that your middleware works well with existing commonly used middleware.
+原则上，中间件是一种非常强大的模式，可以对动作做任何处理。但现有中间件可能对其周围中间件的行为有一些假设，了解这些假设有助于确保你的中间件能与常用中间件良好协作。
 
-There are two contact points between our middleware and the other middlewares:
+我们的中间件和其他中间件有两个接触点：
 
-### Calling the next middleware
+### 调用下一个中间件
 
-When you call `next`, the middleware will expect some form of action. Unless you want to explicitly modify it, just pass through the action that you received.
+调用 `next` 时，中间件期望传入某种形式的动作。除非你明确想修改它，否则应直接传递你收到的动作。
 
-More subtly, some middlewares expect that the middleware is called on the same tick as `dispatch` is called, so `next` should be called synchronously by your middleware.
+更微妙的是，有些中间件期望中间件和 `dispatch` 在同一个事件循环（tick）内调用，所以你的中间件应该同步调用 `next`。
 
-### Returning the dispatch return value
+### 返回 dispatch 的返回值
 
-Unless the middleware needs to explicitly modify the return value of `dispatch`, just return what you get from `next`. If you do need to modify the return value, then your middleware will need to sit in a very specific spot in the middleware chain to be able to do what it is supposed to - you will need to check compatibility with all other middlewares manually and decide how they could work together.
+除非中间件需要显式修改 `dispatch` 的返回值，否则应直接返回从 `next` 得到的值。如果你确实需要修改返回值，那么你的中间件必须放在中间件链的一个非常特定的位置，才能正确发挥作用 —— 你需要手动检查与所有其他中间件的兼容性，并决定它们如何协同工作。
 
-This has a tricky consequence:
+这有一个棘手的后果：
 
 ```ts
 const middleware: Middleware = api => next => async action => {
   const response = next(action)
 
-  // Do something after the action hits the reducer
+  // 在动作到达 reducer 后做一些事情
   const afterState = api.getState()
   if (action.type === 'some/action') {
     const data = await fetchData()
@@ -172,15 +172,15 @@ const middleware: Middleware = api => next => async action => {
 }
 ```
 
-Even though it looks like we didn't modify the response, we actually did: Due to async-await, it is now a promise. This will break some middlewares like the one from RTK Query.
+虽然看起来我们没有修改 `response`，但实际上我们修改了：因为 async-await，`response` 现在是一个 Promise。这会破坏像 RTK Query 这样的某些中间件。
 
-So, how can we write this middleware instead?
+那我们该如何改写这个中间件呢？
 
 ```ts
 const middleware: Middleware = api => next => action => {
   const response = next(action)
 
-  // Do something after the action hits the reducer
+  // 在动作到达 reducer 后做一些事情
   const afterState = api.getState()
   if (action.type === 'some/action') {
     void loadData(api)
@@ -195,8 +195,8 @@ async function loadData(api) {
 }
 ```
 
-Just move out the async logic into a separate function so that you can still use async-await, but don't actually wait for the promise to resolve in the middleware. `void` indicates to others reading the code that you decided to not await the promise explicitly without having an effect on the code.
+只需将异步逻辑移到单独的函数中，这样你仍然可以使用 async-await，但不会在中间件中等待 Promise 解析。使用 `void` 标明你决定不显式等待这个 Promise，而不会影响代码行为。
 
-## Next Steps
+## 接下来
 
-If you haven't yet, take a look at [the Middleware section in Understanding Redux](../understanding/history-and-design/middleware.md) to understand how middleware works under the hood.
+如果还没看过，[了解 Redux 一文中的中间件章节](../understanding/history-and-design/middleware.md) 是个不错的补充，帮助你理解中间件的底层工作原理。

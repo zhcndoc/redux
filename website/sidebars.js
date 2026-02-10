@@ -1,6 +1,6 @@
 module.exports = {
   docs: {
-    Introduction: [
+    '介绍': [
       'introduction/getting-started',
       'introduction/installation',
       'introduction/why-rtk-is-redux-today',
@@ -9,13 +9,13 @@ module.exports = {
       'introduction/ecosystem',
       'introduction/examples'
     ],
-    Tutorials: [
+    '教程': [
       'tutorials/tutorials-index',
       'tutorials/quick-start',
       'tutorials/typescript-quick-start',
       {
         type: 'category',
-        label: 'Redux Essentials',
+        label: 'Redux 入门',
         items: [
           'tutorials/essentials/part-1-overview-concepts',
           'tutorials/essentials/part-2-app-structure',
@@ -29,7 +29,7 @@ module.exports = {
       },
       {
         type: 'category',
-        label: 'Redux Fundamentals',
+        label: 'Redux 基础',
         items: [
           'tutorials/fundamentals/part-1-overview',
           'tutorials/fundamentals/part-2-concepts-data-flow',
@@ -43,11 +43,11 @@ module.exports = {
       },
       'tutorials/videos'
     ],
-    'Using Redux': [
+    '使用 Redux': [
       'usage/index',
       {
         type: 'category',
-        label: 'Setup and Organization',
+        label: '设置与组织',
         collapsed: false,
         items: [
           'usage/configuring-your-store',
@@ -59,7 +59,7 @@ module.exports = {
       },
       {
         type: 'category',
-        label: 'Migrations',
+        label: '迁移',
         collapsed: false,
         items: [
           'usage/migrating-to-modern-redux',
@@ -68,7 +68,7 @@ module.exports = {
       },
       {
         type: 'category',
-        label: 'Code Quality',
+        label: '代码质量',
         collapsed: false,
         items: [
           'usage/usage-with-typescript',
@@ -78,12 +78,12 @@ module.exports = {
       },
       {
         type: 'category',
-        label: 'Redux Logic and Patterns',
+        label: 'Redux 逻辑与模式',
         collapsed: false,
         items: [
           {
             type: 'category',
-            label: 'Structuring Reducers',
+            label: '结构化 Reducer',
             collapsed: true,
             items: [
               'usage/structuring-reducers/structuring-reducers',
@@ -109,10 +109,10 @@ module.exports = {
         ]
       }
     ],
-    'Understanding Redux': [
+    '理解 Redux': [
       {
         type: 'category',
-        label: 'Thinking in Redux',
+        label: 'Redux 思维',
         items: [
           'understanding/thinking-in-redux/motivation',
           'understanding/thinking-in-redux/three-principles',
@@ -121,7 +121,7 @@ module.exports = {
       },
       {
         type: 'category',
-        label: 'History and Design',
+        label: '历史与设计',
         items: [
           'understanding/history-and-design/history-of-redux',
           'understanding/history-and-design/prior-art',
@@ -129,7 +129,7 @@ module.exports = {
         ]
       }
     ],
-    FAQ: [
+    '常问问题': [
       'faq',
       'faq/general',
       'faq/reducers',
@@ -143,8 +143,8 @@ module.exports = {
       'faq/react-redux',
       'faq/miscellaneous'
     ],
-    'Style Guide': ['style-guide/style-guide'],
-    'API Reference': [
+    '风格指南': ['style-guide/style-guide'],
+    'API 参考': [
       'api/api-reference',
       'api/createstore',
       'api/store',
@@ -153,8 +153,8 @@ module.exports = {
       'api/bindactioncreators',
       'api/compose',
       'api/utils',
-      { type: 'link', label: 'Error Messages', href: '/errors' }
+      { type: 'link', label: '错误信息', href: '/errors' }
     ],
-    'Redux Toolkit': ['redux-toolkit/overview']
+    'Redux 工具包': ['redux-toolkit/overview']
   }
 }

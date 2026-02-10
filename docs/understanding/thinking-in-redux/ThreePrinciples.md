@@ -1,32 +1,32 @@
 ---
 id: three-principles
-title: Three Principles
-description: 'Introduction > Three Principles: Three key principles for using Redux'
+title: 三大原则
+description: '介绍 > 三大原则：使用 Redux 的三个关键原则'
 ---
 
-# Three Principles
+# 三大原则
 
-Redux can be described in three fundamental principles:
+Redux 可以用三个基本原则来描述：
 
-### Single source of truth
+### 单一数据源
 
-**The [global state](./Glossary.md#state) of your application is stored in an object tree within a single [store](./Glossary.md#store).**
+**你的应用的[全局状态](./Glossary.md#state)存储在一个单一的[store](./Glossary.md#store)中的对象树里。**
 
-This makes it easy to create universal apps, as the state from your server can be serialized and hydrated into the client with no extra coding effort. A single state tree also makes it easier to debug or inspect an application; it also enables you to persist your app's state in development, for a faster development cycle. Some functionality which has been traditionally difficult to implement - Undo/Redo, for example - can suddenly become trivial to implement, if all of your state is stored in a single tree.
+这使得创建通用应用变得容易，因为你可以将服务器端的状态序列化并在客户端恢复，且无需额外编码。单一的状态树也让调试或检查应用变得更简单；它还允许你在开发过程中持久化应用的状态，从而实现更快的开发周期。一些传统上难以实现的功能——例如撤销/重做——如果所有状态都存储在单个树中，变得异常简单。
 
 ```js
 console.log(store.getState())
 
-/* Prints
+/* 打印结果
 {
   visibilityFilter: 'SHOW_ALL',
   todos: [
     {
-      text: 'Consider using Redux',
+      text: '考虑使用 Redux',
       completed: true,
     },
     {
-      text: 'Keep all state in a single tree',
+      text: '把所有状态存储在单一树中',
       completed: false
     }
   ]
@@ -34,11 +34,11 @@ console.log(store.getState())
 */
 ```
 
-### State is read-only
+### 状态只读
 
-**The only way to change the state is to emit an [action](./Glossary.md), an object describing what happened.**
+**更改状态的唯一方式是发出一个描述发生了什么的[action](./Glossary.md)对象。**
 
-This ensures that neither the views nor the network callbacks will ever write directly to the state. Instead, they express an intent to transform the state. Because all changes are centralized and happen one by one in a strict order, there are no subtle race conditions to watch out for. As actions are just plain objects, they can be logged, serialized, stored, and later replayed for debugging or testing purposes.
+这确保视图或网络回调绝不会直接写入状态。相反，它们表达了一个意图去转换状态。因为所有更改都是集中进行且按严格顺序依次发生，所以没有需要担心的微妙竞态条件。由于 actions 只是普通对象，它们可以被记录、序列化、存储，之后可以重新播放用于调试或测试。
 
 ```js
 store.dispatch({
@@ -52,11 +52,11 @@ store.dispatch({
 })
 ```
 
-### Changes are made with pure functions
+### 通过纯函数进行更改
 
-**To specify how the state tree is transformed by actions, you write pure [reducers](./Glossary.md#reducer).**
+**为了指定状态树如何根据 action 转换，你需要编写纯[reducer](./Glossary.md#reducer)。**
 
-Reducers are just pure functions that take the previous state and an action, and return the next state. Remember to return new state objects, instead of mutating the previous state. You can start with a single reducer, and as your app grows, split it off into smaller reducers that manage specific parts of the state tree. Because reducers are just functions, you can control the order in which they are called, pass additional data, or even make reusable reducers for common tasks such as pagination.
+Reducers 是纯函数，接收上一个状态和一个动作，返回下一个状态。记住要返回新的状态对象，而不是修改之前的状态。你可以从单一 reducer 开始，随着应用的增长，拆分成管理状态树特定部分的小 reducers。因为 reducers 只是函数，你可以控制它们被调用的顺序，传递额外数据，甚至创建可复用的 reducer 来完成诸如分页等常见任务。
 
 ```js
 function visibilityFilter(state = 'SHOW_ALL', action) {
@@ -97,4 +97,4 @@ const reducer = combineReducers({ visibilityFilter, todos })
 const store = createStore(reducer)
 ```
 
-That's it! Now you know what Redux is all about.
+就是这样！现在你明白 Redux 的核心理念了。

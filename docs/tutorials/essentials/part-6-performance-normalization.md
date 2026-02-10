@@ -1,42 +1,42 @@
 ---
 id: part-6-performance-normalization
-title: 'Redux Essentials, Part 6: Performance, Normalizing Data, and Reactive Logic'
-sidebar_label: 'Performance, Normalizing Data, and Reactive Logic'
-description: 'The official Redux Essentials tutorial: learn how to improve app performance and structure data correctly'
+title: 'Redux 必备知识，第6部分：性能优化、正规化数据与响应式逻辑'
+sidebar_label: '性能优化、正规化数据与响应式逻辑'
+description: '官方 Redux 必备教学：学习如何提升应用性能并正确构造数据'
 ---
 
 import { DetailedExplanation } from '../../components/DetailedExplanation'
 
-:::tip What You'll Learn
+:::tip 你将学到
 
-- How to create memoized selector functions with `createSelector`
-- Patterns for optimizing component rendering performance
-- How to use `createEntityAdapter` to store and update normalized data
-- How to use `createListenerMiddleware` for reactive logic
-
-:::
-
-:::info Prerequisites
-
-- Completion of [Part 5](./part-5-async-logic.md) to understand data fetching flow
+- 如何用 `createSelector` 创建记忆化的选择器函数
+- 组件渲染性能优化的模式
+- 如何用 `createEntityAdapter` 来存储和更新正规化数据
+- 如何用 `createListenerMiddleware` 实现响应式逻辑
 
 :::
 
-## Introduction
+:::info 先决条件
 
-In [Part 5: Async Logic and Data Fetching](./part-5-async-logic.md), we saw how to write async thunks to fetch data from a server API, and patterns for handling async request loading state.
+- 完成 [第5部分](./part-5-async-logic.md) 的学习以理解数据获取流程
 
-In this section, we'll look at optimized patterns for ensuring good performance in our application, and techniques for automatically handling common updates of data in the store. We'll also look at how to write reactive logic that responds to dispatched actions.
+:::
 
-So far, most of our functionality has been centered around the `posts` feature. We're going to add a couple new sections of the app. After those are added, we'll look at some specific details of how we've built things, and talk about some weaknesses with what we've built so far and how we can improve the implementation.
+## 简介
 
-## Adding More User Features
+在 [第5部分：异步逻辑与数据获取](./part-5-async-logic.md) 中，我们学习了如何书写异步 thunk 来从服务器 API 获取数据，以及处理异步请求加载状态的模式。
 
-### Adding User Pages
+在本节中，我们将探讨确保应用性能良好的优化模式，以及自动处理 store 中数据常见更新的技术。同时，我们还将学习如何编写响应已派发动作的响应式逻辑。
 
-We're fetching a list of users from our fake API, and we can choose a user as the author when we add a new post. But, a social media app needs the ability to look at the page for a specific user and see all the posts they've made. Let's add a page to show the list of all users, and another to show all posts by a specific user.
+到目前为止，我们的大部分功能都围绕 `posts` 功能开发。现在我们将给应用添加几个新模块。添加完成后，我们将细看构建细节，讨论目前实现的不足之处及如何改进。
 
-We'll start by adding a new `<UsersList>` component. It follows the usual pattern of reading some data from the store with `useSelector`, and mapping over the array to show a list of users with links to their individual pages:
+## 添加更多用户功能
+
+### 添加用户页面
+
+我们已从假 API 获取了用户列表，并且可以选择用户作为新增帖子的作者。但社交媒体应用需要查看特定用户页面，并浏览该用户发布的所有帖子。我们将添加一个展示所有用户列表的页面，再添加一个展示某用户所有帖子的页面。
+
+先添加一个新的 `<UsersList>` 组件。它沿用以往模式，通过 `useSelector` 读取部分 store 数据，并对数组映射形成带链接的用户列表：
 
 ```tsx title="features/users/UsersList.tsx"
 import { Link } from 'react-router-dom'
@@ -64,17 +64,17 @@ export const UsersList = () => {
 }
 ```
 
-And we'll add a `<UserPage>`, which is similar to our `<SinglePostPage>` in taking a `userId` parameter from the router. It then renders a list of all of the posts for that particular user. Following our usual pattern, we'll first add a `selectPostsByUser` selector in `postsSlice.ts`:
+再添加一个与 `<SinglePostPage>` 类似的 `<UserPage>`，从路由中获取 `userId` 参数，然后渲染该用户的所有帖子列表。按照惯例，我们先在 `postsSlice.ts` 中添加一个 `selectPostsByUser` 选择器：
 
 ```ts title="features/posts/postsSlice.ts"
-// omit rest of the file
+// 省略其它代码
 export const selectPostById = (state: RootState, postId: string) =>
   state.posts.posts.find(post => post.id === postId)
 
 // highlight-start
 export const selectPostsByUser = (state: RootState, userId: string) => {
   const allPosts = selectAllPosts(state)
-  // ❌ This seems suspicious! See more details below
+  // ❌ 这看起来有问题！详见下文解释
   return allPosts.filter(post => post.user === userId)
 }
 // highlight-end
@@ -126,15 +126,15 @@ export const UserPage = () => {
 
 :::caution
 
-Note that we're using `allPosts.filter()` inside of `selectPostsByUser`. **This is actually a _broken_ pattern!** We'll see why in just a minute.
+请注意，我们在 `selectPostsByUser` 中使用了 `allPosts.filter()`，**这其实是一个 _错误_ 的写法！** 稍后会说明原因。
 
 :::
 
-We already have the `selectAllUsers` and `selectUserById` selectors available in our `usersSlice`, so we can just import and use those in the components.
+我们在 `usersSlice` 中已有 `selectAllUsers` 和 `selectUserById` 选择器，组件中直接导入使用就行。
 
-As we've seen before, we can take data from one `useSelector` call, or from props, and use that to help decide what to read from the store in another `useSelector` call.
+此前已有示例展示，我们可以先从一次 `useSelector` 读取数据或从 props 中获取数据，然后用这些数据辅助决定下一次 `useSelector` 读取何种 store 数据。
 
-As usual, we will add routes for these components in `<App>`:
+同往常一样，我们会在 `<App>` 中为这些组件添加路由：
 
 ```tsx title="App.tsx"
           <Route path="/posts/:postId" element={<SinglePostPage />} />
@@ -145,11 +145,11 @@ As usual, we will add routes for these components in `<App>`:
           // highlight-end
 ```
 
-We'll also add another tab in `<Navbar>` that links to `/users` so that we can click and go to `<UsersList>`:
+还要在 `<Navbar>` 添加一个链接到 `/users` 的标签页，方便跳转到 `<UsersList>`：
 
 ```tsx title="app/Navbar.tsx"
 export const Navbar = () => {
-  // omit other logic
+  // 省略其它逻辑
 
   navContent = (
     <div className="navContent">
@@ -168,15 +168,15 @@ export const Navbar = () => {
     </div>
   )
 
-  // omit other rendering
+  // 省略其它渲染
 }
 ```
 
-Now we can actually browse to each user's page and see a list of just their posts.
+如此一来，我们就可以浏览每个用户页面，并看到该用户所有的帖子列表。
 
-### Sending Login Requests to the Server
+### 向服务器发送登录请求
 
-Right now our `<LoginPage>` and `authSlice` are just dispatching client-side Redux actions to track the current username. In practice, we really need to send a login request to the server. Like we've done with posts and users, we'll convert the login and logout handling to async thunks instead.
+目前 `<LoginPage>` 和 `authSlice` 仅派发客户端 Redux 操作来跟踪当前用户名。实际上，我们需要向服务器发送登录请求。就像对待帖子和用户的方式一样，我们把登录和登出处理改写成异步 thunk。
 
 ```ts title="features/auth/authSlice.ts"
 // highlight-next-line
@@ -209,8 +209,8 @@ export const logout = createAppAsyncThunk('auth/logout', async () => {
 // highlight-end
 
 const initialState: AuthState = {
-  // Note: a real app would probably have more complex auth state,
-  // but for this example we'll keep things simple
+  // 注意：真实应用一般会有更复杂的认证状态，
+  // 这里只用简单示例
   username: null
 }
 
@@ -218,10 +218,10 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   // highlight-start
-  // Remove the reducer definitions
+  // 移除原 reducer 定义
   reducers: {},
   extraReducers: builder => {
-    // and handle the thunk actions instead
+    // 统一处理 thunk 的 action
     builder
       .addCase(login.fulfilled, (state, action) => {
         state.username = action.payload
@@ -234,12 +234,12 @@ const authSlice = createSlice({
 })
 
 // highlight-next-line
-// Removed the exported actions
+// 移除导出的普通 action
 
 export default authSlice.reducer
 ```
 
-Along with that, we'll update `<Navbar>` and `<LoginPage>` to import and dispatch the new thunks instead of the previous action creators:
+同样，我们更新 `<Navbar>` 和 `<LoginPage>`，导入并派发新的 thunk 替代旧的 action 创建者：
 
 ```tsx title="components/Navbar.tsx"
 import { Link } from 'react-router-dom'
@@ -277,7 +277,7 @@ import { selectAllUsers } from '@/features/users/usersSlice'
 // highlight-next-line
 import { login } from './authSlice'
 
-// omit types
+// 省略类型定义
 
 export const LoginPage = () => {
   const dispatch = useAppDispatch()
@@ -296,7 +296,7 @@ export const LoginPage = () => {
 
 ```
 
-Since the `userLoggedOut` action creator was being used by the `postsSlice`, we can update that to listen to `logout.fulfilled` instead:
+因为 `postsSlice` 使用了 `userLoggedOut` 辅助 action，我们修改其监听为 `logout.fulfilled`：
 
 ```ts title="features/posts/postsSlice.ts"
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
@@ -305,41 +305,41 @@ import { client } from '@/api/client'
 import type { RootState } from '@/app/store'
 
 // highlight-start
-// Import this thunk instead
+// 改为从 authSlice 导入这个 thunk
 import { logout } from '@/features/auth/authSlice'
 // highlight-end
 
-// omit types and setup
+// 省略类型定义及其他设置
 
 const postsSlice = createSlice({
   name,
   initialState,
   reducers: {
-    /* omitted */
+    /* 略 */
   },
   extraReducers: builder => {
     builder
       // highlight-start
-      // switch to handle the thunk fulfilled action
+      // 监听 thunk 的 fulfilled 动作
       .addCase(logout.fulfilled, state => {
         // highlight-end
-        // Clear out the list of posts whenever the user logs out
+        // 用户登出时清空帖子列表
         return initialState
       })
-    // omit other cases
+    // 省略其他 case
   }
 })
 ```
 
-## Adding Notifications
+## 添加通知功能
 
-No social media app would be complete without some notifications popping up to tell us that someone has sent a message, left a comment, or reacted to one of our posts.
+社交媒体应用少不了弹出通知，告知有人发消息、评论或对帖子点赞。
 
-In a real application, our app client would be in constant communication with the backend server, and the server would push an update to the client every time something happens. Since this is a small example app, we're going to mimic that process by adding a button to actually fetch some notification entries from our fake API. We also don't have any other _real_ users sending messages or reacting to posts, so the fake API will just create some random notification entries every time we make a request. (Remember, the goal here is to see how to use Redux itself.)
+真实应用中，客户端会持续和服务器通信，服务器一有消息就推送到客户端。这里示范的示例很小，我们模拟这个过程，添加按钮从假 API 获取若干通知条目。注意没有其他 _真实_ 用户发送消息或操作，假 API 会针对每次请求返回随机生成的部分通知条目。（重点在展示如何用 Redux）
 
-### Notifications Slice
+### 通知切片
 
-Since this is a new part of our app, the first step is to create a new slice for our notifications, and an async thunk to fetch some notification entries from the API. In order to create some realistic notifications, we'll include the timestamp of the latest notification we have in state. That will let our mock server generate notifications newer than that timestamp.
+这部分属于新功能模块，第一步是创建通知切片和一个异步 thunk 从 API 拉取通知。为了生成真实的通知条目，我们需要传递目前 state 中最新通知的时间戳，让假服务器只返回比它新的通知。
 
 ```ts title="features/notifications/notificationsSlice.ts"
 import { createSlice } from '@reduxjs/toolkit'
@@ -378,7 +378,7 @@ const notificationsSlice = createSlice({
   extraReducers(builder) {
     builder.addCase(fetchNotifications.fulfilled, (state, action) => {
       state.push(...action.payload)
-      // Sort with newest first
+      // 最新通知排在前面
       state.sort((a, b) => b.date.localeCompare(a.date))
     })
   }
@@ -389,41 +389,43 @@ export default notificationsSlice.reducer
 export const selectAllNotifications = (state: RootState) => state.notifications
 ```
 
-As with the other slices, we then import `notificationsReducer` into `store.ts` and add it to the `configureStore()` call.
+同其它切片一样，将 `notificationsReducer` 导入并添加到 `store.ts` 的 `configureStore()` 配置中。
 
-We've written an async thunk called `fetchNotifications`, which will retrieve a list of new notifications from the server. As part of that, we want to use the creation timestamp of the most recent notification as part of our request, so that the server knows it should only send back notifications that are actually new.
+`fetchNotifications` 是一个异步 thunk，用于向服务器请求新通知列表。请求时我们包含了最新通知的时间戳，告诉服务器只返回更新的通知。
 
-We know that we will be getting back an array of notifications, so we can pass them as separate arguments to `state.push()`, and the array will add each item. We also want to make sure that they're sorted so that the most recent notification is first in the array, just in case the server were to send them out of order. (As a reminder, **`array.sort()` always mutates the existing array - this is only safe because we're using `createSlice` and Immer inside.**)
+服务器返回数组，我们通过 `state.push(...items)` 批量插入，并调用 `array.sort()` 保证数组按时间倒序排列。（提醒：**`array.sort()` 会直接修改原数组——这里只能这样写是因为用 `createSlice` 和 Immer 支持可变写法**）
 
-### Thunk Arguments
+### Thunk 参数
 
-If you look at our `fetchNotifications` thunk, it has something new that we haven't seen before. Let's talk about thunk arguments for a minute.
+观察 `fetchNotifications` thunk 有一些新写法，花点时间说明一下 thunk 参数。
 
-We've already seen that we can pass an argument into a thunk action creator when we dispatch it, like `dispatch(addPost(newPost))`. For `createAsyncThunk` specifically, you can only pass in one argument, and whatever we pass in becomes the first argument of the payload creation callback. If we don't actually pass anything in, then that argument becomes `undefined`.
+以前学过，向 thunk action creator 派发时可以传递参数，比方说 `dispatch(addPost(newPost))`。`createAsyncThunk` 只能接收且传入一个参数，这个参数即是 payload 回调的第一个。
 
-The second argument to our payload creator is a `thunkAPI` object containing several useful functions and pieces of information:
+如果没有传参，这个第一个参数就是 `undefined`。
 
-- `dispatch` and `getState`: the actual `dispatch` and `getState` methods from our Redux store. You can use these inside the thunk to dispatch more actions, or get the latest Redux store state (such as reading an updated value after another action is dispatched).
-- `extra`: the "extra argument" that can be passed into the thunk middleware when creating the store. This is typically some kind of API wrapper, such as a set of functions that know how to make API calls to your application's server and return data, so that your thunks don't have to have all the URLs and query logic directly inside.
-- `requestId`: a unique random ID value for this thunk call. Useful for tracking status of an individual request.
-- `signal`: An `AbortController.signal` function that can be used to cancel an in-progress request.
-- `rejectWithValue`: a utility that helps customize the contents of a `rejected` action if the thunk receives an error.
+回调的第二个参数是一个包含很多实用功能的 `thunkAPI` 对象，比如：
 
-(If you're writing a thunk by hand instead of using `createAsyncThunk`, the thunk function will get`(dispatch, getState)` as separate arguments, instead of putting them together in one object.)
+- `dispatch` 和 `getState`：真实 Redux store 的 dispatch 和 getState 函数，在 thunk 中可以调用更多操作或获取最新 store
+- `extra`：创建 store 的中间件传入的「额外参数」，通常是封装好的 API 调用函数集合，方便 thunk 使用
+- `requestId`：此 thunk 调用的唯一随机 ID，便于跟踪进度
+- `signal`：可以取消正在执行请求的 `AbortController.signal`
+- `rejectWithValue`：可以定制 thunk 出错时 action 的返回值
+
+（如果用手写 thunk 不用 `createAsyncThunk`，会分别传入 `(dispatch, getState)` 两个参数，而不是放在单个对象中）
 
 :::info
 
-For more details on these arguments and how to handle canceling thunks and requests, see [the `createAsyncThunk` API reference page](https://redux-toolkit.js.org/api/createAsyncThunk).
+更多详情及取消请求处理，参考 [createAsyncThunk API 参考](https://redux-toolkit.js.org/api/createAsyncThunk)。
 
 :::
 
-In this case, we need access to the `thunkApi` argument, which is always the second argument. That means we need to provide _some_ variable name for the first argument, even though we don't pass anything in when we dispatch the thunk, and we don't need to use it inside the payload callback. So, we'll just give it a name of `_unused`.
+这次我们用到了 `thunkApi`（第二个参数），第一个参数并不使用，因此命名为 `_unused`。
 
-From there, we know that the list of notifications is in our Redux store state, and that the latest notification should be first in the array. We can call `thunkApi.getState()` to read the state value, and use the `selectAllNotifications` selector to give us just the array of notifications. Since the array of notifications is sorted newest first, we can grab the latest one using array destructuring.
+我们从 store 中拿到通知数组，最新通知出现在数组开头。用 `thunkApi.getState()` 与 `selectAllNotifications` 选择器得到通知数组，再用数组解构获得最新通知。
 
-### Adding the Notifications List
+### 添加通知列表组件
 
-Now that we've got the `notificationsSlice` created, we can add a `<NotificationsList>` component. It needs to read the list of notifications from the store and format them, including showing how recent each notification was, and who sent it. We already have the `<PostAuthor>` and `<TimeAgo>` components that can do that formatting, so we can reuse them here. That said, `<PostAuthor>` includes a "by " prefix which doesn't make sense here - we'll modify it to add a `showPrefix` prop that defaults to `true`, and specifically _not_ show prefixes here.
+有了 `notificationsSlice` 后，就能做 `<NotificationsList>` 组件。它从 store 读取通知列表并格式化渲染，展示通知多久之前发出、是谁发送的。我们已有 `<PostAuthor>` 和 `<TimeAgo>` 组件能格式化显示，可重用其中 `<PostAuthor>`。不过 `<PostAuthor>` 默认带有 `"by "` 前缀，不适合这里显示通知，我们给它增加一个 `showPrefix` 属性，默认 `true`，在这里设为 `false` 不显示前缀。
 
 ```tsx title="features/posts/PostAuthor.tsx"
 interface PostAuthorProps {
@@ -481,10 +483,10 @@ export const NotificationsList = () => {
 }
 ```
 
-We also need to update the `<Navbar>` to add a "Notifications" tab, and a new button to fetch some notifications:
+还要给 `<Navbar>` 添加「通知」页签和一个按钮用于刷新通知：
 
 ```tsx title="app/Navbar.tsx"
-// omit several imports
+// 省略导入
 
 import { logout } from '@/features/auth/authSlice'
 // highlight-next-line
@@ -522,25 +524,25 @@ export const Navbar = () => {
           </button>
           // highlight-end
         </div>
-        {/* omit user details */}
+        {/* 省略用户详情 */}
       </div>
     )
   }
 
-  // omit other rendering
+  // 省略其余渲染
 }
 ```
 
-Lastly, we need to update `App.tsx` with the "Notifications" route so we can navigate to it:
+最后在 `App.tsx` 加入通知路由以支持跳转：
 
 ```tsx title="App.tsx"
-// omit imports
+// 省略导入
 // highlight-next-line
 import { NotificationsList } from './features/notifications/NotificationsList'
 
 function App() {
   return (
-    // omit all the outer router setup
+    // 省略外层路由设置
     <Routes>
       <Route path="/posts" element={<PostsMainPage />} />
       <Route path="/posts/:postId" element={<SinglePostPage />} />
@@ -555,28 +557,28 @@ function App() {
 }
 ```
 
-Here's what the "Notifications" tab looks like so far:
+下面是当前「通知」标签页的样子：
 
-![Initial Notifications tab](/img/tutorials/essentials/notifications-initial.png)
+![初始通知标签页](/img/tutorials/essentials/notifications-initial.png)
 
-### Showing New Notifications
+### 显示新的通知
 
-Each time we click "Refresh Notifications", a few more notification entries will be added to our list. In a real app, those could be coming from the server while we're looking at other parts of the UI. We can do something similar by clicking "Refresh Notifications" while we're looking at the `<PostsList>` or `<UserPage>`.
+每点击一次「刷新通知」，列表就会增加一些通知条目。真实应用中，这种新通知可能会推送到用户查看其他页面时。我们可以模拟点击「刷新通知」，同时切换在 `<PostsList>` 或 `<UserPage>` 页签。
 
-But, right now we have no idea how many notifications just arrived, and if we keep clicking the button, there could be many notifications we haven't read yet. Let's add some logic to keep track of which notifications have been read and which of them are "new". That will let us show the count of "Unread" notifications as a badge on our "Notifications" tab in the navbar, and display new notifications in a different color.
+不过目前我们没看到新增通知数目，如果按钮一直被点击，可能会积累很多未读通知。我们添加逻辑跟踪通知是否被阅读，区分哪些是「新」的。这样就能在导航栏「通知」标签上显示未读数量徽章，并在列表中用不同样式标注新通知。
 
-#### Tracking Notification Status
+#### 追踪通知状态
 
-The `Notification` objects that our fake API is sending back look like `{id, date, message, user}`. The idea of "new" or "unread" will only exist on the client. Given that, let's rework the `notificationsSlice` to support that.
+从假 API 返回的通知是 `{id, date, message, user}` 格式，「新」和「未读」概念仅存在客户端，因此重写 `notificationsSlice`：
 
-First, we'll create a new `ClientNotification` type that extends `ServerNotification` to add those two fields. Then, when we receive a new batch of notifications from the server, we'll always add those fields with default values.
+先定义 `ClientNotification` 类型，继承自 `ServerNotification` 并新增两个字段，然后在接收到服务器通知时，默认给这两个字段赋值。
 
-Next, we'll add a reducer that marks all notifications as read, and some logic to handle marking existing notifications as "not new".
+另外，添加 reducer，用来标记全部通知已读，并添加逻辑调整已有通知的「新」状态。
 
-Finally, we can also add a selector that counts how many unread notifications are in the store:
+最后，定义一个选择器返回未读通知数量：
 
 ```ts title="features/notifications/notificationsSlice.ts"
-// omit imports
+// 省略导入
 
 export interface ServerNotification {
   id: string
@@ -592,7 +594,7 @@ export interface ClientNotification extends ServerNotification {
 }
 // highlight-end
 
-// omit thunk
+// 省略 thunk
 
 // highlight-next-line
 const initialState: ClientNotification[] = []
@@ -612,7 +614,7 @@ const notificationsSlice = createSlice({
   extraReducers(builder) {
     builder.addCase(fetchNotifications.fulfilled, (state, action) => {
       // highlight-start
-      // Add client-side metadata for tracking new notifications
+      // 添加客户端元数据以追踪新的通知
       const notificationsWithMetadata: ClientNotification[] =
         action.payload.map(notification => ({
           ...notification,
@@ -621,13 +623,13 @@ const notificationsSlice = createSlice({
         }))
 
       state.forEach(notification => {
-        // Any notifications we've read are no longer new
+        // 已读通知不再被标记为新
         notification.isNew = !notification.read
       })
 
       state.push(...notificationsWithMetadata)
       // highlight-end
-      // Sort with newest first
+      // 按日期降序排序
       state.sort((a, b) => b.date.localeCompare(a.date))
     })
   }
@@ -649,9 +651,11 @@ export const selectUnreadNotificationsCount = (state: RootState) => {
 // highlight-end
 ```
 
-#### Marking Notifications as Read
+#### 将通知标记为已读
 
-We want to mark these notifications as read whenever our `<NotificationsList>` component renders, either because we clicked on the tab to view the notifications, or because we already have it open and we just received some additional notifications. We can do this by dispatching `allNotificationsRead` any time this component re-renders. In order to avoid flashing of old data as this updates, we'll dispatch the action in a `useLayoutEffect` hook. We also want to add an additional classname to any notification list entries in the page, to highlight them:
+我们希望 `<NotificationsList>` 组件渲染时，无论是点击标签页打开还是已有页面时刷新通知，都会派发 `allNotificationsRead`。
+
+为避免数据闪烁，使用 `useLayoutEffect` 钩子来派发。同时为通知列表项添加额外 class，实现新通知高亮：
 
 ```tsx title="features/notifications/NotificationsList.tsx"
 // highlight-start
@@ -711,26 +715,28 @@ export const NotificationsList = () => {
 }
 ```
 
-This works, but actually has a slightly surprising bit of behavior. Any time there are new notifications (either because we've just switched to this tab, or we've fetched some new notifications from the API), you'll actually see _two_ `"notifications/allNotificationsRead"` actions dispatched. Why is that?
+此实现有效，但表现稍意外。只要有新通知（切换标签页或触发刷新），会派发 _两次_ `"notifications/allNotificationsRead"`。
 
-Let's say we have fetched some notifications while looking at the `<PostsList>`, and then click the "Notifications" tab. The `<NotificationsList>` component will mount, and the `useLayoutEffect` callback will run after that first render and dispatch `allNotificationsRead`. Our `notificationsSlice` will handle that by updating the notification entries in the store. This creates a new `state.notifications` array containing the immutably-updated entries, which forces our component to render again because it sees a new array returned from the `useSelector`.
+为何？
 
-When the component renders the second time, `useLayoutEffect` hook runs again and dispatches `allNotificationsRead`again. The reducer runs again too, but **this time no data changes, so the slice state and root state remain the same, and the component doesn't re-render**.
+假设我们在 `<PostsList>` 时收到了通知，然后点击「通知」标签页。`<NotificationsList>` 挂载后，第一次 render 后的 `useLayoutEffect` 派发了 `allNotificationsRead`，对应 reducer 更新状态并返回新的 `state.notifications` 数组，迫使组件重渲染。
 
-There's a couple ways we could potentially avoid that second dispatch, like splitting the logic to dispatch once when the component mounts, and only dispatch again if the size of the notifications array changes. But, this isn't actually hurting anything, so we can leave it alone.
+第二次渲染时，`useLayoutEffect` 再次运行，派发 `allNotificationsRead`，不过 reducer 这次没有修改状态，返回原状态，组件不会再重渲染。
 
-This does actually show that **it's possible to dispatch an action and not have _any_ state changes happen at all**. Remember, **it's always up to your reducers to decide _if_ any state actually needs to be updated, and "nothing needs to happen" is a valid decision for a reducer to make**.
+虽可用组件挂载阶段派发和检测通知数组变化分开派发来避免，但对用户体验无影响，可以接受。
 
-Here's how the notifications tab looks now that we've got the "new/read" behavior working:
+这里展示了 **派发 action 不一定导致状态变化**，**纯粹由 reducers 决定是否更改状态是有效选择**。
 
-![New notifications](/img/tutorials/essentials/notifications-new.png)
+下面图示新增已读状态：
 
-#### Showing Unread Notifications
+![新通知显示](/img/tutorials/essentials/notifications-new.png)
 
-The last thing we need to do before we move on is to add the badge on our "Notifications" tab in the navbar. This will show us the count of "Unread" notifications when we are in other tabs:
+#### 显示未读通知徽章
+
+最后一步是在导航栏「通知」标签旁显示未读通知数量徽章，以便在其它界面时提醒：
 
 ```tsx title="app/Navbar.tsx"
-// omit other imports
+// 省略其它导入
 
 // highlight-next-line
 import {
@@ -785,46 +791,46 @@ export const Navbar = () => {
             Refresh Notifications
           </button>
         </div>
-        {/* omit button */}
+        {/* 省略按钮 */}
       </div>
     )
   }
 
-  // omit other rendering
+  // 省略其它渲染
 }
 ```
 
-## Improving Render Performance
+## 性能渲染优化
 
-Our application is looking useful, but we've actually got a couple flaws in when and how our components re-render. Let's look at those problems, and talk about some ways to improve the performance.
+应用已经挺强大了，但组件的渲染时机和方式存在一些瑕疵。下面分析问题，聊聊优化策略。
 
-### Investigating Render Behavior
+### 调查渲染情况
 
-We can use the React DevTools Profiler to view some graphs of what components re-render when state is updated. Try clicking over to the `<UserPage>` for a single user. Open up your browser's DevTools, and in the React "Profiler" tab, click the circle "Record" button in the upper-left. Then, click the "Refresh Notifications" button in our app, and stop the recording in the React DevTools Profiler. You should see a chart that looks like this:
+使用 React DevTools Profiler 查看状态更新后哪些组件重新渲染。尝试跳转到某个 `<UserPage>`。打开浏览器 DevTools，React "Profiler" 页签，点击左上圆形 Record 录制按钮。点击本应用的「刷新通知」按钮，停止录制。得到如下图：
 
-![React DevTools Profiler render capture - `<UserPage>`](/img/tutorials/essentials/userpage-rerender.png)
+![React DevTools Profiler 渲染情况 - `<UserPage>`](/img/tutorials/essentials/userpage-rerender.png)
 
-We can see that the `<Navbar>` re-rendered, which makes sense because it had to show the updated "unread notifications" badge in the tab. But, why did our `<UserPage>` re-render?
+看到 `<Navbar>` 重新渲，合理，因为通知未读徽章发生变化。但为什么 `<UserPage>` 也重新渲染了？
 
-If we inspect the last couple dispatched actions in the Redux DevTools, we can see that only the notifications state updated. Since the `<UserPage>` doesn't read any notifications, it shouldn't have re-rendered. Something must be wrong with the component or one of the selectors it's using.
+打开 Redux DevTools，还原几条派发动作，只发现通知状态变更。`<UserPage>` 根本不读取通知，按理不会重渲染。这里输入组件或其使用的选择器有问题。
 
-`<UserPage>` is reading the list of posts from the store via `selectPostsByUser`. If we look at `selectPostsByUser` carefully, there's a specific problem:
+`<UserPage>` 用了 `selectPostsByUser` 读取该用户帖子。看 `selectPostsByUser` 职责里的问题：
 
 ```tsx title="features/posts/postsSlice.ts"
 export const selectPostsByUser = (state: RootState, userId: string) => {
   const allPosts = selectAllPosts(state)
-  // ❌ WRONG - this _always_ creates a new array reference!
+  // ❌ 错误写法 - _每次_ 都创建一个新数组引用！
   return allPosts.filter(post => post.user === userId)
 }
 ```
 
-We know that `useSelector` will re-run every time an action is dispatched, and that it forces the component to re-render if we return a new reference value.
+`useSelector` 每次派发动作会重新调用选择器，如果返回新引用值，组件会重渲。
 
-We're calling `filter()` inside of a selector function, so that we only return the list of posts that belong to this user.
+这里调用了 `filter()`，返回的是 _一个新数组引用_。
 
-Unfortunately, **this means that `useSelector` _always_ returns a new array reference for this selector, and so our component will re-render after _every_ action even if the posts data hasn't changed!**.
+所以 `useSelector` 每次都会返回新的数组引用，导致组件每次派发动作后无条件重渲。
 
-This is a common mistake in Redux applications. Because of that, React-Redux actually does checks in development mode for selectors that accidentally always return new references. If you open up your browser devtools and go to the console, you should see a warning that says:
+这是 Redux应用中的典型错误。React-Redux 在开发环境会检测到此类选择器，然后在控制台输出警告：
 
 ```
 Selector unknown returned a different result when called with the same parameters.
@@ -833,27 +839,27 @@ Selectors that return a new reference (such as an object or an array) should be 
     at UserPage (http://localhost:5173/src/features/users/UserPage.tsx)
 ```
 
-In most cases, the error would tell us the actual variable name of the selector. In _this_ case, the error message doesn't have a specific name for the selector, because we're actually using an anonymous function inside of `useAppSelector`. But, knowing it's in `<UserPage>` narrows it down for us.
+多数情况下，错误消息会标明具体选择器名称。这里因为 `<UserPage>` 里的选择器是匿名函数导致没有名称提示，但定位到 `<UserPage>` 里能排查。
 
-Now, realistically this isn't a meaningful perf issue in this particular example app. The `<UserPage>` component is small, and there's not many actions being dispatched in the app. However, **this _can_ be a very major perf issue in real-world apps**, with the impact varying based on app structure. Given that, extra components re-rendering when they didn't need to is a common perf issue and something we should try to fix.
+针对本例，性能影响不大，组件简单且派发动作不多。但**真实应用中，此类反复不必要的渲染可能严重拖慢体验**，是常见性能问题，应及时处理。
 
-### Memoizing Selector Functions
+### 记忆化选择器函数
 
-What we really need is a way to only calculate the new filtered array if either `state.posts` or `userId` have changed. If they _haven't_ changed, we want to return the same filtered array reference as the last time.
+理想情况是当 `state.posts` 或 `userId` 未变时，返回 _同一_ 的数组引用，而非新数组。
 
-This idea is called **"memoization"**. We want to save a previous set of inputs and the calculated result, and if the inputs are the same, return the previous result instead of recalculating it again.
+这叫做**「记忆化」**：保存近期输入和结果，如果输入没变直接返回之前结果，不重复计算。
 
-So far, we've been writing selectors by ourselves as plain functions, and mostly using them so that we don't have to copy and paste the code for reading data from the store. It would be great if there was a way to make our selector functions memoized so that we could improve performance.
+目前我们自己写选择器，仅用于复用读取 store 代码。若能让选择器记忆化就能提升性能。
 
-**[Reselect](https://github.com/reduxjs/reselect) is a library for creating memoized selector functions**, and was specifically designed to be used with Redux. It has a `createSelector` function that generates memoized selectors that will only recalculate results when the inputs change. Redux Toolkit [exports the `createSelector` function](https://redux-toolkit.js.org/api/createSelector), so we already have it available.
+**[Reselect](https://github.com/reduxjs/reselect) 是专门为 Redux 设计的记忆化选择器库**，提供 `createSelector` 函数，只会在输入改变时重新计算结果。Redux Toolkit [内置导出了 `createSelector`](https://redux-toolkit.js.org/api/createSelector)，我们已经可以直接用。
 
-Let's rewrite `selectPostsByUser` to be a memoized function with `createSelector`:
+改写 `selectPostsByUser` 使其用 `createSelector` 记忆化：
 
 ```ts title="features/posts/postsSlice.ts"
 // highlight-next-line
 import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit'
 
-// omit slice logic
+// 省略 slice 代码
 
 export const selectAllPosts = (state: RootState) => state.posts.posts
 
@@ -862,65 +868,63 @@ export const selectPostById = (state: RootState, postId: string) =>
 
 // highlight-start
 export const selectPostsByUser = createSelector(
-  // Pass in one or more "input selectors"
+  // 传入一个或多个「输入选择器」
   [
-    // we can pass in an existing selector function that
-    // reads something from the root `state` and returns it
+    // 复用已有选择器从根 state 读取需要的字段
     selectAllPosts,
-    // and another function that extracts one of the arguments
-    // and passes that onward
+    // 另一个选择器提取参数 userId 传递
     (state: RootState, userId: string) => userId
   ],
-  // the output function gets those values as its arguments,
-  // and will run when either input value changes
+  // 输出函数接收输入选择器的返回值作为参数，输入改变时执行
   (posts, userId) => posts.filter(post => post.user === userId)
 )
-
 // highlight-end
 ```
 
-`createSelector` first needs one or more "input selector" functions (either together inside of a single array, or as separate arguments). You also need to pass in an "output function", which calculates the result.
+`createSelector` 接收一个输入选择器数组/参数和一个输出函数。
 
-When we call `selectPostsByUser(state, userId)`, `createSelector` will pass all of the arguments into each of our input selectors. Whatever those input selectors return becomes the arguments for the output selector. (We've already done something similar in `selectCurrentUser`, where we first call `const currentUsername = selectCurrentUsername(state)`.)
+调用 `selectPostsByUser(state, userId)` 时，会调用输入选择器，取其结果作为输出函数输入，只有当输入改变才触发输出函数。
 
-In this case, we know that we need the array of all posts and the user ID as the two arguments for our output selector. We can reuse our existing `selectAllPosts` selector to extract the posts array. Since the user ID is the second argument we're passing into `selectPostsByUser`, we can write a small selector that just returns `userId`.
+我们用了已有 `selectAllPosts` 取全部帖子数组，另写函数返回 `userId`，传给输出函数。
 
-Our output function then gets `posts` and `userId` as its arguments, and returns the filtered array of posts for just that user.
+输出函数负责过滤属于该用户的帖子。
 
-If we try calling `selectPostsByUser` multiple times, it will only re-run the output selector if either `posts` or `userId` has changed:
+重复调用只会在 `posts` 或 `userId` 改变时计算，实现记忆化。
 
 ```ts Selector Calculation Examples
 const state1 = getState()
-// Output selector runs, because it's the first call
+// 第一次调用，执行输出函数
 selectPostsByUser(state1, 'user1')
-// Output selector does _not_ run, because the arguments haven't changed
+// 第二次调用，输入相同，跳过输出函数
 selectPostsByUser(state1, 'user1')
-// Output selector runs, because `userId` changed
+// userId 变，执行输出函数
 selectPostsByUser(state1, 'user2')
 
 dispatch(fetchUsers())
 const state2 = getState()
-// Output selector does not run, because `posts` and `userId` are the same
+// posts 和 userId 未变，跳过输出函数
 selectPostsByUser(state2, 'user2')
 
-// Add some more posts
+// 新增帖子
 dispatch(addNewPost())
 const state3 = getState()
-// Output selector runs, because `posts` has changed
+// posts 更新，执行输出函数
 selectPostsByUser(state3, 'user2')
 ```
 
-Now that we've memoized `selectPostsByUser`, we can try repeating the React profiler with `<UserPage>` open while fetching notifications. This time we should see that `<UserPage>` doesn't re-render:
+记忆化后，再用 React Profiler 捕获 `<UserPage>` 并刷新通知，这回 `<UserPage>` 不再重渲染：
 
-![React DevTools Profiler optimized render capture - `<UserPage>`](/img/tutorials/essentials/userpage-optimized.png)
+![React DevTools Profiler 优化后 - `<UserPage>`](/img/tutorials/essentials/userpage-optimized.png)
 
-### Balancing Selector Usage
+### 选择器使用的平衡
 
-Memoized selectors are a valuable tool for improving performance in a React+Redux application, because they can help us avoid unnecessary re-renders, and also avoid doing potentially complex or expensive calculations if the input data hasn't changed.
+记忆化选择器能显著提升 React+Redux App 性能，避免无谓重渲及浪费计算。
 
-Note that **not all selectors in an application need to be memoized!** The rest of the selectors we've written are still just plain functions, and those work fine. **Selectors only need to be memoized if they create and return new object or array references, or if the calculation logic is "expensive"**.
+但**并非所有选择器都需要记忆化！** 我们以前写的绝大多数选择器都是普通函数，性能也够用。
 
-As an example, let's look back at `selectUnreadNotificationsCount`:
+**记忆化仅当选择器返回新的对象或数组引用，或计算开销较大时才必需**。
+
+举例来看 `selectUnreadNotificationsCount`：
 
 ```ts
 export const selectUnreadNotificationsCount = (state: RootState) => {
@@ -932,69 +936,75 @@ export const selectUnreadNotificationsCount = (state: RootState) => {
 }
 ```
 
-This selector _is_ a plain function that's doing a `.filter()` call inside. However, notice that it's not _returning_ that new array reference. Instead, it's just returning a number. That's safer - even if we update the notifications array, the actual return value isn't going to be changing all the time.
+它是普通函数，虽然做了 `.filter()`，但返回的是数字而非数组。数字类型不会频繁变化，比较安全。
 
-Now, re-filtering the notifications array every time this selector runs _is_ a bit wasteful. It would be reasonable to also convert this to a memoized selector, and that might save a few CPU cycles. But, it's not as _necessary_ as it would be if the selector was actually returning a new reference each time.
+当然，每次算未读条数有点浪费资源，加记忆化也合理，但重要性没有返回数组引用时高。
 
 :::info
 
-For more details on why we use selector functions and how to write memoized selectors with Reselect, see:
+关于选择器函数和 Reselect 记忆化，参考：
 
-- [Using Redux: Deriving Data with Selectors](../../usage/deriving-data-selectors.md)
+- [使用 Redux：派生数据与选择器](../../usage/deriving-data-selectors.md)
 
 :::
 
-## Investigating the Posts List
+## 调查帖子列表
 
-If we go back to our `<PostsList>` and try clicking a reaction button on one of the posts while capturing a React profiler trace, we'll see that not only did the `<PostsList>` and the updated `<PostExcerpt>` instance render, _all_ of the `<PostExcerpt>` components rendered:
+返回 `<PostsList>`，点击某帖的反应按钮，同时捕获 React Profiler，会发现不只 `<PostsList>` 和改动的 `<PostExcerpt>` 渲染，所有 `<PostExcerpt>` 都重新渲染了：
 
-![React DevTools Profiler render capture - `<PostsList>`](/img/tutorials/essentials/postslist-rerender.png)
+![React DevTools Profiler 渲染 - `<PostsList>`](/img/tutorials/essentials/postslist-rerender.png)
 
-Why is that? None of the other posts changed, so why would they need to re-render?
+为啥？只有一个帖子变化，为什么其它帖子也要重渲？
 
-[**React's default behavior is that when a parent component renders, React will recursively render all child components inside of it!**](https://blog.isquaredsoftware.com/2020/05/blogged-answers-a-mostly-complete-guide-to-react-rendering-behavior/). The immutable update of one post object also created a new `posts` array. Our `<PostsList>` had to re-render because the `posts` array was a new reference, so after it rendered, React continued downwards and re-rendered all of the `<PostExcerpt>` components too.
+[**React 有默认行为：父组件渲染时，递归渲染其所有子组件！**](https://blog.isquaredsoftware.com/2020/05/blogged-answers-a-mostly-complete-guide-to-react-rendering-behavior/)
 
-This isn't a serious problem for our small example app, but in a larger real-world app, we might have some very long lists or very large component trees, and having all those extra components re-render might slow things down.
+修改帖子对象同时生成了新的帖子数组，`<PostsList>` 读取到新数组，于是重新渲染，之后 React 继续渲染所有 `<PostExcerpt>`。
 
-### Options for Optimizing List Rendering
+小示例没啥性能问题，但真实场景大量长列表或组件树，很多额外渲染会拖慢性能。
 
-There's a few different ways we could optimize this behavior in `<PostsList>`.
+### 列表渲染优化方案
 
-First, we could wrap the `<PostExcerpt>` component in [`React.memo()`](https://react.dev/reference/react/memo), which will ensure that the component inside of it only re-renders if the props have actually changed. This will actually work quite well - try it out and see what happens:
+有几种方案：
+
+1. 用 [`React.memo()`](https://react.dev/reference/react/memo) 包裹 `<PostExcerpt>`，避免除非 props 改变才重渲。
+
+试试：
 
 ```tsx title="features/posts/PostsList.tsx"
 // highlight-next-line
 let PostExcerpt = ({ post }: PostExcerptProps) => {
-  // omit logic
+  // 省略逻辑
 }
 
 // highlight-next-line
 PostExcerpt = React.memo(PostExcerpt)
 ```
 
-Another option is to rewrite `<PostsList>` so that it only selects a list of post IDs from the store instead of the entire `posts` array, and rewrite `<PostExcerpt>` so that it receives a `postId` prop and calls `useSelector` to read the post object it needs. If `<PostsList>` gets the same list of IDs as before, it won't need to re-render, and so only our one changed `<PostExcerpt>` component should have to render.
+2. 改写 `<PostsList>` 让它只读取帖子 ID 列表，不再读取整个帖子数组。改 `<PostExcerpt>` 接收 `postId` 参数，并通过 `useSelector` 单独取帖子数据。若 ID 数组无变动，`<PostsList>` 不会渲染，只改动的 `<PostExcerpt>` 触发渲染。
 
-Unfortunately, this gets tricky because we also need to have all our posts sorted by date and rendered in the right order. We could update our `postsSlice` to keep the array sorted at all times, so we don't have to sort it in the component, and use a memoized selector to extract just the list of post IDs. We could also [customize the comparison function that `useSelector` runs to check the results](https://react-redux.js.org/api/hooks#equality-comparisons-and-updates), like `useSelector(selectPostIds, shallowEqual)`, so that will skip re-rendering if the _contents_ of the IDs array haven't changed.
+这稍复杂，因为需确保帖子数组按日期排序，无需每次在组件排序。可持续维护有序 ID 数组，并用记忆化选择器读取。
 
-The last option is to find some way to have our reducer keep a separate array of IDs for all the posts, and only modify that array when posts are added or removed, and do the same rewrite of `<PostsList>` and `<PostExcerpt>`. This way, `<PostsList>` only needs to re-render when that IDs array changes.
+也可用 `useSelector` 自定义比较函数实现浅比较，如 `useSelector(selectPostIds, shallowEqual)`。
 
-Conveniently, Redux Toolkit has a `createEntityAdapter` function that will help us do just that.
+3. 在 reducer 里维护额外的帖子 ID 数组，增删帖子才更新 ID 数组，搭配改写的 `<PostsList>` 和 `<PostExcerpt>`，实现只在 ID 数组变时渲染。
 
-## Normalizing Data
+Redux Toolkit 提供了 `createEntityAdapter`，帮我们管理此类结构。
 
-You've seen that a lot of our logic has been looking up items by their ID field. Since we've been storing our data in arrays, that means we have to loop over all the items in the array using `array.find()` until we find the item with the ID we're looking for.
+## 数据正规化
 
-Realistically, this doesn't take very long, but if we had arrays with hundreds or thousands of items inside, looking through the entire array to find one item becomes wasted effort. What we need is a way to look up a single item based on its ID, directly, without having to check all the other items. This process is known as **"normalization"**.
+你会发现代码中不断通过 ID 字段查找条目。因数据存数组形式，查找时要用 `array.find()` 遍历直到找到该 ID。
 
-### Normalized State Structure
+虽说遍历很快，但如果数组有上百甚至上千条，性能损失会明显。我们需要直接根据 ID 快速查找，这叫**「正规化」**。
 
-**"Normalized state"** means that:
+### 正规化状态结构
 
-- We only have one copy of each particular piece of data in our state, so there's no duplication
-- Data that has been normalized is kept in a lookup table, where the item IDs are the keys, and the items themselves are the values. This is typically just a plain JS object.
-- There may also be an array of all of the IDs for a particular item type
+**正规化状态**包含：
 
-JavaScript objects can be used as lookup tables, similar to "maps" or "dictionaries" in other languages. Here's what the normalized state for a group of `user` objects might look like:
+- 同一条数据状态只保留一份，无重复
+- 以查找表（key-value 结构）形式存储，key 是对象 ID，value 是对象内容。一般用 JS 普通对象实现。
+- 可能还有包含所有 ID 的数组
+
+JS 对象就是查找表，示例用户正规化状态：
 
 ```js
 {
@@ -1009,7 +1019,7 @@ JavaScript objects can be used as lookup tables, similar to "maps" or "dictionar
 }
 ```
 
-This makes it easy to find a particular `user` object by its ID, without having to loop through all the other user objects in an array:
+查找用户简易为：
 
 ```js
 const userId = 'user2'
@@ -1018,35 +1028,35 @@ const userObject = state.users.entities[userId]
 
 :::info
 
-For more details on why normalizing state is useful, see [Normalizing State Shape](../../usage/structuring-reducers/NormalizingStateShape.md) and the Redux Toolkit Usage Guide section on [Managing Normalized Data](https://redux-toolkit.js.org/usage/usage-guide#managing-normalized-data).
+为什么要正规化，详情见 [正规化状态结构](../../usage/structuring-reducers/NormalizingStateShape.md) 和 Redux Toolkit 用法指南的 [管理正规化数据](https://redux-toolkit.js.org/usage/usage-guide#managing-normalized-data) 章节。
 
 :::
 
-### Managing Normalized State with `createEntityAdapter`
+### 用 `createEntityAdapter` 管理正规化状态
 
-Redux Toolkit's [**`createEntityAdapter`**](https://redux-toolkit.js.org/api/createEntityAdapter) API provides a standardized way to store your data in a slice by taking a collection of items and putting them into the shape of `{ ids: [], entities: {} }`. Along with this predefined state shape, it generates a set of reducer functions and selectors that know how to work with that data.
+Redux Toolkit 的 [**`createEntityAdapter`**](https://redux-toolkit.js.org/api/createEntityAdapter) 提供标准做法来将集合正规化为 `{ids: [], entities: {}}` 格式。它生成预设的 reducers 和选择器方便管理。
 
-This has several benefits:
+好处：
 
-- We don't have to write the code to manage the normalization ourselves
-- `createEntityAdapter`'s pre-built reducer functions handle common cases like "add all these items", "update one item", or "remove multiple items"
-- `createEntityAdapter` can optionally keep the ID array in a sorted order based on the contents of the items, and will only update that array if items are added / removed or the sorting order changes.
+- 我们不用手写正规化管理代码
+- 预置 reducer 支持常见操作：批量添加、更新单条、批量删除
+- 可选排序函数 `sortComparer`，可保持 ID 数组排序且有序时才更新 ID 数组
 
-`createEntityAdapter` accepts an options object that may include a `sortComparer` function, which will be used to keep the item IDs array in sorted order by comparing two items (and works the same way as `Array.sort()`).
+`createEntityAdapter` 接收配置对象，支持带排序的比较函数（和 `Array.sort()` 一样用法）。
 
-It returns an object that contains [a set of generated reducer functions for adding, updating, and removing items from an entity state object](https://redux-toolkit.js.org/api/createEntityAdapter#crud-functions). These reducer functions can either be used as a case reducer for a specific action type, or as a "mutating" utility function within another reducer in `createSlice`.
+返回适配器对象包含：
 
-The adapter object also has a `getSelectors` function. You can pass in a selector that returns this particular slice of state from the Redux root state, and it will generate selectors like `selectAll` and `selectById`.
+- 预设 reducer 函数集合，也可用作 `createSlice` 内部 reducer 的辅助工具
+- `getInitialState()`，返回初始正规化状态 `{ids: [], entities: {}}`，可传入额外字段合并
+- `getSelectors()`，接受 selector 输入当前切片 root state，生成如 `selectAll` 和 `selectById` 选择器
 
-Finally, the adapter object has a `getInitialState` function that generates an empty `{ids: [], entities: {}}` object. You can pass in more fields to `getInitialState`, and those will be merged in.
+### 将帖子切片正规化
 
-### Normalizing the Posts Slice
+按此思路重写 `postsSlice`，需改较多：
 
-With that in mind, let's update our `postsSlice` to use `createEntityAdapter`. We'll need to make several changes.
+修改 `PostsState`，不再是 `posts: Post[]` 数组，而是扩展 Redux Toolkit 自带的 `EntityState<Post, string>` 类型的对象，同时保留 `status` 和 `error`。
 
-Our `PostsState` structure is going to change. Instead of having `posts: Post[]` as an array, it's now going to include `{ids: string[], entities: Record<string, Post>}`. Redux Toolkit already has an `EntityState` type that describes that `{ids, entities}` structure, so we'll import that and use it as the base for `PostsState`. We also still need the `status` and `error` fields too, so we'll include those.
-
-We're going to need to import `createEntityAdapter`, create an instance that has the right `Post` type applied, and knows how to sort posts in the right order.
+导入 `createEntityAdapter`，创建与 `Post` 类型对应的适配器对象，同时指定排序规则（日期降序）。
 
 ```ts title="features/posts/postsSlice.ts"
 import {
@@ -1054,10 +1064,10 @@ import {
   createEntityAdapter,
   EntityState
   // highlight-end
-  // omit other imports
+  // 省略其它导入
 } from '@reduxjs/toolkit'
 
-// omit thunks
+// 省略 thunk
 
 // highlight-start
 interface PostsState extends EntityState<Post, string> {
@@ -1066,7 +1076,7 @@ interface PostsState extends EntityState<Post, string> {
 }
 
 const postsAdapter = createEntityAdapter<Post>({
-  // Sort in descending date order
+  // 按日期降序排序
   sortComparer: (a, b) => b.date.localeCompare(a.date)
 })
 
@@ -1077,7 +1087,7 @@ const initialState: PostsState = postsAdapter.getInitialState({
 
 // highlight-end
 
-// omit thunks
+// 省略 thunk
 
 const postsSlice = createSlice({
   name: 'posts',
@@ -1108,11 +1118,11 @@ const postsSlice = createSlice({
   },
   extraReducers(builder) {
     builder
-      // omit other cases
+      // 省略其它 case
       .addCase(fetchPosts.fulfilled, (state, action) => {
         state.status = 'succeeded'
         // highlight-start
-        // Save the fetched posts into state
+        // 用适配器函数填充帖子
         postsAdapter.setAll(state, action.payload)
       })
       .addCase(addNewPost.fulfilled, postsAdapter.addOne)
@@ -1125,12 +1135,12 @@ export const { postAdded, postUpdated, reactionAdded } = postsSlice.actions
 export default postsSlice.reducer
 
 // highlight-start
-// Export the customized selectors for this adapter using `getSelectors`
+// 用适配器生成的选择器替代手写版本
 export const {
   selectAll: selectAllPosts,
   selectById: selectPostById,
   selectIds: selectPostIds
-  // Pass in a selector that returns the posts slice of state
+  // 传入选择帖子切片的 selector
 } = postsAdapter.getSelectors((state: RootState) => state.posts)
 // highlight-end
 
@@ -1140,21 +1150,17 @@ export const selectPostsByUser = createSelector(
 )
 ```
 
-There's a lot going on there! Let's break it down.
+拆解说明：
 
-First, we import `createEntityAdapter`, and call it to create our `postsAdapter` object. We know that we want to keep an array of all post IDs sorted with the newest post first, so we pass in a `sortComparer` function that will sort newer items to the front based on the `post.date` field.
+- 导入并调用 `createEntityAdapter` 创建 `postsAdapter`，其中指定排序函数把日期最新排前面
+- 用 `postsAdapter.getInitialState()` 生成基础规范化状态，同时传入 `{ status, error }` 合并
+- reducer 里通过 `state.entities[id]` 直接查找帖子实体，不用再数组遍历
+- 接收到 `fetchPosts.fulfilled` 后用 `postsAdapter.setAll` 填充状态，示范在 `createSlice` 里调用适配器 mutate 函数
+- 接收到 `addNewPost.fulfilled` 用适配器微调，直接传入 `postsAdapter.addOne` 作为 reducer 使用
+- 替换我们写的 `selectAllPosts` 和 `selectPostById` 为适配器自动生成的选择器，绑定 `state.posts` 访问路径
+- 也导出 `selectPostIds`，组件可读取排序后的 ID 数组
 
-`getInitialState()` returns an empty `{ids: [], entities: {}}` normalized state object. Our `postsSlice` needs to keep the `status` and `error` fields for loading state too, so we pass those in to `getInitialState()`.
-
-Now that our posts are being kept as a lookup table in `state.entities`, we can change our `reactionAdded` and `postUpdated` reducers to directly look up the right posts by their IDs via `state.entities[postId]`, instead of having to loop over the old `posts` array.
-
-When we receive the `fetchPosts.fulfilled` action, we can use the `postsAdapter.setAll` function to add all of the incoming posts to the state, by passing in the draft `state` and the array of posts in `action.payload`. This is an example of using the adapter methods as "mutating" helper functions inside of a `createSlice` reducer.
-
-When we receive the `addNewPost.fulfilled` action, we know we need to add that one new post object to our state. We can use the adapter functions as reducers directly, so we'll pass `postsAdapter.addOne` as the reducer function to handle that action. In this case, we use the adapter method _as_ the actual reducer for this action.
-
-Finally, we can replace the old hand-written `selectAllPosts` and `selectPostById` selector functions with the ones generated by `postsAdapter.getSelectors`. Since the selectors are called with the root Redux state object, they need to know where to find our posts data in the Redux state, so we pass in a small selector that returns `state.posts`. The generated selector functions are always called `selectAll` and `selectById`, so we can use destructuring syntax to rename them as we export them and match the old selector names. We'll also export `selectPostIds` the same way, since we want to read the list of sorted post IDs in our `<PostsList>` component.
-
-We could even cut out a couple more lines by changing `postUpdated` to use the `postsAdapter.updateOne` method. This takes an object that looks like`{id, changes}`, where `changes` is an object with fields to overwrite:
+还可以用 `postsAdapter.updateOne` 简化 `postUpdated`：
 
 ```ts title="features/posts/postsSlice.ts"
 const postsSlice = createSlice({
@@ -1177,20 +1183,20 @@ const postsSlice = createSlice({
       }
     }
   }
-  // omit `extraReducers`
+  // 省略 extraReducers
 })
 ```
 
-Note that we can't quite use `postsAdapter.updateOne` with the `reactionAdded` reducer, because it's a bit more complicated. Rather than just _replacing_ a field in the post object, we need to increment a counter nested inside one of the fields. In that case, it's fine to look up the object and do a "mutating" update as we have been.
+注意 `reactionAdded` 无法用 `updateOne` 简单替代，因为它需要在嵌套字段计数器上做加法，而不是整体替换。那种复杂的变更依然可用对象可变写法。
 
-### Optimizing the Posts List
+### 优化帖子列表渲染
 
-Now that our posts slice is using `createEntityAdapter`, we can update `<PostsList>` to optimize its rendering behavior.
+用 `createEntityAdapter` 后，更新 `<PostsList>`：
 
-We'll update `<PostsList>` to read just the sorted array of post IDs, and pass `postId` to each `<PostExcerpt>`:
+让它读取排序的帖子 ID 数组，`<PostExcerpt>` 传入 `postId`，再用选择器单独取对应帖子。
 
 ```tsx title="features/posts/PostsList.tsx"
-// omit other imports
+// 省略导入
 
 // highlight-start
 import {
@@ -1208,7 +1214,7 @@ interface PostExcerptProps {
 function PostExcerpt({ postId }: PostExcerptProps) {
   const post = useAppSelector(state => selectPostById(state, postId))
   // highlight-end
-  // omit rendering logic
+  // 省略渲染逻辑
 }
 
 export const PostsList = () => {
@@ -1216,7 +1222,7 @@ export const PostsList = () => {
   // highlight-next-line
   const orderedPostIds = useAppSelector(selectPostIds)
 
-  // omit other selections and effects
+  // 省略其余状态读取和 effect
 
   if (postStatus === 'pending') {
     content = <Spinner text="Loading..." />
@@ -1230,19 +1236,19 @@ export const PostsList = () => {
     content = <div>{postsError}</div>
   }
 
-  // omit other rendering
+  // 省略其它渲染
 }
 ```
 
-Now, if we try clicking a reaction button on one of the posts while capturing a React component performance profile, we should see that _only_ that one component re-rendered:
+此时，如果点击帖子的反应按钮，在 React Profiler 里只看到改动的帖子组件渲染：
 
-![React DevTools Profiler render capture - optimized `<PostsList>`](/img/tutorials/essentials/postslist-optimized.png)
+![React DevTools Profiler 渲染 - 优化后的 `<PostsList>`](/img/tutorials/essentials/postslist-optimized.png)
 
-### Normalizing the Users Slice
+### 将用户切片正规化
 
-We can convert other slices to use `createEntityAdapter` as well.
+同样思路应用到其他切片，例如 `usersSlice`：
 
-The `usersSlice` is fairly small, so we've only got a few things to change:
+代码简单，改动不多：
 
 ```ts title="features/users/usersSlice.ts"
 import {
@@ -1293,15 +1299,15 @@ export const selectCurrentUser = (state: RootState) => {
 }
 ```
 
-The only action we're handling here always replaces the entire list of users with the array we fetched from the server. We can use `usersAdapter.setAll` to implement that instead.
+由于只有替换整张用户列表，所以用 `usersAdapter.setAll` 简单实现。
 
-We were already exporting the `selectAllUsers` and `selectUserById` selectors we'd written by hand. We can replace those with the versions generated by `usersAdapter.getSelectors()`.
+替换了以前手写的 `selectAllUsers` 和 `selectUserById` 为自动生成版本。
 
-We do now have a slight types mismatch with `selectUserById` - our `currentUsername` _can_ be `null` according to the types, but the generated `selectUserById` won't accept that. A simple fix is to check if it exists and just return early if it doesn't.
+类型上稍有出入，`selectUserById` 不能输入 `null`，加检查即可。
 
-### Normalizing the Notifications Slice
+### 将通知切片正规化
 
-Last but not least, we'll update `notificationsSlice` as well:
+最后我们也给通知切片用适配器：
 
 ```ts title="features/notifications/notificationsSlice.ts"
 // highlight-next-line
@@ -1309,11 +1315,11 @@ import { createEntityAdapter, createSlice } from '@reduxjs/toolkit'
 
 import { client } from '@/api/client'
 
-// omit types and fetchNotifications thunk
+// 省略类型与 fetchNotifications thunk
 
 // highlight-start
 const notificationsAdapter = createEntityAdapter<ClientNotification>({
-  // Sort with newest first
+  // 按日期降序排序
   sortComparer: (a, b) => b.date.localeCompare(a.date)
 })
 
@@ -1335,7 +1341,7 @@ const notificationsSlice = createSlice({
   },
   extraReducers(builder) {
     builder.addCase(fetchNotifications.fulfilled, (state, action) => {
-      // Add client-side metadata for tracking new notifications
+      // 添加客户端元数据追踪新通知
       const notificationsWithMetadata: ClientNotification[] =
         action.payload.map(notification => ({
           ...notification,
@@ -1345,7 +1351,7 @@ const notificationsSlice = createSlice({
 
       // highlight-start
       Object.values(state.entities).forEach(notification => {
-        // Any notifications we've read are no longer new
+        // 已读则不再标记为新
         notification.isNew = !notification.read
       })
 
@@ -1373,37 +1379,39 @@ export const selectUnreadNotificationsCount = (state: RootState) => {
 }
 ```
 
-We again import `createEntityAdapter`, call it, and call `notificationsAdapter.getInitialState()` to help set up the slice.
+同样导入 `createEntityAdapter`，调用适配器生成状态初始值。
 
-Ironically, we do have a couple places in here where we need to loop over all notification objects and update them. Since those are no longer being kept in an array, we have to use `Object.values(state.entities)` to get an array of those notifications and loop over that. On the other hand, we can replace the previous fetch update logic with `notificationsAdapter.upsertMany`.
+有若干地方遍历通知更新，此时要用 `Object.values(state.entities)` 拿到实体数组。
 
-## Writing Reactive Logic
+用 `notificationsAdapter.upsertMany` 替代之前的增量更新。
 
-Thus far, all of our application behavior has been relatively imperative. The user does something (adding a post, fetching notifications), and we dispatch actions in either a click handler or a component `useEffect` hook in response. That includes the data fetching thunks like `fetchPosts` and `login`.
+## 编写响应式逻辑
 
-However, sometimes we need to write more logic that runs in response to things that happened in the app, such as certain actions being dispatched.
+到此为止，我们的应用行为都相当命令式。用户操作（发帖、拉取通知）调用动作，组件内用 `useEffect` 或点击事件处理器响应派发。这包括数据异步请求 thunk。
 
-We've shown some loading indicators for things like fetching posts. It would be nice to have some kind of a visual confirmation for the user when they add a new post, like popping up a toast message.
+不过，有时需要写更多响应应用中特定事件或动作派发的逻辑。
 
-We've already seen that we can have [many reducers respond to the same dispatched action](./part-4-using-data.md#handling-actions-in-multiple-slices). That works great for logic that is just "update more parts of the state", but what if we need to write logic that is async or has other side effects? We can't put that in the reducers - [reducers must be "pure" and must _not_ have any side effects](./part-2-app-structure.md#rules-of-reducers).
+我们在帖子加载时显示过加载指示。希望给用户增加发帖成功时的视觉反馈，比如弹出消息提示。
 
-If we can't put this logic with side effects in reducers, where _can_ we put it?
+之前看到多个 reducer 可同时处理同一动作更新 state。但如果逻辑涉及异步或副作用，不能放 reducer。**Reducer 必须是「纯函数」，绝不可有副作用。**
 
-The answer is inside of [Redux middleware, because middleware is designed to enable side effects](./part-5-async-logic.md#using-middleware-to-enable-async-logic).
+不能放 reducer，我们能放哪？
 
-### Reactive Logic with `createListenerMiddleware`
+答案是放进 [Redux 中间件，专门用以处理副作用](./part-5-async-logic.md#using-middleware-to-enable-async-logic)。
 
-We've already used the thunk middleware for async logic that has to run "right now". However, thunks are just functions. We need a different kind of middleware that lets us say "when a specific action is dispatched, go run this additional logic in response".
+### 用 `createListenerMiddleware` 实现响应式逻辑
 
-**Redux Toolkit includes the [`createListenerMiddleware`](https://redux-toolkit.js.org/api/createListenerMiddleware) API to let us write logic that runs in response to specific actions being dispatched**. It lets us add "listener" entries that define what actions to look for and have an `effect` callback that will run whenever it matches against an action.
+之前用过异步 thunk 中间件处理「立即执行」的异步逻辑，但 thunk 只是个函数，不是响应动作派发的「监听」。
 
-Conceptually, you can think of `createListenerMiddleware` as being similar to [React's `useEffect` hook](https://react.dev/learn/synchronizing-with-effects), except that they are defined as part of your Redux logic instead of inside a React component, and they run in response to dispatched actions and Redux state updates instead of as part of React's rendering lifecycle.
+**Redux Toolkit 提供 [`createListenerMiddleware`](https://redux-toolkit.js.org/api/createListenerMiddleware)，允许我们定义「监听器」，监听某动作并执行额外逻辑。**
 
-### Setting Up the Listener Middleware
+它类似 React 里的 `useEffect` 钩子，不过作用于 Redux 层面，响应动作派发和状态更新，而不是组件渲染周期。
 
-We didn't have to specifically set up or define the thunk middleware, because Redux Toolkit's `configureStore` automatically adds the thunk middleware to the store setup. For the listener middleware, we'll have to do a bit of setup work to create it and add it to the store.
+### 设置监听中间件
 
-We'll create a new `app/listenerMiddleware.ts` file and create an instance of the listener middleware there. Similar to `createAsyncThunk`, we'll pass through the correct `dispatch` and `state` types so that we can safely access state fields and dispatch actions.
+Thunk 中间件自动注入，监听中间件就要定义和添加到 store。
+
+在新文件 `app/listenerMiddleware.ts` 创建中间件：
 
 ```ts title="app/listenerMiddleware.ts"
 import { createListenerMiddleware, addListener } from '@reduxjs/toolkit'
@@ -1421,15 +1429,15 @@ export const addAppListener = addListener.withTypes<RootState, AppDispatch>()
 export type AppAddListener = typeof addAppListener
 ```
 
-Like `createSlice`, `createListenerMiddleware` returns an object that contains multiple fields:
+`createListenerMiddleware` 返回对象包含：
 
-- `listenerMiddleware.middleware`: the actual Redux middleware instance that needs to be added to the store
-- `listenerMiddleware.startListening`: adds a new listener entry to the middleware directly
-- `listenerMiddleware.addListener`: an action creator that can be dispatched to add a listener entry from anywhere in the codebase that has access to `dispatch`, even if you didn't import the `listenerMiddleware` object
+- `.middleware`：真正需要添加到 store 的中间件
+- `.startListening`：添加监听器
+- `.addListener`：也可以派发动作形式动态添加监听器
 
-As with async thunks and hooks, we can use the `.withTypes()` methods to define pre-typed `startAppListening` and `addAppListener` functions with the right types built in.
+使用 `.withTypes()` 包装，生成带类型参数的辅助函数。
 
-Then, we need to add it to the store:
+然后，在 `store.ts` 把监听中间件加进中间件链：
 
 ```ts title="app/store.ts"
 import { configureStore } from '@reduxjs/toolkit'
@@ -1456,21 +1464,17 @@ export const store = configureStore({
 })
 ```
 
-`configureStore` already adds the `redux-thunk` middleware to the store setup by default, along with some additional middleware in development that add safety checks. We want to preserve those, but also add the listener middleware as well.
+`configureStore` 默认已经带了 thunk 及开发环境安全检查。我们想保持它们，同时把监听中间件加到最前端。
 
-Order can matter when setting up middleware, because they form a pipeline: `m1` -> `m2` -> `m3` -> `store.dispatch()`. In this case, the listener middleware needs to be at the _start_ of the pipeline, so that it can intercept some actions first and process them.
+中间件是链式结构，如 `m1 -> m2 -> m3 -> store.dispatch()`。监听中间件需要放最开始，预先捕获动作执行。
 
-`getDefaultMiddleware()` returns an array of the configured middleware. Since it's an array, it already has a `.concat()` method that returns a copy with the new items at the _end_ of the array, but `configureStore` also adds an equivalent `.prepend()` method that makes a copy with the new items at the _start_ of the array.
+`getDefaultMiddleware()` 返回数组，有 `.prepend()` 方法可往前添加。
 
-So, we'll call `getDefaultMiddleware().prepend(listenerMiddleware.middleware)` to add this to the front of the list.
+### 新发帖弹出吐司提示
 
-### Showing Toasts for New Posts
+监听中间件配置好后，添加监听器，监听成功添加新帖动作，弹出吐司消息。
 
-Now that we have the listener middleware configured, we can add a new listener entry that will show a toast message any time a new post successfully gets added.
-
-We're going to use the `react-tiny-toast` library to manage showing toasts with the right appearance. It's already included in the project repo, so we don't have to install it.
-
-We do need to import and render its `<ToastContainer>` component in our `<App>`:
+我们用已安装的 `react-tiny-toast` 库，无需安装。要在 `<App>` 里导入 `<ToastContainer>` 渲染：
 
 ```tsx title="App.tsx"
 import React from 'react'
@@ -1483,14 +1487,14 @@ import {
 // highlight-next-line
 import { ToastContainer } from 'react-tiny-toast'
 
-// omit other imports and ProtectedRoute definition
+// 省略导入与 ProtectedRoute
 
 function App() {
   return (
     <Router>
       <Navbar />
       <div className="App">
-        <Routes>{/* omit routes content */}</Routes>
+        <Routes>{/* 省略路由内容 */}</Routes>
         // highlight-next-line
         <ToastContainer />
       </div>
@@ -1499,9 +1503,7 @@ function App() {
 }
 ```
 
-Now we can go add a listener that will watch for the `addNewPost.fulfilled` action, show a toast that says "Post Added", and remove it after a delay.
-
-There's [multiple approaches we can use for defining listeners in our codebase](https://redux-toolkit.js.org/api/createListenerMiddleware#organizing-listeners-in-files). That said, it's usually a good practice to define listeners in whatever slice file seems most related to the logic we want to add. In this case, we want to show a toast when a post gets added, so let's add this listener in the `postsSlice` file:
+给 `postsSlice` 添加监听器：
 
 ```ts title="features/posts/postsSlice.ts"
 import {
@@ -1518,7 +1520,7 @@ import type { RootState } from '@/app/store'
 import { AppStartListening } from '@/app/listenerMiddleware'
 import { createAppAsyncThunk } from '@/app/withTypes'
 
-// omit types, initial state, slice definition, and selectors
+// 省略类型、初始状态、切片定义和选择器
 
 export const selectPostsStatus = (state: RootState) => state.posts.status
 export const selectPostsError = (state: RootState) => state.posts.error
@@ -1544,23 +1546,16 @@ export const addPostsListeners = (startAppListening: AppStartListening) => {
 // highlight-end
 ```
 
-To add a listener, we need to call the `startAppListening` function that was defined in `app/listenerMiddleware.ts`. However, it's better if we _don't_ import `startAppListening` directly into the slice file, to help keep the import chains more consistent. Instead, we can export a function that accepts `startAppListening` as an argument. That way, the `app/listenerMiddleware.ts` file can import this function, similar to the way `app/store.ts` imports the slice reducers from each slice file.
+添加监听器时，调用 `startAppListening`，传入对象：
 
-To add a listener entry, call `startAppListening` and pass in an object with an `effect` callback function, and one of these options to define when the effect callback will run:
+- `actionCreator`：指定监听的动作（此处是 thunk 完成动作 `addNewPost.fulfilled`）
+- `effect`：执行回调，接收匹配动作和 `listenerApi` 对象
 
-- `actionCreator: ActionCreator`: any RTK action creator function, like `reactionAdded` or `addNewPost.fulfilled`. This will run the effect when that one specific action is dispatched.
-- `matcher: (action: UnknownAction) => boolean`: Any RTK ["matcher" function](https://redux-toolkit.js.org/api/matching-utilities), like `isAnyOf(reactionAdded, addNewPost.fulfilled)`. This will run the effect any time the matcher returns `true`.
-- `predicate: (action: UnknownAction, currState: RootState, prevState: RootState) => boolean`: a more general matching function that has access to `currState` and `prevState`. This can be used to make any check you want against the action or state values, including seeing if a piece of state has changed (such as `currState.counter.value !== prevState.counter.value`)
+`effect` 支持同步异步。`listenerApi` 提供 `dispatch`、`getState` 及更多辅助异步功能。
 
-In this case, we specifically want to show our toast any time the `addNewPost` thunk succeeds, so we'll specify the effect should run with `actionCreator: addNewPost.fulfilled`.
+这里动态导入 toast 库，调 show 弹出成功提示，等待 5 秒后移除提示。
 
-The `effect` callback itself is much like an async thunk. It gets the matched `action` as the first argument, and a `listenerApi` object as the second argument.
-
-The `listenerApi` includes the usual `dispatch` and `getState` methods, but also [several other functions that can be used to implement complex async logic and workflows](https://redux-toolkit.js.org/api/createListenerMiddleware#listener-api). That includes methods like `condition()` to pause until some other action is dispatched or state value changes, `unsubscribe()/subscribe()` to change whether this listener entry is active, `fork()` to kick off a child task, and more.
-
-In this case, we want to import the actual `react-tiny-toast` library dynamically, show the success toast, wait a few seconds, and then remove the toast.
-
-Finally, we need to actually import and call `addPostsListeners` somewhere. In this case, we'll import it into `app/listenerMiddleware.ts`:
+为避免切片文件导入监听文件导致循环依赖，我们把监听器导出成函数，留给监听文件调用。监听文件导入切片的监听工厂函数，调用它注册监听：
 
 ```ts title="app/listenerMiddleware.ts"
 import { createListenerMiddleware, addListener } from '@reduxjs/toolkit'
@@ -1581,17 +1576,16 @@ export const addAppListener = addListener.withTypes<RootState, AppDispatch>()
 export type AppAddListener = typeof addAppListener
 
 // highlight-start
-// Call this and pass in `startAppListening` to let the
-// posts slice set up its listeners
+// 调用切片的监听添加函数并传入注册函数
 addPostsListeners(startAppListening)
 // highlight-end
 ```
 
-Now when we add a new post, we should see a small green toast pop up in the lower right-hand corner of the page, and disappear after 5 seconds. This works because the listener middleware in the Redux store checks and runs the effect callback after the action was dispatched, even though we didn't specifically add any more logic to the React components themselves.
+这样，添加新帖子后会在页面右下角弹出绿色提示，5 秒后消失。监听中间件拦截动作执行回调，组件本身无须改动。
 
-## What You've Learned
+## 你学到了什么
 
-We've built a lot of new behavior in this section. Let's see how the app looks with all those changes:
+本节我们做了大量新功能。成品示例如下：
 
 <iframe
   class="codesandbox"
@@ -1601,38 +1595,40 @@ We've built a lot of new behavior in this section. Let's see how the app looks w
   sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
 ></iframe>
 
-Here's what we covered in this section:
+总结：
 
-:::tip Summary
+:::tip 小结
 
-- **Memoized selector functions can be used to optimize performance**
-  - Redux Toolkit re-exports the `createSelector` function from Reselect, which generates memoized selectors
-  - Memoized selectors will only recalculate the results if the input selectors return new values
-  - Memoization can skip expensive calculations, and ensure the same result references are returned
-- **There are multiple patterns you can use to optimize React component rendering with Redux**
-  - Avoid creating new object/array references inside of `useSelector` - those will cause unnecessary re-renders
-  - Memoized selector functions can be passed to `useSelector` to optimize rendering
-  - `useSelector` can accept an alternate comparison function like `shallowEqual` instead of reference equality
-  - Components can be wrapped in `React.memo()` to only re-render if their props change
-  - List rendering can be optimized by having list parent components read just an array of item IDs, passing the IDs to list item children, and retrieving items by ID in the children
-- **Normalized state structure is a recommended approach for storing items**
-  - "Normalization" means no duplication of data, and keeping items stored in a lookup table by item ID
-  - Normalized state shape usually looks like `{ids: [], entities: {}}`
-- **Redux Toolkit's `createEntityAdapter` API helps manage normalized data in a slice**
-  - Item IDs can be kept in sorted order by passing in a `sortComparer` option
-  - The adapter object includes:
-    - `adapter.getInitialState`, which can accept additional state fields like loading state
-    - Prebuilt reducers for common cases, like `setAll`, `addMany`, `upsertOne`, and `removeMany`
-    - `adapter.getSelectors`, which generates selectors like `selectAll` and `selectById`
-- **Redux Toolkit's `createListenerMiddleware` API is used to run reactive logic in response to dispatched actions**
-  - The listener middleware should be added to the store setup, with the right store types attached
-  - Listeners are typically defined in slice files, but may be structured other ways as well
-  - Listeners can match against individual actions, many actions, or use custom comparisons
-  - Listener effect callbacks can contain any sync or async logic
-  - The `listenerApi` object provides many methods for managing async workflows and behavior
+- **记忆化选择器函数能优化性能**
+  - Redux Toolkit 重新导出 Reselect 的 `createSelector`，可生成记忆化选择器
+  - 记忆化选择器仅在输入选择器返回值变化时重新计算
+  - 记忆化可跳过贵重计算，保证返回相同引用
+- **有多种模式可以优化 React+Redux 组件渲染**
+  - 避免在 `useSelector` 中创建新引用的对象/数组，防止无谓重渲
+  - 传入记忆化选择器到 `useSelector` 以优化性能
+  - `useSelector` 可以传入自定义比较函数如 `shallowEqual` 替代默认引用判断
+  - 用 `React.memo()` 包裹组件，只在 props 变化时渲染
+  - 列表渲染优化：父列表只选 ID 数组，传 ID 给子组件，子组件通过 ID 单独读取数据
+- **正规化状态结构推荐存储实体数据**
+  - 「正规化」即无数据重复，实体存储在以 ID 为键的映射表中
+  - 结构类似 `{ids: [], entities: {}}`
+- **Redux Toolkit 的 `createEntityAdapter` 助力正规化切片管理**
+  - ID 可以用排序函数定序，只有更改时更新
+  - 适配器对象包含：
+    - `adapter.getInitialState` 可合并额外加载状态字段
+    - 常用 reducer：`setAll`, `addMany`, `upsertOne`, `removeMany`
+    - `adapter.getSelectors` 生成选择器如 `selectAll`, `selectById`
+- **Redux Toolkit 的 `createListenerMiddleware` 用于响应动作派发执行逻辑**
+  - 中间件需添加到 store，带入类型参数
+  - 监听器多定义在切片文件，也可其它方式拆分
+  - 监听匹配单个动作、多动作或自定义条件
+  - 监听回调支持同步异步多样逻辑
+  - `listenerApi` 提供额外辅助方法管理复杂异步工作流
 
 :::
 
-## What's Next?
+## 接下来是什么？
 
-**Redux Toolkit also includes a powerful data fetching and caching API called "RTK Query"**. RTK Query is an optional addon that can completely eliminate the need to write any data fetching logic yourself. In [Part 7: RTK Query Basics](./part-7-rtk-query-basics.md), you'll learn what RTK Query is, what problems it solves, and how to use it to fetch and use cached data in your application.
+**Redux Toolkit 还包含功能强大的数据获取与缓存 API——「RTK Query」**。RTK Query 是一个可选扩展，能帮你彻底免写数据获取逻辑。
+
+在 [第7部分：RTK Query 基础](./part-7-rtk-query-basics.md) 你将学习 RTK Query 的原理、解决的问题，以及如何使用它在应用中高效获取和缓存数据。

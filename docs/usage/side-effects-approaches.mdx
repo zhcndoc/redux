@@ -1,117 +1,117 @@
 ---
 id: side-effects-approaches
-title: Side Effects Approaches
-description: 'Usage > Redux Logic > Side Effects Approaches: tools and recommendations for managing side effects'
+title: 副作用处理方法
+description: '使用指南 > Redux 逻辑 > 副作用处理方法：管理副作用的工具和推荐方案'
 ---
 
 import { DetailedExplanation } from '../components/DetailedExplanation'
 
-:::tip What You'll Learn
+:::tip 你将学到
 
-- What "side effects" are and how they fit into Redux
-- Common tools for managing side effects with Redux
-- Our recommendations for which tools to use for different use cases
+- 何为“副作用”，以及它们如何融入 Redux
+- 管理 Redux 副作用的常用工具
+- 针对不同使用情景的工具推荐
 
 :::
 
-## Redux and Side Effects
+## Redux 与副作用
 
-### Side Effects Overview
+### 副作用概述
 
-By itself, a Redux store doesn't know anything about async logic. It only knows how to synchronously dispatch actions, update the state by calling the root reducer function, and notify the UI that something has changed. Any asynchronicity has to happen outside the store.
+Redux store 本身并不了解异步逻辑。它只知道如何同步地分发 action，通过调用根 reducer 函数更新状态，并通知 UI 有变化。任何异步操作必须在 store 外部完成。
 
-Redux reducers must never contain "side effects". **A "side effect" is any change to state or behavior that can be seen outside of returning a value from a function**. Some common kinds of side effects are things like:
+Redux reducer 绝不可包含“副作用”。**“副作用”是指函数返回值之外的任何状态或行为改变**。一些常见副作用示例包括：
 
-- Logging a value to the console
-- Saving a file
-- Setting an async timer
-- Making an AJAX HTTP request
-- Modifying some state that exists outside of a function, or mutating arguments to a function
-- Generating random numbers or unique random IDs (such as `Math.random()` or `Date.now()`)
+- 在控制台打印日志
+- 保存文件
+- 设置异步定时器
+- 发起 AJAX HTTP 请求
+- 修改函数外部存在的状态，或修改函数参数
+- 生成随机数或唯一随机 ID（如 `Math.random()` 或 `Date.now()`）
 
-However, any real app will need to do these kinds of things _somewhere_. So, if we can't put side effects in reducers, where _can_ we put them?
+然而，任何真实应用都需要在某处进行这些操作。那么，如果不能在 reducers 中管理副作用，我们能放在哪里呢？
 
-### Middleware and Side Effects
+### 中间件与副作用
 
-**Redux middleware were designed to enable writing logic that has side effects**.
+**Redux 中间件设计的初衷就是允许编写含有副作用的逻辑**。
 
-[A Redux middleware can do _anything_ when it sees a dispatched action](../tutorials/fundamentals/part-4-store.md#middleware-use-cases): log something, modify the action, delay the action, make an async call, and more. Also, since middleware form a pipeline around the real `store.dispatch` function, this also means that we could actually pass something that _isn't_ a plain action object to `dispatch`, as long as a middleware intercepts that value and doesn't let it reach the reducers.
+[Redux 中间件能拦截任何被分发的 action](../tutorials/fundamentals/part-4-store.md#middleware-use-cases)：比如日志打印、修改 action、延迟 action、发起异步调用等。此外，因为中间件形成了一条围绕真实 `store.dispatch` 函数的管线，所以理论上我们甚至可以向 `dispatch` 传递一个非普通的 action 对象，只要中间件截获并处理它，不让它传递给 reducers 即可。
 
-Middleware also have access to `dispatch` and `getState`. That means you could write some async logic in a middleware, and still have the ability to interact with the Redux store by dispatching actions.
+中间件也能访问 `dispatch` 和 `getState`。这意味着你可以在中间件内编写异步逻辑，同时通过 dispatch 继续与 Redux store 交互。
 
-Because of this, **Redux side effects and async logic are normally implemented through middleware**.
+因此，**Redux 中的副作用和异步逻辑通常通过中间件实现**。
 
-### Side Effects Use Cases
+### 副作用使用场景
 
-In practice, **the single most common use case for side effects in a typical Redux app is fetching and caching data from the server**.
+实际上，在典型 Redux 应用中，**最常见的副作用使用场景是从服务器获取和缓存数据**。
 
-Another use case more specific to Redux is writing logic that _responds_ to a dispatched action or state change by executing additional logic, such as dispatching more actions.
+另一个 Redux 特有的使用场景是针对某个分发动作或状态变化写响应逻辑，例如触发更多的 actions。
 
-## Recommendations
+## 推荐方案
 
-We recommend using the tools that best fit each use case (see below for the reasons for our recommendations, as well as further details on each tool):
+我们建议针对不同使用场景选用最合适的工具（以下内容详细说明了推荐理由及各工具特性）：
 
 :::tip
 
-#### Data Fetching
+#### 数据获取
 
-- **Use RTK Query as the default approach for data fetching and caching**
-- If RTKQ doesn't fully fit for some reason, use `createAsyncThunk`
-- Only fall back to handwritten thunks if nothing else works
-- _Don't_ use sagas or observables for data fetching!
+- **默认使用 RTK Query 进行数据获取与缓存**
+- 如果 RTKQ 出于某些原因不适合，使用 `createAsyncThunk`
+- 仅当以上方案都不能满足需求时，才手写 thunk
+- _不要_ 用 saga 或 observable 来做数据获取！
 
-#### Reacting to Actions / State Changes, Async Workflows
+#### 响应动作 / 状态变化，异步流程
 
-- **Use RTK listeners as the default for responding to store updates and writing long-running async workflows**
-- Only use sagas / observables if listeners don't solve your use case well enough
+- **默认使用 RTK 监听器（listeners）响应 store 更新，处理长时间运行的异步流程**
+- 仅当监听器无法很好满足需求时，再考虑 saga / observable
 
-#### Logic with State Access
+#### 涉及状态访问的逻辑
 
-- **Use thunks for complex sync and moderate async logic**, including access to `getState` and dispatching multiple actions
+- **使用 thunk 处理复杂的同步与中等复杂度异步逻辑**，包括访问 `getState` 和分发多个动作
 
 :::
 
-### Why RTK Query for Data Fetching
+### 为什么用 RTK Query 进行数据获取
 
-Per [the React docs section on "alternatives for data fetching in Effects"](https://react.dev/learn/synchronizing-with-effects#what-are-good-alternatives-to-data-fetching-in-effects), you _should_ use either data fetching approaches that are built into a server-side framework, or a client-side cache. **You should _not_ write data fetching and cache management code yourself.**
+根据 [React 文档“Effects 中数据获取的替代方案”](https://react.dev/learn/synchronizing-with-effects#what-are-good-alternatives-to-data-fetching-in-effects)，你应当使用服务端框架自带的数据获取方案，或使用客户端缓存，**而非手写数据获取和缓存管理代码**。
 
-RTK Query was specifically designed to be a complete data fetching and caching layer for Redux-based applications. It manages all the fetching, caching, and loading status logic for you, and covers many edge cases that are typically forgotten or hard to handle if you write data fetching code yourself, as well as having cache lifecycle management built-in. It also makes it simple to fetch and use data via the auto-generated React hooks.
+RTK Query 专为 Redux 应用设计，是一套完整的数据获取与缓存解决方案。它帮你管理所有的获取、缓存及加载状态逻辑，涵盖了手写代码时常被遗漏或难以处理的边界情况，并内建缓存生命周期管理。且它方便通过自动生成的 React hooks 获取和使用数据。
 
-We specifically recommend _against_ sagas for data fetching because the complexity of sagas is not helpful, and you would still have to write all of the caching + loading status management logic yourself.
+我们特别不推荐用 saga 做数据获取，因为 saga 复杂度大且需要你手写所有缓存和加载状态管理逻辑。
 
-### Why Listeners for Reactive Logic
+### 为什么用监听器实现响应式逻辑
 
-We've intentionally designed the RTK listener middleware to be straightforward to use. It uses standard `async/await` syntax, covers most common reactive use cases (responding to actions or state changes, debouncing, delays), and even several advanced cases (launching child tasks). It has a small bundle size (~3K), is included with Redux Toolkit, and works great with TypeScript.
+我们特点设计了 RTK 监听器中间件，使其简单易用。它采用标准的 `async/await` 语法，覆盖大多数常见响应式使用场景（响应动作或状态变化、防抖、延迟），甚至还支持一些高级场景（启动子任务）。体积小巧（约3KB），包含于 Redux Toolkit 内，并且对 TypeScript 支持良好。
 
-We specifically recommend _against_ sagas or observables for most reactive logic for multiple reasons:
+我们反对在大多数响应式逻辑中使用 saga 或 observable，原因包括：
 
-- Sagas: require understanding generator function syntax as well as the saga effects behaviors; add multiple levels of indirection due to needing extra actions dispatched; have poor TypeScript support; and the power and complexity is simply not needed for most Redux use cases.
-- Observables: require understanding the RxJS API and mental model; can be difficult to debug; can add significant bundle size
+- Saga：需要了解 generator 语法及其 effect 行为；因需额外动作而增加多层间接调用；对 TypeScript 支持差；大多数 Redux 用例不需要其复杂能力。
+- Observable：必须掌握 RxJS API 及其思维模型；调试难度较高；显著增加包大小。
 
-## Common Side Effects Approaches
+## 常见副作用处理方案
 
-The lowest-level technique for managing side effects with Redux is to write your own custom middleware that listens for specific actions and runs logic. However, that's rarely used. Instead, most apps have historically used one of the common pre-built Redux side effects middleware available in the ecosystem: thunks, sagas, or observables. Each of these has its own different use cases and tradeoffs.
+管理 Redux 副作用最底层的方式是写自定义中间件监听特定动作并执行逻辑，但这极少被采用。大部分应用历史上使用生态中提供的成熟副作用中间件：thunk、saga 或 observable。它们各有特点与适用场景。
 
-More recently, our official Redux Toolkit package has added two new APIs for managing side effects: the "listener" middleware for writing reactive logic, and RTK Query for fetching and caching server state.
+近年来，官方 Redux Toolkit 新增了两款副作用处理 API：监听器中间件用来编写响应式逻辑，以及 RTK Query 用于数据获取和缓存。
 
 ### Thunks
 
-The [Redux "thunk" middleware](./writing-logic-thunks.mdx) has traditionally been the most widely used middleware for writing async logic.
+[Redux thunk 中间件](./writing-logic-thunks.mdx)传统上是最广泛使用的异步逻辑解决方案。
 
-Thunks work by passing a function into `dispatch`. The thunk middleware intercepts the function, calls it, and passes in `theThunkFunction(dispatch, getState)`. The thunk function can now do any sync/async logic and interact with the store.
+thunk 使用方式是向 `dispatch` 传入一个函数。thunk 中间件拦截该函数，执行并传入 `(dispatch, getState)`，使你能执行任意同步或异步逻辑并访问 store。
 
-#### Thunk Use Cases
+#### Thunk 使用场景
 
-Thunks are best used for complex sync logic that needs access to `dispatch` and `getState`, or moderate async logic such as one-shot "fetch some async data and dispatch an action with the result" requests.
+thunk 最适合处理需要访问 `dispatch` 和 `getState` 的复杂同步逻辑，或中等复杂度异步逻辑，如一次性“异步请求数据并以结果分发动作”。
 
-We have traditionally recommended thunks as the default approach, and Redux Toolkit specifically includes the [`createAsyncThunk` API](https://redux-toolkit.js.org/api/createAsyncThunk) for the "request and dispatch" use case. For other use cases, you can write your own thunk functions.
+我们传统上推荐 thunk 作为默认方法，Redux Toolkit 也专门提供了 [`createAsyncThunk` API](https://redux-toolkit.js.org/api/createAsyncThunk) 以简化“请求并分发”场景。其他场景可自行编写 thunk 函数。
 
-#### Thunk Tradeoffs
+#### Thunk 权衡
 
-- 👍: Just write functions; may contain any logic
-- 👎: Can't respond to dispatched actions; imperative; can't be cancelled
+- 👍 ：仅需编写函数；可以包含任意逻辑
+- 👎 ：无法响应已分发的动作；指令式；不可取消
 
-```js title="Thunk Examples"
+```js title="Thunk 示例"
 const thunkMiddleware =
   ({ dispatch, getState }) =>
   next =>
@@ -123,26 +123,26 @@ const thunkMiddleware =
     return next(action)
   }
 
-// Original "hand-written" thunk fetch request pattern
+// 传统手写thunk异步请求模式
 const fetchUserById = userId => {
   return async (dispatch, getState) => {
-    // Dispatch "pending" action to help track loading state
+    // 分发“请求开始”动作用以跟踪加载状态
     dispatch(fetchUserStarted())
-    // Need to pull this out to have correct error handling
+    // 先保存变量，方便错误处理
     let lastAction
     try {
       const user = await userApi.getUserById(userId)
-      // Dispatch "fulfilled" action on success
+      // 请求成功分发“成功”动作
       lastAction = fetchUserSucceeded(user)
     } catch (err) {
-      // Dispatch "rejected" action on failure
+      // 请求失败分发“失败”动作
       lastAction = fetchUserFailed(err.message)
     }
     dispatch(lastAction)
   }
 }
 
-// Similar request with `createAsyncThunk`
+// 使用 createAsyncThunk 实现类似请求
 const fetchUserById2 = createAsyncThunk('fetchUserById', async userId => {
   const user = await userApi.getUserById(userId)
   return user
@@ -151,32 +151,32 @@ const fetchUserById2 = createAsyncThunk('fetchUserById', async userId => {
 
 ### Sagas
 
-The [Redux-Saga middleware](https://redux-saga.js.org/) has traditionally been the second most common tool for side effects, after thunks. It's inspired by the backend "saga" pattern, where long-running workflows can respond to events triggered throughout the system.
+[Redux-Saga 中间件](https://redux-saga.js.org/)历来是第二常用的副作用工具，仅次于 thunk。它受到后端“saga”模式启发，可以让长流程异步工作流响应系统内任意事件。
 
-Conceptually, you can think of sagas as "background threads" inside the Redux app, which have the ability to listen to dispatched actions and run additional logic.
+概念上，你可以把 saga 理解为 Redux 应用内部的“后台线程”，能监听分发的动作并执行额外逻辑。
 
-Sagas are written using generator functions. Saga functions return _descriptions_ of side effects and pause themselves, and the saga middleware is responsible for executing the side effect and resuming the saga function with the result. The `redux-saga` library includes a variety of effects definitions such as:
+Saga 使用 generator 函数编写。saga 函数返回副作用的“描述”，暂停自身执行，由 saga 中间件负责执行副作用并用结果恢复 saga 函数。`redux-saga` 库包含多种副作用定义，如：
 
-- `call`: executes an async function and returns the result when the promise resolves:
-- `put`: dispatches a Redux action
-- `fork`: spawns a "child saga", like an additional thread that can do more work
-- `takeLatest`: listens for a given Redux action, triggers a saga function to execute, and cancels previous running copies of the saga if it's dispatched again
+- `call`：执行异步函数，Promise 解决后返回结果
+- `put`：分发 Redux 动作
+- `fork`：派生“子 saga”，类似额外线程做更多工作
+- `takeLatest`：监听特定动作，触发 saga，若动作再发则取消之前同类 saga
 
-#### Saga Use Cases
+#### Saga 使用场景
 
-Sagas are extremely powerful, and are best used for highly complex async workflows that require "background thread"-type behavior or debouncing/cancelling.
+Saga 功能强大，适合极复杂的异步工作流，需后台线程式行为或防抖/取消。
 
-Saga users have often pointed to the fact that saga functions only return _descriptions_ of the desired effects as a major positive that makes them more testable.
+许多 saga 用户强调 saga 函数仅返回副作用描述是其可测试性的主要优势。
 
-#### Saga Tradeoffs
+#### Saga 权衡
 
-- 👍: Sagas are testable because they only return descriptions of effects; powerful effects model; pause/cancel capabilities
-- 👎: generator functions are complex; unique saga effects API; saga tests often only test implementation results and need to be rewritten every time the saga is touched, making them a lot less valuable; do not work well with TypeScript;
+- 👍 ：因只返回副作用描述，易于测试；副作用模型强大；支持暂停取消
+- 👎 ：generator 语法复杂；独有 saga API；测试容易变成实现细节测试，代码变动即需重写，价值降低；TypeScript 配合欠佳
 
-```js title="Saga Examples"
+```js title="Saga 示例"
 import { call, put, takeEvery } from 'redux-saga/effects'
 
-// "Worker" saga: will be fired on USER_FETCH_REQUESTED actions
+// “工作” saga：响应 USER_FETCH_REQUESTED 动作
 function* fetchUser(action) {
   yield put(fetchUserStarted())
   try {
@@ -187,12 +187,12 @@ function* fetchUser(action) {
   }
 }
 
-// "Watcher" saga: starts fetchUser on each `USER_FETCH_REQUESTED` action
+// “监听” saga：监听所有 USER_FETCH_REQUESTED 动作，触发 fetchUser
 function* fetchUserWatcher() {
   yield takeEvery('USER_FETCH_REQUESTED', fetchUser)
 }
 
-// Can use also use sagas for complex async workflows with "child tasks":
+// saga 支持复杂异步流程及子任务：
 function* fetchAll() {
   const task1 = yield fork(fetchResource, 'users')
   const task2 = yield fork(fetchResource, 'comments')
@@ -207,21 +207,21 @@ function* fetchResource(resource) {
 
 ### Observables
 
-The [Redux-Observable middleware](https://redux-observable.js.org/) lets you use RxJS observables to create processing pipelines called "epics".
+[Redux-Observable 中间件](https://redux-observable.js.org/)允许你使用 RxJS observable 创建称为“epics”的处理管道。
 
-Since RxJS is a framework-agnostic library, observable users point to the fact that you can reuse knowledge of how to use it across different platforms as a major selling point. In addition, RxJS lets you construct declarative pipelines that handle timing cases like cancellation or debouncing.
+由于 RxJS 是框架无关的库，observable 用户强调跨平台复用相关知识是亮点。此外，RxJS 可以构建声明式管道，处理如取消、去抖等定时场景。
 
-#### Observable Use Cases
+#### Observable 使用场景
 
-Similar to sagas, observables are powerful and best used for highly complex async workflows that require "background thread"-type behavior or debouncing/cancelling.
+类似于 saga，observable 功能强大，适合极复杂异步流程，需后台线程式行为或防抖/取消。
 
-#### Observable Tradeoffs
+#### Observable 权衡
 
-- 👍: Observables are a highly powerful data flow model; RxJS knowledge can be used separate from Redux; declarative syntax
-- 👎: RxJS API is complex; mental model; can be hard to debug; bundle size
+- 👍 ：数据流模型非常强大；RxJS 知识独立于 Redux 可用；声明式语法
+- 👎 ：RxJS API 复杂；思维负担；调试难；包体积大
 
-```js title="Observable Examples"
-// Typical AJAX example:
+```js title="Observable 示例"
+// 典型 AJAX 请求例子：
 const fetchUserEpic = action$ =>
   action$.pipe(
     filter(fetchUser.match),
@@ -232,8 +232,7 @@ const fetchUserEpic = action$ =>
     )
   )
 
-// Can write highly complex async pipelines, including delays,
-// cancellation, debouncing, and error handling:
+// 复杂异步管道示例，包括延迟、取消、去抖和错误处理：
 const fetchReposEpic = action$ =>
   action$.pipe(
     filter(fetchReposInput.match),
@@ -251,76 +250,75 @@ const fetchReposEpic = action$ =>
   )
 ```
 
-### Listeners
+### 监听器（Listeners）
 
-Redux Toolkit includes [the `createListenerMiddleware` API](https://redux-toolkit.js.org/api/createListenerMiddleware) to handle "reactive" logic. It's specifically intended to be a lighter-weight alternative to sagas and observables that handles 90% of the same use cases, with a smaller bundle size, simpler API, and better TypeScript support.
+Redux Toolkit 提供了 [createListenerMiddleware API](https://redux-toolkit.js.org/api/createListenerMiddleware) 来处理“响应式”逻辑。设计为比 saga 和 observable 更轻量的替代方案，涵盖了 90% 的常见用例，包体更小，API 简单，TypeScript 支持更佳。
 
-Conceptually, this is similar to React's `useEffect` hook, but for Redux store updates.
+概念上类似 React 的 `useEffect`，但用于 Redux store 更新。
 
-The listener middleware lets you add entries that match against actions to determine when to run the `effect` callback. Similar to thunks, an `effect` callback can be sync or async, and have access to `dispatch` and `getState`. They also receive a `listenerApi` object with several primitives for building async workflows, such as:
+监听器中间件允许添加条目来匹配特定动作并执行 `effect` 回调。类似 thunk，`effect` 支持同步或异步，可以访问 `dispatch` 和 `getState`。还会传入带有多个构建异步工作流原语的 `listenerApi` 对象，比如：
 
-- `condition()`: pauses until a certain action is dispatched or state change occurs
-- `cancelActiveListeners()`: cancel existing in-progress instances of the effect
-- `fork()`: creates a "child task" that can do additional work
+- `condition()`：暂停直到特定动作分发或状态变化
+- `cancelActiveListeners()`：取消已进行中的同类型 effect 实例
+- `fork()`：创建可额外执行工作的“子任务”
 
-These primitives allow listeners to replicate almost all of the effects behaviors from Redux-Saga.
+这些原语使监听器几乎可以复刻 Redux-Saga 的所有副作用行为。
 
-#### Listener Use Cases
+#### 监听器使用场景
 
-Listeners can be used for a wide variety of tasks, such as lightweight store persistence, triggering additional logic when an action is dispatched, watching for state changes, and complex long-running "background thread"-style async workflows.
+监听器适合各种任务，如轻量级 store 持久化、动作触发额外逻辑、状态变化监听，以及复杂长时间运行的“后台线程”式异步工作流。
 
-In addition, listener entries can be added and removed dynamically at runtime by dispatching special `add/removeListener` actions. This integrates nicely with React's `useEffect` hook, and can be used for adding additional behavior that corresponds to a component's lifetime.
+监听器条目也可在运行时动态添加或移除，结合 React 的 `useEffect` 使用非常方便，可实现与组件生命周期绑定的行为。
 
-#### Listener Tradeoffs
+#### 监听器权衡
 
-- 👍: Built into Redux Toolkit; `async/await` is more familiar syntax; similar to thunks; lightweight concepts and size; works great with TypeScript
-- 👎: Relatively new and not as "battle-tested" yet; not _quite_ as flexible as sagas/observables
+- 👍 ：含于 Redux Toolkit ；`async/await` 更易用；类似 thunk；轻量；TypeScript 支持优良
+- 👎 ：相对较新，尚未广泛“实战检验”；灵活度略逊 saga/observable
 
-```js title="Listener Examples"
-// Create the middleware instance and methods
+```js title="Listener 示例"
+// 创建监听器中间件实例及方法
 const listenerMiddleware = createListenerMiddleware()
 
-// Add one or more listener entries that look for specific actions.
-// They may contain any sync or async logic, similar to thunks.
+// 添加监听条目匹配特定动作。
+// 可包含任意同步/异步逻辑，类似 thunk。
 listenerMiddleware.startListening({
   actionCreator: todoAdded,
   effect: async (action, listenerApi) => {
-    // Run whatever additional side-effect-y logic you want here
+    // 自由运行副作用逻辑
     console.log('Todo added: ', action.payload.text)
 
-    // Can cancel other running instances
+    // 可取消其它运行中实例
     listenerApi.cancelActiveListeners()
 
-    // Run async logic
+    // 异步逻辑示例
     const data = await fetchData()
 
-    // Use the listener API methods to dispatch, get state,
-    // unsubscribe the listener, start child tasks, and more
+    // 通过 listenerApi 分发动作、访问状态、管理监听等
     listenerApi.dispatch(todoAdded('Buy pet food'))
   }
 })
 
 listenerMiddleware.startListening({
-  // Can match against actions _or_ state changes/contents
+  // 匹配动作或状态变化内容
   predicate: (action, currentState, previousState) => {
     return currentState.counter.value !== previousState.counter.value
   },
-  // Listeners can have long-running async workflows
+  // 支持长时间运行异步工作流
   effect: async (action, listenerApi) => {
-    // Pause until action dispatched or state changed
+    // 等待特定动作分发或状态变化
     if (await listenerApi.condition(matchSomeAction)) {
-      // Spawn "child tasks" that can do more work and return results
+      // 派生“子任务”做更多工作并返回结果
       const task = listenerApi.fork(async forkApi => {
-        // Can pause execution
+        // 任务中可暂停执行
         await forkApi.delay(5)
-        // Complete the child by returning a value
+        // 任务完成返回值
         return 42
       })
 
-      // Unwrap the child result in the listener
+      // 监听器中获取子任务结果
       const result = await task.result
       if (result.status === 'ok') {
-        console.log('Child succeeded: ', result.value)
+        console.log('子任务成功: ', result.value)
       }
     }
   }
@@ -329,30 +327,30 @@ listenerMiddleware.startListening({
 
 ### RTK Query
 
-Redux Toolkit includes [RTK Query](https://redux-toolkit.js.org/rtk-query/overview), a purpose-built data fetching and caching solution for Redux apps. It's designed to simplify common cases for loading data in a web application, eliminating the need to hand-write data fetching & caching logic yourself.
+Redux Toolkit 含有 [RTK Query](https://redux-toolkit.js.org/rtk-query/overview)，专为 Redux 应用设计的数据获取与缓存方案。它简化了常见数据加载场景，免去手写数据获取和缓存逻辑。
 
-RTK Query relies on creating an API definition consisting of many "endpoints". An endpoint can be a "query" for fetching data, or a "mutation" for sending an update to the server. RTKQ manages fetching and caching data internally, including tracking usage of each cache entry and removing cached data that's no longer needed. It features a unique "tag" system for triggering automatic refetches of data as mutations update state on the server.
+RTK Query 借助定义 API 及“端点”实现功能。端点可以是获取数据的“查询”，或发送更新的“变更”。RTKQ 内部管理数据获取和缓存，追踪缓存条目使用情况，自动移除不再需要的缓存。采用独特的“标签”机制，能在变更更新服务器状态时自动触发重抓取。
 
-Like the rest of Redux, RTKQ is UI-agnostic at its core, and can be used with any UI framework. However, it also comes with React integration built in, and can automatically generate React hooks for each endpoint. This provides a familiar and simple API for fetching and updating data from React components.
+RTKQ 核心是 UI 无关的，也可配合任何 UI 框架，但内置了 React 集成，可自动为每个端点生成 React hooks，方便从组件获取和更新数据。
 
-RTKQ provides a `fetch`-based implementation out of the box, and works great with REST APIs. It's also flexible enough to be used with GraphQL APIs, and can even be configured to work with arbitrary async functions, allowing integration with external SDKs such as Firebase, Supabase, or your own async logic.
+RTKQ 默认基于 `fetch` 实现，很适合 REST API，也能灵活适配 GraphQL 和任意异步函数，方便集成 Firebase、Supabase 等 SDK 或自定义异步逻辑。
 
-RTKQ also has powerful capabilities such as endpoint "lifecycle methods", allowing you to run logic as cache entries are added and removed. This can be used for scenarios like fetching initial data for a chat room, then subscribing to a socket for additional messages that are used to update the cache.
+RTKQ 还支持端点“生命周期方法”，你可以在缓存条目被添加和移除时执行特定逻辑，比如为聊天室拉取初始数据后订阅 socket 接收额外消息更新缓存。
 
-#### RTK Query Use Cases
+#### RTK Query 使用场景
 
-RTK Query is specifically built to solve the use case of data fetching and caching of server state.
+RTK Query 专门解决服务器状态的数据获取与缓存问题。
 
-#### RTK Query Tradeoffs
+#### RTK Query 权衡
 
-- 👍: Built into RTK; eliminates the need to write _any_ code (thunks, selectors, effects, reducers) for managing data fetching and loading state; works great with TS; integrates into the rest of the Redux store; built-in React hooks
-- 👎: Intentionally a "document"-style cache, rather than "normalized"; Adds a one-time additional bundle size cost
+- 👍 ：含于 RTK；免写任何数据获取相关 thunk、选择器、副作用、reducer 代码；TypeScript 支持优异；与 Redux store 紧密整合；内置 React hooks
+- 👎 ：设计为“文档型”缓存而非“规范化”；会引入一次性包体积开销
 
-```ts no-transpile title="RTK Query Examples"
+```ts no-transpile title="RTK Query 示例"
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import type { Pokemon } from './types'
 
-// Create an API definition using a base URL and expected endpoints
+// 通过基础 URL 和端点定义创建 API
 export const api = createApi({
   reducerPath: 'pokemonApi',
   baseQuery: fetchBaseQuery({ baseUrl: 'https://pokeapi.co/api/v2/' }),
@@ -367,38 +365,37 @@ export const api = createApi({
       query: initialPost => ({
         url: '/posts',
         method: 'POST',
-        // Include the entire post object as the body of the request
+        // 请求体包含整个 post 对象
         body: initialPost
       })
     })
   })
 })
 
-// Export hooks for usage in functional components, which are
-// auto-generated based on the defined endpoints
+// 导出自动生成的 React hooks 用于函数组件调用
 export const { useGetPokemonByNameQuery } = api
 
 export default function App() {
-  // Using a query hook automatically fetches data and returns query values
+  // 使用查询 hook 自动获取数据，获取查询结果
   const { data, error, isLoading } = useGetPokemonByNameQuery('bulbasaur')
 
-  // render UI based on data and loading state
+  // 根据数据和加载状态渲染 UI
 }
 ```
 
-## Other Approaches
+## 其它方案
 
-### Custom Middleware
+### 自定义中间件
 
-Given that thunks, sagas, observables, and listeners are all forms of Redux middleware (and RTK Query includes its own custom middleware), it's always possible to write your own custom middleware if none of these tools sufficiently handles your use cases.
+由于 thunk、saga、observable 和监听器全是中间件形式（且 RTK Query 也自带专属中间件），你完全可以写自己的定制中间件来处理需求。
 
-Note that **we specifically recommend _against_ trying to use custom middleware as a technique for managing the bulk of your app's logic!** Some users have tried creating dozens of custom middleware, one per specific app feature. This adds significant overhead, as each middleware has to run as part of each call to `dispatch`. It's better to use a general-purpose middleware such as thunks or listeners instead, where there's a single middleware instance added that can handle many different chunks of logic.
+但 **我们特别不推荐把大量应用逻辑都拆成自定义中间件！**有人试过为每个功能写一个中间件，这会严重增加开销，因为每次 dispatch 都需执行所有中间件。最好用通用中间件（如 thunk 或监听器）管理多块逻辑，只添加一个中间件实例。
 
-```js title="Custom Middleware Example"
+```js title="自定义中间件示例"
 const delayedActionMiddleware = storeAPI => next => action => {
   if (action.type === 'todos/todoAdded') {
     setTimeout(() => {
-      // Delay this action by one second
+      // 延迟一秒执行该动作
       next(action)
     }, 1000)
     return
@@ -410,46 +407,46 @@ const delayedActionMiddleware = storeAPI => next => action => {
 
 ### Websockets
 
-Many apps use websockets or some other form of persistent connection, primarily to receive streaming updates from the server.
+许多应用使用 websocket 或其他持久化连接，主要为了接收服务器的流式更新。
 
-We generally recommend that [most websocket usage in a Redux app should live inside a custom middleware](https://gist.github.com/markerikson/3df1cf5abbac57820a20059287b4be58), for several reasons:
+我们一般建议 [把大部分 websocket 逻辑放在自定义中间件中](https://gist.github.com/markerikson/3df1cf5abbac57820a20059287b4be58)，因为：
 
-- Middleware exist for the lifetime of the application
-- Like with the store itself, you probably only need a single instance of a given connection that the whole app can use
-- Middleware can see all dispatched actions and dispatch actions themselves. This means a middleware can take dispatched actions and turn those into messages sent over the websocket, and dispatch new actions when a message is received over the websocket.
-- A websocket connection instance isn't serializable, so [it doesn't belong in the store state itself](../style-guide/style-guide.md#do-not-put-non-serializable-values-in-state-or-actions)
+- 中间件生命周期长，贯穿应用运行始终
+- 通常只需一个连接实例供整个应用使用
+- 中间件可拦截所有分发动作，实现用动作发消息，接收消息后也分发动作
+- websocket 连接对象不可序列化，[不应存放在 store 状态中](../style-guide/style-guide.md#do-not-put-non-serializable-values-in-state-or-actions)
 
-Depending on the needs of the application, you could create the socket as part of the middleware init process, create the socket on demand in the middleware by dispatching an initialization action, or create it in a separate module file so it can be accessed elsewhere.
+根据需求，可以在中间件初始化时创建连接，或基于特定初始化动作创建，或放在独立模块中集中管理。
 
-Websockets can also be used in an RTK Query lifecycle callback, where they could respond to messages by applying updates to the RTKQ cache.
+也可以在 RTK Query 生命周期回调里启用 websocket，实时响应消息刷新缓存。
 
 ### XState
 
-State machines can be very useful for defining possible known states for a system and the possible transitions between each state, as well as triggering side effects when a transition occurs.
+状态机有助于定义系统的可能状态以及状态间的过渡，也能在状态转移时触发副作用。
 
-Redux reducers _can_ be written as true Finite State Machines, but RTK doesn't include anything to help with this. In practice, they tend to be _partial_ state machines that really only care about the dispatched action to determine how to update the state. Listeners, sagas, and observables can be used for the "run side effects after dispatch" aspect, but can sometimes require more work to ensure a side effect only runs at a specific time.
+Redux reducer 可以写成真正的有限状态机，但 RTK 并未提供专门支持。实际上它们更像是针对动作判断的“部分”状态机。监听器、saga 和 observable 可以负责“派发后执行副作用”场景，但有时需花更多工夫确保副作用只在特定时刻运行。
 
-[XState](https://xstate.js.org/docs/) is a powerful library for defining true state machines and executing them, including managing state transitions based on events and triggering related side effects. It also has related tools for creating state machine definitions via a graphical editor, which can then be loaded into the XState logic for execution.
+[XState](https://xstate.js.org/docs/) 是个强大的状态机库，支持事件驱动状态转移和副作用触发。还带图形化编辑工具，帮助创建状态机定义，后续加载运行。
 
-While there currently is no official integration between XState and Redux, it _is_ possible to use an XState machine as a Redux reducer, and the XState developers have created a useful POC demonstrating using XState as a Redux side effects middleware:
+目前 XState 与 Redux 无官方集成，但可用 XState 机器作为 Redux reducer，且 XState 开发者有一个以 Redux 侧效果中间件形式演示的有趣 POC：
 
 - https://github.com/mattpocock/redux-xstate-poc
 
-## Further Information
+## 深入了解
 
-- Presentation: [**The Evolution of Redux Async Logic**](https://blog.isquaredsoftware.com/2022/05/presentations-evolution-redux-async-logic/)
-- Reason for middleware and side effects:
-  - ["How to dispatch a Redux action with a timeout?"](https://stackoverflow.com/questions/35411423/how-to-dispatch-a-redux-action-with-a-timeout/35415559#35415559)
-  - ["Why do we need middleware for async flow?"](https://stackoverflow.com/questions/34570758/why-do-we-need-middleware-for-async-flow-in-redux/34599594#34599594)
-- Docs and Tutorials:
-  - [Redux Fundamentals, Part 4: Store > Middleware](../tutorials/fundamentals/part-4-store.md#middleware)
-  - [Redux Fundamentals, Part 6: Async Logic and Data Fetching](../tutorials/fundamentals/part-6-async-logic.md)
-  - [Redux Essentials, Part 5: Async Logic and Data Fetching](../tutorials/essentials/part-5-async-logic.md)
-  - [Redux Essentials, Part 7: RTK Query Basics](../tutorials/essentials/part-7-rtk-query-basics.md)
-  - [Using Redux: Writing Logic with Thunks](./writing-logic-thunks.mdx)
-  - [Redux Toolkit: RTK Query Overview](https://redux-toolkit.js.org/rtk-query/overview)
-- Articles and comparisons
-  - [Designing the RTK Listener Middleware](https://blog.isquaredsoftware.com/2022/03/designing-rtk-listener-middleware/)
-  - [Thoughts on Async Redux: comparing thunks, sagas, and observables](https://nordfjord.io/2020/08/31/async-redux.html)
-  - [Redux Toolkit’s new listener middleware vs. Redux-Saga](https://blog.logrocket.com/redux-toolkits-new-listener-middleware-vs-redux-saga/)
-  - [Experimenting with the Redux Listener Middleware](https://www.rsarai.xyz/redux-listener-middleware/)
+- 演讲：[**Redux 异步逻辑的演化**](https://blog.isquaredsoftware.com/2022/05/presentations-evolution-redux-async-logic/)
+- 关于中间件和副作用的理由：
+  - ["如何用超时分发 Redux action？"](https://stackoverflow.com/questions/35411423/how-to-dispatch-a-redux-action-with-a-timeout/35415559#35415559)
+  - ["为什么异步流需要中间件？"](https://stackoverflow.com/questions/34570758/why-do-we-need-middleware-for-async-flow-in-redux/34599594#34599594)
+- 文档与教程：
+  - [Redux 基础，第4部分：Store > 中间件](../tutorials/fundamentals/part-4-store.md#middleware)
+  - [Redux 基础，第6部分：异步逻辑与数据获取](../tutorials/fundamentals/part-6-async-logic.md)
+  - [Redux 核心教程，第5部分：异步逻辑与数据获取](../tutorials/essentials/part-5-async-logic.md)
+  - [Redux 核心教程，第7部分：RTK Query 基础](../tutorials/essentials/part-7-rtk-query-basics.md)
+  - [Using Redux：用 Thunks 编写逻辑](./writing-logic-thunks.mdx)
+  - [Redux Toolkit：RTK Query 概览](https://redux-toolkit.js.org/rtk-query/overview)
+- 文章与对比
+  - [设计 RTK 监听器中间件](https://blog.isquaredsoftware.com/2022/03/designing-rtk-listener-middleware/)
+  - [异步 Redux 思考：thunks、sagas 和 observables 比较](https://nordfjord.io/2020/08/31/async-redux.html)
+  - [Redux Toolkit 新监听器中间件 vs. Redux-Saga](https://blog.logrocket.com/redux-toolkits-new-listener-middleware-vs-redux-saga/)
+  - [尝试 Redux Listener Middleware](https://www.rsarai.xyz/redux-listener-middleware/)

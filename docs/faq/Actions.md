@@ -1,144 +1,144 @@
 ---
 id: actions
-title: Actions
-sidebar_label: Actions
+title: 操作（Actions）
+sidebar_label: 操作（Actions）
 ---
 
-## Redux FAQ: Actions
+## Redux 常见问题：操作（Actions）
 
-### Why should `type` be a string? Why should my action types be constants?
+### 为什么 `type` 应该是字符串？为什么我的操作类型应该是常量？
 
-As with state, serializable actions enable several of Redux's defining features, such as time travel debugging, and recording and replaying actions. Using something like a `Symbol` for the `type` value or using `instanceof` checks for actions themselves would break that. Strings are serializable and easily self-descriptive, and so are a better choice. Note that it _is_ okay to use Symbols, Promises, or other non-serializable values in an action if the action is intended for use by middleware. Actions only need to be serializable by the time they actually reach the store and are passed to the reducers.
+与状态一样，可序列化的操作支持 Redux 的几个核心特性，比如时间旅行调试，以及记录和重放操作。如果 `type` 使用类似 `Symbol` 的类型或对操作本身使用 `instanceof` 检查，就会破坏这些功能。字符串是可序列化且自描述的，因此是更好的选择。请注意，如果操作旨在由中间件使用，操作中使用 Symbols、Promises 或其他不可序列化的值也是可以的。操作只需在真正到达 store 并传递给 reducer 时是可序列化的。
 
-We can't reliably enforce serializable actions for performance reasons, so Redux only checks that every action is a plain object, and that the `type` is a string. The rest is up to you, but you might find that keeping everything serializable helps debug and reproduce issues.
+出于性能考虑，我们无法可靠地强制所有操作都可序列化，所以 Redux 仅检查每个操作必须是一个普通对象，且 `type` 是字符串。其余由你自己决定，但你可能会发现保持一切可序列化有助于调试和重现问题。
 
-Encapsulating and centralizing commonly used pieces of code is a key concept in programming. While it is certainly possible to manually create action objects everywhere, and write each `type` value by hand, defining reusable constants makes maintaining code easier. If you put constants in a separate file, you can [check your `import` statements against typos](https://www.npmjs.com/package/eslint-plugin-import) so you can't accidentally use the wrong string.
+封装并集中常用代码片段是编程的关键概念。虽然确实可以在任何地方手动创建操作对象并手写每个 `type` 字符串，但定义可复用的常量会使代码维护更便捷。如果把常量放到单独的文件中，还可以通过工具[检查导入语句中的拼写错误](https://www.npmjs.com/package/eslint-plugin-import)，防止意外使用错误的字符串。
 
-#### Further information
+#### 更多信息
 
-**Documentation**
+**文档**
 
-- [Using Redux: Reducing Boilerplate](../usage/ReducingBoilerplate.md#actions)
+- [使用 Redux: 减少样板代码](../usage/ReducingBoilerplate.md#actions)
 
-**Discussion**
+**讨论**
 
-- [#384: Recommend that Action constants be named in the past tense](https://github.com/reactjs/redux/issues/384)
-- [#628: Solution for simple action creation with less boilerplate](https://github.com/reactjs/redux/issues/628)
-- [#1024: Proposal: Declarative reducers](https://github.com/reactjs/redux/issues/1024)
-- [#1167: Reducer without switch](https://github.com/reactjs/redux/issues/1167)
-- [Stack Overflow: Why do you need 'Actions' as data in Redux?](https://stackoverflow.com/q/34759047/62937)
-- [Stack Overflow: What is the point of the constants in Redux?](https://stackoverflow.com/q/34965856/62937)
+- [#384: 建议将操作常量命名为过去式](https://github.com/reactjs/redux/issues/384)
+- [#628: 简化操作创建的方案](https://github.com/reactjs/redux/issues/628)
+- [#1024: 提案：声明式 reducer](https://github.com/reactjs/redux/issues/1024)
+- [#1167: 不用 switch 的 reducer](https://github.com/reactjs/redux/issues/1167)
+- [Stack Overflow: 为什么 Redux 需要“操作”作为数据？](https://stackoverflow.com/q/34759047/62937)
+- [Stack Overflow: Redux 中定义常量的意义是什么？](https://stackoverflow.com/q/34965856/62937)
 
-### Is there always a one-to-one mapping between reducers and actions?
+### reducer 和操作之间是否总是一一对应的？
 
-No. We suggest you write independent small reducer functions that are each responsible for updates to a specific slice of state. We call this pattern “reducer composition”. A given action could be handled by all, some, or none of them. This keeps components decoupled from the actual data changes, as one action may affect different parts of the state tree, and there is no need for the component to be aware of this. Some users do choose to bind them more tightly together, such as the “ducks” file structure, but there is definitely no one-to-one mapping by default, and you should break out of such a paradigm any time you feel you want to handle an action in many reducers.
+不是。我们建议编写独立的小型 reducer 函数，每个 reducer 负责特定状态片段的更新。我们称这种模式为“reducer 组合”。一个操作可以被全部、部分或无任何 reducer 处理。这样保持组件与实际数据变动解耦，因为一个操作可能影响状态树的不同部分，组件无需知道这些细节。一些用户会选择更紧密地绑定它们，比如“ducks” 文件结构，但默认情况下绝不存在一一对应关系。如果你发现需要在多个 reducer 中处理同一个操作，应该跳出一一对应的思维模式。
 
-#### Further information
+#### 更多信息
 
-**Documentation**
+**文档**
 
-- [Fundamentals: State, Actions, Reducers](../tutorials/fundamentals/part-3-state-actions-reducers.md)
-- [Using Redux: Structuring Reducers](../usage/structuring-reducers/StructuringReducers.md)
+- [基础知识：状态、操作、reducers](../tutorials/fundamentals/part-3-state-actions-reducers.md)
+- [使用 Redux：组织 reducers](../usage/structuring-reducers/StructuringReducers.md)
 
-**Discussions**
+**讨论**
 
-- [Twitter: most common Redux misconception](https://twitter.com/dan_abramov/status/682923564006248448)
-- [#1167: Reducer without switch](https://github.com/reactjs/redux/issues/1167)
-- [Reduxible #8: Reducers and action creators aren't a one-to-one mapping](https://github.com/reduxible/reduxible/issues/8)
-- [Stack Overflow: Can I dispatch multiple actions without Redux Thunk middleware?](https://stackoverflow.com/questions/35493352/can-i-dispatch-multiple-actions-without-redux-thunk-middleware/35642783)
+- [Twitter：最常见的 Redux 误解](https://twitter.com/dan_abramov/status/682923564006248448)
+- [#1167: 不用 switch 的 reducer](https://github.com/reactjs/redux/issues/1167)
+- [Reduxible #8: Reducers 和 action creators 不是一一对应](https://github.com/reduxible/reduxible/issues/8)
+- [Stack Overflow: 能否在没有 Redux Thunk 中间件的情况下分发多个操作？](https://stackoverflow.com/questions/35493352/can-i-dispatch-multiple-actions-without-redux-thunk-middleware/35642783)
 
-### How can I represent “side effects” such as AJAX calls? Why do we need things like “action creators”, “thunks”, and “middleware” to do async behavior?
+### 如何表现 “副作用” 例如 AJAX 请求？为什么需要 “操作创建者”、“thunks” 和 “中间件” 来处理异步行为？
 
-This is a long and complex topic, with a wide variety of opinions on how code should be organized and what approaches should be used.
+这是一个复杂且意见多样的话题，关于代码应如何组织以及应采用何种方案各家观点不一。
 
-Any meaningful web app needs to execute complex logic, usually including asynchronous work such as making AJAX requests. That code is no longer purely a function of its inputs, and the interactions with the outside world are known as [“side effects”](https://en.wikipedia.org/wiki/Side_effect_%28computer_science%29)
+任何有意义的 Web 应用都需要执行复杂逻辑，通常包括异步工作，如 AJAX 请求。这类代码不再单纯是输入的函数，其与外部世界的交互称为[“副作用”](https://en.wikipedia.org/wiki/Side_effect_%28computer_science%29)。
 
-Redux is inspired by functional programming, and out of the box, has no place for side effects to be executed. In particular, reducer functions _must_ always be pure functions of `(state, action) => newState`. However, Redux's middleware makes it possible to intercept dispatched actions and add additional complex behavior around them, including side effects.
+Redux 受到函数式编程的启发，开箱即用时没有执行副作用的方案。具体来说，reducer 函数必须始终是纯函数，形式为 `(state, action) => newState`。但 Redux 的中间件可以拦截派发的操作并在周围添加复杂行为，包括副作用。
 
-In general, Redux suggests that code with side effects should be part of the action creation process. While that logic _can_ be performed inside of a UI component, it generally makes sense to extract that logic into a reusable function so that the same logic can be called from multiple places—in other words, an action creator function.
+通常，Redux 建议把副作用代码放进操作创建流程中。尽管这些逻辑可以写在 UI 组件中，但通常更合理抽象成可复用函数，这样同一逻辑可被多处调用，也就是操作创建者函数。
 
-The simplest and most common way to do this is to add the [Redux Thunk](https://github.com/reduxjs/redux-thunk) middleware that lets you write action creators with more complex and asynchronous logic. Another widely-used method is [Redux Saga](https://github.com/yelouafi/redux-saga) which lets you write more synchronous-looking code using generators, and can act like “background threads” or “daemons” in a Redux app. Yet another approach is [Redux Loop](https://github.com/raisemarketplace/redux-loop), which inverts the process by allowing your reducers to declare side effects in response to state changes and have them executed separately. Beyond that, there are _many_ other community-developed libraries and ideas, each with their own take on how side effects should be managed.
+最简单且常用的做法是添加 [Redux Thunk](https://github.com/reduxjs/redux-thunk) 中间件，允许你编写包含更复杂异步逻辑的操作创建者。另一种广泛使用的方案是 [Redux Saga](https://github.com/yelouafi/redux-saga)，它使用 generator 函数编写看似同步的代码，能够表现像 Redux 应用中的“后台线程”或“守护进程”。还有一种方案是 [Redux Loop](https://github.com/raisemarketplace/redux-loop)，它通过倒置流程，使 reducer 在响应状态变化时声明副作用，由其他机制执行。除此之外，社区还开发了许多其他库和思路，每个都有自己对副作用管理的看法。
 
-#### Further information
+#### 更多信息
 
-**Documentation**
+**文档**
 
-- [Redux Fundamentals: Async Logic and Data Flow](../tutorials/fundamentals/part-6-async-logic.md)
-- [Redux Fundamentals: Store - Middleware](../tutorials/fundamentals/part-4-store.md#middleware)
+- [Redux 基础：异步逻辑和数据流](../tutorials/fundamentals/part-6-async-logic.md)
+- [Redux 基础：Store - Middleware（中间件）](../tutorials/fundamentals/part-4-store.md#middleware)
 
-**Articles**
+**文章**
 
-- [Redux Side-Effects and You](https://medium.com/@fward/redux-side-effects-and-you-66f2e0842fc3)
-- [Pure functionality and side effects in Redux](http://blog.hivejs.org/building-the-ui-2/)
-- [From Flux to Redux: Async Actions the easy way](http://danmaz74.me/2015/08/19/from-flux-to-redux-async-actions-the-easy-way/)
-- [React/Redux Links: "Redux Side Effects" category](https://github.com/markerikson/react-redux-links/blob/master/redux-side-effects.md)
-- [Gist: Redux-Thunk examples](https://gist.github.com/markerikson/ea4d0a6ce56ee479fe8b356e099f857e)
+- [Redux 副作用与您](https://medium.com/@fward/redux-side-effects-and-you-66f2e0842fc3)
+- [Redux 中的纯功能和副作用](http://blog.hivejs.org/building-the-ui-2/)
+- [从 Flux 到 Redux：简单易用的异步操作](http://danmaz74.me/2015/08/19/from-flux-to-redux-async-actions-the-easy-way/)
+- [React/Redux 资源链接：“Redux 副作用”分类](https://github.com/markerikson/react-redux-links/blob/master/redux-side-effects.md)
+- [Gist: Redux-Thunk 示例](https://gist.github.com/markerikson/ea4d0a6ce56ee479fe8b356e099f857e)
 
-**Discussions**
+**讨论**
 
-- [#291: Trying to put API calls in the right place](https://github.com/reactjs/redux/issues/291)
-- [#455: Modeling side effects](https://github.com/reactjs/redux/issues/455)
-- [#533: Simpler introduction to async action creators](https://github.com/reactjs/redux/issues/533)
-- [#569: Proposal: API for explicit side effects](https://github.com/reactjs/redux/pull/569)
-- [#1139: An alternative side effect model based on generators and sagas](https://github.com/reactjs/redux/issues/1139)
-- [Stack Overflow: Why do we need middleware for async flow in Redux?](https://stackoverflow.com/questions/34570758/why-do-we-need-middleware-for-async-flow-in-redux)
-- [Stack Overflow: How to dispatch a Redux action with a timeout?](https://stackoverflow.com/questions/35411423/how-to-dispatch-a-redux-action-with-a-timeout/35415559)
-- [Stack Overflow: Where should I put synchronous side effects linked to actions in redux?](https://stackoverflow.com/questions/32982237/where-should-i-put-synchronous-side-effects-linked-to-actions-in-redux/33036344)
-- [Stack Overflow: How to handle complex side-effects in Redux?](https://stackoverflow.com/questions/32925837/how-to-handle-complex-side-effects-in-redux/33036594)
-- [Stack Overflow: How to unit test async Redux actions to mock ajax response](https://stackoverflow.com/questions/33011729/how-to-unit-test-async-redux-actions-to-mock-ajax-response/33053465)
-- [Stack Overflow: How to fire AJAX calls in response to the state changes with Redux?](https://stackoverflow.com/questions/35262692/how-to-fire-ajax-calls-in-response-to-the-state-changes-with-redux/35675447)
-- [Reddit: Help performing Async API calls with Redux-Promise Middleware.](https://www.reddit.com/r/reactjs/comments/469iyc/help_performing_async_api_calls_with_reduxpromise/)
-- [Twitter: possible comparison between sagas, loops, and other approaches](https://twitter.com/dan_abramov/status/689639582120415232)
+- [#291: 试图把 API 调用放到合适位置](https://github.com/reactjs/redux/issues/291)
+- [#455: 副作用建模](https://github.com/reactjs/redux/issues/455)
+- [#533: 简明介绍异步操作创建者](https://github.com/reactjs/redux/issues/533)
+- [#569: 提案：显式副作用 API](https://github.com/reactjs/redux/pull/569)
+- [#1139: 基于 generator 和 saga 的替代副作用模型](https://github.com/reactjs/redux/issues/1139)
+- [Stack Overflow: 为什么 Redux 中异步流程需要中间件？](https://stackoverflow.com/questions/34570758/why-do-we-need-middleware-for-async-flow-in-redux)
+- [Stack Overflow: 如何带超时分发 Redux 操作？](https://stackoverflow.com/questions/35411423/how-to-dispatch-a-redux-action-with-a-timeout/35415559)
+- [Stack Overflow: Redux 中同步副作用该放哪里？](https://stackoverflow.com/questions/32982237/where-should-i-put-synchronous-side-effects-linked-to-actions-in-redux/33036344)
+- [Stack Overflow: 如何在 Redux 中处理复杂副作用？](https://stackoverflow.com/questions/32925837/how-to-handle-complex-side-effects-in-redux/33036594)
+- [Stack Overflow: 如何单元测试异步 Redux 操作并模拟 ajax 响应？](https://stackoverflow.com/questions/33011729/how-to-unit-test-async-redux-actions-to-mock-ajax-response/33053465)
+- [Stack Overflow: 如何在 Redux 状态变化时触发 AJAX 请求？](https://stackoverflow.com/questions/35262692/how-to-fire-ajax-calls-in-response-to-the-state-changes-with-redux/35675447)
+- [Reddit: 使用 Redux-Promise Middleware 完成异步 API 调用的帮助](https://www.reddit.com/r/reactjs/comments/469iyc/help_performing_async_api_calls_with_reduxpromise/)
+- [Twitter: 可能的 saga、loops 和其他方案对比](https://twitter.com/dan_abramov/status/689639582120415232)
 
-### What async middleware should I use? How do you decide between thunks, sagas, observables, or something else?
+### 应该使用哪种异步中间件？如何在 thunks、sagas、observables 或其他方案间做选择？
 
-There are [many async/side effect middlewares available](https://github.com/markerikson/redux-ecosystem-links/blob/master/side-effects.md), but the most commonly used ones are [`redux-thunk`](https://github.com/reduxjs/redux-thunk), [`redux-saga`](https://github.com/redux-saga/redux-saga), and [`redux-observable`](https://github.com/redux-observable/redux-observable). These are different tools, with different strengths, weaknesses, and use cases.
+有[许多可用的异步/副作用中间件](https://github.com/markerikson/redux-ecosystem-links/blob/master/side-effects.md)，但最常用的是 [`redux-thunk`](https://github.com/reduxjs/redux-thunk)、[`redux-saga`](https://github.com/redux-saga/redux-saga) 和 [`redux-observable`](https://github.com/redux-observable/redux-observable)。这些工具各有特长、弱点和适用场景。
 
-As a general rule of thumb:
+通用建议：
 
-- Thunks are best for complex synchronous logic (especially code that needs access to the entire Redux store state), and simple async logic (like basic AJAX calls). With the use of `async/await`, it can be reasonable to use thunks for some more complex promise-based logic as well.
-- Sagas are best for complex async logic and decoupled "background thread"-type behavior, especially if you need to listen to dispatched actions (which is something that can't be done with thunks). They require familiarity with generator functions and `redux-saga`'s "effects" operators.
-- Observables solve the same problems as sagas, but rely on RxJS to implement async behavior. They require familiarity with the RxJS API.
+- Thunks 适合复杂的同步逻辑（尤其是需要读取整个 Redux store 状态的代码）和简单异步逻辑（如基本 AJAX 请求）。借助 `async/await`，thunks 也能胜任部分较复杂的 Promise 逻辑。
+- Sagas 适合复杂异步逻辑和解耦的“后台线程”类型行为，尤其是在需要监听派发操作时（这是 thunks 做不到的）。使用时需要熟悉 generator 函数及 `redux-saga` 的“effects”操作符。
+- Observables 与 sagas 解决同样的问题，但依赖 RxJS 来实现异步行为。使用时需熟悉 RxJS API。
 
-We recommend that most Redux users should start with thunks, and then add an additional side effect library like sagas or observables later if their app really requires handling for more complex async logic.
+我们建议大多数 Redux 用户从 thunks 开始使用，只有在应用确实需要更复杂的异步逻辑处理时，才添加 sagas 或 observables 等副作用库。
 
-Since sagas and observables have the same use case, an application would normally use one or the other, but not both. However, note that **it's absolutely fine to use both thunks and either sagas or observables together**, because they solve different problems.
+因为 sagas 和 observables 适用场景相同，一个应用一般选其一，而不会两者兼用。但注意，**使用 thunks 以及 sagas 或 observables 其一是完全可以共存的**，因为它们解决的是不同的问题。
 
-**Articles**
+**文章**
 
-- [Decembersoft: What is the right way to do asynchronous operations in Redux?](https://decembersoft.com/posts/what-is-the-right-way-to-do-asynchronous-operations-in-redux/)
-- [Redux-Thunk vs Redux-Saga: an overview](https://medium.com/@shoshanarosenfield/redux-thunk-vs-redux-saga-93fe82878b2d)
-- [Redux-Saga V.S. Redux-Observable](https://hackmd.io/s/H1xLHUQ8e#side-by-side-comparison)
+- [Decembersoft：Redux 中异步操作的正确用法？](https://decembersoft.com/posts/what-is-the-right-way-to-do-asynchronous-operations-in-redux/)
+- [Redux-Thunk vs Redux-Saga：概览](https://medium.com/@shoshanarosenfield/redux-thunk-vs-redux-saga-93fe82878b2d)
+- [Redux-Saga 与 Redux-Observable 对比](https://hackmd.io/s/H1xLHUQ8e#side-by-side-comparison)
 
-**Discussions**
+**讨论**
 
-- [Reddit: discussion of using thunks and sagas together, and pros and cons of sagas](https://www.reddit.com/r/reactjs/comments/8vglo0/react_developer_map_by_adamgolab/e1nr597/)
-- [Stack Overflow: Pros/cons of using redux-saga with ES2015 generators vs redux-thunk with ES2017 async/await](https://stackoverflow.com/questions/34930735/pros-cons-of-using-redux-saga-with-es6-generators-vs-redux-thunk-with-es2017-asy)
-- [Stack Overflow: Why use Redux-Observable over Redux-Saga?](https://stackoverflow.com/questions/40021344/why-use-redux-observable-over-redux-saga/40027778#40027778)
+- [Reddit: 关于同时使用 thunks 和 sagas 以及 sagas 优缺点的讨论](https://www.reddit.com/r/reactjs/comments/8vglo0/react_developer_map_by_adamgolab/e1nr597/)
+- [Stack Overflow: 使用 ES2015 生成器的 redux-saga 与 ES2017 async/await 的 redux-thunk 优缺点](https://stackoverflow.com/questions/34930735/pros-cons-of-using-redux-saga-with-es6-generators-vs-redux-thunk-with-es2017-asy)
+- [Stack Overflow: 为什么使用 Redux-Observable 而非 Redux-Saga？](https://stackoverflow.com/questions/40021344/why-use-redux-observable-over-redux-saga/40027778#40027778)
 
-### Should I dispatch multiple actions in a row from one action creator?
+### 我应该在一个操作创建者中连续派发多个操作吗？
 
-There's no specific rule for how you should structure your actions. Using an async middleware like Redux Thunk certainly enables scenarios such as dispatching multiple distinct but related actions in a row, dispatching actions to represent progression of an AJAX request, dispatching actions conditionally based on state, or even dispatching an action and checking the updated state immediately afterwards.
+对于操作的结构没有硬性规定。像 Redux Thunk 这样的异步中间件当然支持连续派发多个相关但不同的操作，派发表示 AJAX 请求进度的操作，根据状态条件派发操作，甚至派发某个操作后立即检查更新的状态。
 
-In general, ask if these actions are related but independent, or should actually be represented as one action. Do what makes sense for your own situation but try to balance the readability of reducers with readability of the action log. For example, an action that includes the whole new state tree would make your reducer a one-liner, but the downside is now you have no history of _why_ the changes are happening, so debugging gets really difficult. On the other hand, if you emit actions in a loop to keep them granular, it's a sign that you might want to introduce a new action type that is handled in a different way.
+一般来说，考虑这些操作是相关但独立的，还是应该合并为一个操作。根据你的具体情况做决定，但要权衡 reducer 的可读性和操作日志的可读性。例如，一个包含整个新状态树的操作会让 reducer 变成一行代码，但缺点是你失去了变化原因的历史记录，调试会非常困难。反之，如果你通过循环发送多个细粒度操作，那可能意味着你应该引入一种新的操作类型，并通过不同方式处理。
 
-Try to avoid dispatching several times synchronously in a row in the places where you're concerned about performance. There are a number of addons and approaches that can batch up dispatches as well.
+如果你关心性能，尽量避免在同一时刻连续同步派发多次操作。有许多插件和方案可以对 dispatch 操作进行合并批处理。
 
-#### Further information
+#### 更多信息
 
-**Documentation**
+**文档**
 
-- [FAQ: Performance - Reducing Update Events](./Performance.md#how-can-i-reduce-the-number-of-store-update-events)
+- [FAQ: 性能 - 减少更新事件次数](./Performance.md#how-can-i-reduce-the-number-of-store-update-events)
 
-**Articles**
+**文章**
 
-- [Idiomatic Redux: Thoughts on Thunks, Sagas, Abstraction, and Reusability](https://blog.isquaredsoftware.com/2017/01/idiomatic-redux-thoughts-on-thunks-sagas-abstraction-and-reusability/#multiple-dispatching)
+- [Idiomatic Redux: 关于 Thunks、Sagas、抽象和可复用性的思考](https://blog.isquaredsoftware.com/2017/01/idiomatic-redux-thoughts-on-thunks-sagas-abstraction-and-reusability/#multiple-dispatching)
 
-**Discussions**
+**讨论**
 
-- [#597: Valid to dispatch multiple actions from an event handler?](https://github.com/reactjs/redux/issues/597)
-- [#959: Multiple actions one dispatch?](https://github.com/reactjs/redux/issues/959)
-- [Stack Overflow: Should I use one or several action types to represent this async action?](https://stackoverflow.com/questions/33637740/should-i-use-one-or-several-action-types-to-represent-this-async-action/33816695)
-- [Stack Overflow: Do events and actions have a 1:1 relationship in Redux?](https://stackoverflow.com/questions/35406707/do-events-and-actions-have-a-11-relationship-in-redux/35410524)
-- [Stack Overflow: Should actions be handled by reducers to related actions or generated by action creators themselves?](https://stackoverflow.com/questions/33220776/should-actions-like-showing-hiding-loading-screens-be-handled-by-reducers-to-rel/33226443#33226443)
-- [Twitter: "Good thread on the problems with Redux Thunk..."](https://twitter.com/dan_abramov/status/800310164792414208)
+- [#597: 在事件处理器中派发多个操作是否合法？](https://github.com/reactjs/redux/issues/597)
+- [#959: 多个操作合成一个 dispatch？](https://github.com/reactjs/redux/issues/959)
+- [Stack Overflow: 我应该用一个还是多个操作类型来表示这个异步操作？](https://stackoverflow.com/questions/33637740/should-i-use-one-or-several-action-types-to-represent-this-async-action/33816695)
+- [Stack Overflow: 事件和操作在 Redux 中是否一一对应？](https://stackoverflow.com/questions/35406707/do-events-and-actions-have-a-11-relationship-in-redux/35410524)
+- [Stack Overflow: “显示/隐藏加载屏幕”这类操作应该由响应相关操作的 reducer 处理，还是由操作创建者本身生成？](https://stackoverflow.com/questions/33220776/should-actions-like-showing-hiding-loading-screens-be-handled-by-reducers-to-rel/33226443#33226443)
+- [Twitter: 关于 Redux Thunk 问题的有价值讨论](https://twitter.com/dan_abramov/status/800310164792414208)

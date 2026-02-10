@@ -1,36 +1,36 @@
 ---
 id: tutorials-index
 slug: index
-title: 'Redux Tutorials Index'
-sidebar_label: 'Tutorials Index'
-description: 'Overview of the Redux tutorial pages'
+title: 'Redux 教程索引'
+sidebar_label: '教程索引'
+description: 'Redux 教程页面概览'
 ---
 
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css'
 
-# Redux Tutorials Index
+# Redux 教程索引
 
-## Redux Official Tutorials
+## Redux 官方教程
 
-The [**Quick Start** page](./quick-start.md) briefly shows the basics of setting up a Redux Toolkit + React application, and the [**TypeScript Quick Start** page](./typescript.md) shows how to set up Redux Toolkit and React for use with TypeScript.
+[**快速入门** 页面](./quick-start.md)简要介绍了如何搭建 Redux Toolkit + React 应用程序的基础知识，[**TypeScript 快速入门** 页面](./typescript.md)则展示了如何配置 Redux Toolkit 和 React 以支持 TypeScript。
 
-We have two different full-size tutorials:
+我们有两个不同的完整教程：
 
-- The [**Redux Essentials tutorial**](./essentials/part-1-overview-concepts) is a "top-down" tutorial that teaches "how to use Redux the right way", using our latest recommended APIs and best practices (Redux Toolkit for the logic, React-Redux hooks for the UI, and "RTK Query" for fetching and caching data).
-- The [**Redux Fundamentals tutorial**](./fundamentals/part-1-overview.md) is a "bottom-up" tutorial that teaches "how Redux works" from first principles and without any abstractions, and why standard Redux usage patterns exist.
+- [**Redux Essentials 教程**](./essentials/part-1-overview-concepts) 是一个“自上而下”的教程，教授“如何以正确的方式使用 Redux”，采用我们最新推荐的 API 和最佳实践（逻辑部分使用 Redux Toolkit，UI 使用 React-Redux 钩子，以及用于数据获取和缓存的“RTK Query”）。
+- [**Redux Fundamentals 教程**](./fundamentals/part-1-overview.md) 是一个“自下而上”的教程，从第一原理讲解“Redux 如何工作”，并解释为何存在标准的 Redux 使用模式。
 
 :::tip
 
-**We recommend starting with the [Redux Essentials tutorial](./essentials/part-1-overview-concepts)**, since it covers the key points you need to know about how to get started using our modern Redux Toolkit package to write actual applications.
+**我们推荐从 [Redux Essentials 教程](./essentials/part-1-overview-concepts) 开始学习**，因为它涵盖了如何使用我们现代 Redux Toolkit 包来编写实际应用程序的关键要点。
 
 :::
 
-## Additional Resources
+## 其他资源
 
-### Learn Modern Redux Livestream
+### 学习现代 Redux 直播
 
-Redux maintainer Mark Erikson appeared on the "Learn with Jason" show to explain how we recommend using Redux today. The show includes a live-coded example app that shows how to use Redux Toolkit and React-Redux hooks with TypeScript, as well as the new RTK Query data fetching APIs:
+Redux 维护者 Mark Erikson 参加了 “Learn with Jason” 节目，讲解了我们当下推荐的 Redux 使用方式。该节目包含一个现场编码示例应用，展示了如何使用 Redux Toolkit 和 React-Redux 钩子配合 TypeScript，以及新的 RTK Query 数据获取 API：
 
 <LiteYouTubeEmbed
     id="9zySeP5vH9c"

@@ -1,56 +1,56 @@
 ---
 id: miscellaneous
-title: Miscellaneous
-sidebar_label: Miscellaneous
+title: 杂项
+sidebar_label: 杂项
 ---
 
-## Redux FAQ: Miscellaneous
+## Redux 常见问答：杂项
 
-### Are there any larger, “real” Redux projects?
+### 有没有规模较大、真正的 Redux 项目？
 
-Yes, lots of them! To name just a few:
+有，很多！举几个例子：
 
-- [Twitter's mobile site](https://mobile.twitter.com/)
-- [Wordpress's new admin page](https://github.com/Automattic/wp-calypso)
-- [Firefox's new debugger](https://github.com/devtools-html/debugger.html)
-- [The HyperTerm terminal application](https://github.com/zeit/hyperterm)
+- [Twitter 的移动端网站](https://mobile.twitter.com/)
+- [Wordpress 的新管理页面](https://github.com/Automattic/wp-calypso)
+- [Firefox 的新调试器](https://github.com/devtools-html/debugger.html)
+- [HyperTerm 终端应用](https://github.com/zeit/hyperterm)
 
-And many, many more! The Redux Addons Catalog has **[a list of Redux-based applications and examples](https://github.com/markerikson/redux-ecosystem-links/blob/master/apps-and-examples.md)** that points to a variety of actual applications, large and small.
+还有许许多多！Redux Addons 目录中有**[一份基于Redux的应用和示例列表](https://github.com/markerikson/redux-ecosystem-links/blob/master/apps-and-examples.md)**，其中包含各种实际应用，无论大小。
 
-#### Further information
+#### 进一步信息
 
-**Documentation**
+**文档**
 
-- [Introduction: Examples](../introduction/Examples.md)
+- [介绍：示例](../introduction/Examples.md)
 
-**Discussions**
+**讨论**
 
-- [Reddit: Large open source react/redux projects?](https://www.reddit.com/r/reactjs/comments/496db2/large_open_source_reactredux_projects/)
-- [HN: Is there any huge web application built using Redux?](https://news.ycombinator.com/item?id=10710240)
+- [Reddit：大型开源 React/Redux 项目有哪些？](https://www.reddit.com/r/reactjs/comments/496db2/large_open_source_reactredux_projects/)
+- [HN：有使用 Redux 构建的巨大 Web 应用吗？](https://news.ycombinator.com/item?id=10710240)
 
-### How can I implement authentication in Redux?
+### 如何在 Redux 中实现身份认证？
 
-Authentication is essential to any real application. When going about authentication you must keep in mind that nothing changes with how you should organize your application and you should implement authentication in the same way you would any other feature. It is relatively straightforward:
+身份认证对任何真实的应用都是必不可少的。实现身份认证时，你必须记住，这不会改变你组织应用的方式，应像实现其他功能一样实现身份认证。过程相对简单：
 
-1. Create action constants for `LOGIN_SUCCESS`, `LOGIN_FAILURE`, etc.
+1. 创建表示 `LOGIN_SUCCESS`、`LOGIN_FAILURE` 等的 action 常量。
 
-2. Create action creators that take in credentials, a flag that signifies whether authentication succeeded, a token, or an error message as the payload.
+2. 创建 action creators，接收凭证、表示认证是否成功的标志、token 或错误消息作为 payload。
 
-3. Create an async action creator with Redux Thunk middleware or any middleware you see fit to fire a network request to an API that returns a token if the credentials are valid. Then save the token in the local storage or show a response to the user if it failed. You can perform these side effects from the action creators you wrote in the previous step.
+3. 使用 Redux Thunk 中间件或任何你认为合适的中间件创建异步 action creator，发送网络请求到 API，若凭证有效则返回 token。然后将 token 保存在本地存储，或者如果失败则向用户显示响应。你可以在上一步写的 action creators 中执行这些副作用。
 
-4. Create a reducer that returns the next state for each possible authentication case (`LOGIN_SUCCESS`, `LOGIN_FAILURE`, etc).
+4. 创建 reducer，根据每种可能的认证情况（如 `LOGIN_SUCCESS`、`LOGIN_FAILURE` 等）返回下一个状态。
 
-#### Further information
+#### 进一步信息
 
-**Articles**
+**文章**
 
-- [Authentication with JWT by Auth0](https://auth0.com/blog/2016/01/04/secure-your-react-and-redux-app-with-jwt-authentication/)
-- [Tips to Handle Authentication in Redux](https://medium.com/@MattiaManzati/tips-to-handle-authentication-in-redux-2-introducing-redux-saga-130d6872fbe7)
+- [Auth0: 使用 JWT 进行身份认证](https://auth0.com/blog/2016/01/04/secure-your-react-and-redux-app-with-jwt-authentication/)
+- [处理 Redux 中身份认证的技巧](https://medium.com/@MattiaManzati/tips-to-handle-authentication-in-redux-2-introducing-redux-saga-130d6872fbe7)
 
-**Examples**
+**示例**
 
 - [react-redux-jwt-auth-example](https://github.com/joshgeller/react-redux-jwt-auth-example)
 
-**Libraries**
+**库**
 
-- [Redux Addons Catalog: Use Cases - Authentication](https://github.com/markerikson/redux-ecosystem-links/blob/master/use-cases.md#authentication)
+- [Redux Addons 目录：使用场景 - 身份认证](https://github.com/markerikson/redux-ecosystem-links/blob/master/use-cases.md#authentication)

@@ -2,40 +2,40 @@
 id: applymiddleware
 title: applyMiddleware
 hide_title: true
-description: 'API > applyMiddleware: extending the Redux store'
+description: 'API > applyMiddleware：扩展 Redux store'
 ---
 
 &nbsp;
 
 # `applyMiddleware(...middleware)`
 
-## Overview
+## 概述
 
-Middleware is the suggested way to extend Redux with custom functionality. Middleware lets you wrap the store's [`dispatch`](Store.md#dispatchaction) method for fun and profit. The key feature of middleware is that it is composable. Multiple middleware can be combined together, where each middleware requires no knowledge of what comes before or after it in the chain.
+中间件是扩展 Redux 以实现自定义功能的推荐方式。中间件可以让你包装 store 的 [`dispatch`](Store.md#dispatchaction) 方法，既有趣又实用。中间件的关键特点是它具备可组合性。多个中间件可以组合在一起，每个中间件不需要了解链中它之前或之后的中间件是做什么的。
 
-:::warning Warning
+:::warning 警告
 
-You shouldn't have to call `applyMiddleware` directly. Redux Toolkit's [`configureStore` method](https://redux-toolkit.js.org/api/configureStore) automatically adds a default set of middleware to the store, or can accept a list of middleware to add.
+你通常不需要直接调用 `applyMiddleware`。Redux Toolkit 的 [`configureStore` 方法](https://redux-toolkit.js.org/api/configureStore) 会自动为 store 添加一组默认的中间件，或者接受一个中间件列表以添加。
 
 :::
 
-The most common use case for middleware is to support asynchronous actions without much boilerplate code or a dependency on a library like [Rx](https://github.com/Reactive-Extensions/RxJS). It does so by letting you dispatch [async actions](../understanding/thinking-in-redux/Glossary.md#async-action) in addition to normal actions.
+中间件最常见的用例是支持异步动作，而无需大量模板代码或依赖像 [Rx](https://github.com/Reactive-Extensions/RxJS) 这样的库。中间件通过允许你分发[异步动作](../understanding/thinking-in-redux/Glossary.md#async-action)（除了普通动作之外）来实现这一点。
 
-For example, [redux-thunk](https://github.com/reduxjs/redux-thunk) lets the action creators invert control by dispatching functions. They would receive [`dispatch`](Store.md#dispatchaction) as an argument and may call it asynchronously. Such functions are called _thunks_. Another example of middleware is [redux-promise](https://github.com/acdlite/redux-promise). It lets you dispatch a [Promise](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise) async action, and dispatches a normal action when the Promise resolves.
+例如，[redux-thunk](https://github.com/reduxjs/redux-thunk) 允许 action 创建者通过分发函数来反转控制流。这些函数会接收 [`dispatch`](Store.md#dispatchaction) 作为参数，并且可以异步调用它。这类函数称为 _thunks_。另一个中间件示例是 [redux-promise](https://github.com/acdlite/redux-promise)。它允许你分发一个 [Promise](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise) 异步动作，并在 Promise 解析时分发一个普通动作。
 
-The original Redux [`createStore`](createStore.md) method does not understand what middleware are out of the box - it has to be configured with `applyMiddleware` to add that behavior. However, Redux Toolkit's [`configureStore` method](https://redux-toolkit.js.org/api/configureStore) automatically adds middleware support by default.
+Redux 原生的 [`createStore`](createStore.md) 方法默认并不支持中间件——必须通过 `applyMiddleware` 来配置，才能添加这类功能。然而，Redux Toolkit 的 [`configureStore` 方法](https://redux-toolkit.js.org/api/configureStore) 默认会自动添加中间件支持。
 
-## Arguments
+## 参数
 
-- `...middleware` (_arguments_): Functions that conform to the Redux _middleware API_. Each middleware receives [`Store`](Store.md)'s [`dispatch`](Store.md#dispatchaction) and [`getState`](Store.md#getstate) functions as named arguments, and returns a function. That function will be given the `next` middleware's dispatch method, and is expected to return a function of `action` calling `next(action)` with a potentially different argument, or at a different time, or maybe not calling it at all. The last middleware in the chain will receive the real store's [`dispatch`](Store.md#dispatchaction) method as the `next` parameter, thus ending the chain. So, the middleware signature is `({ getState, dispatch }) => next => action`.
+- `...middleware` (_参数_): 符合 Redux _中间件 API_ 的函数。每个中间件接收 [`Store`](Store.md) 的 [`dispatch`](Store.md#dispatchaction) 和 [`getState`](Store.md#getstate) 函数作为具名参数，并返回一个函数。这个返回的函数接收链中下一个中间件的 dispatch 方法 `next`，然后返回一个接收 `action` 的函数。该函数通常会以不同的参数、不同的时机调用 `next(action)`，或者干脆不调用它。链中最后一个中间件接收的是 store 真实的 [`dispatch`](Store.md#dispatchaction) 方法作为 `next` 参数，链条至此结束。所以，中间件的签名是：`({ getState, dispatch }) => next => action`。
 
-### Returns
+### 返回值
 
-(_Function_) A store enhancer that applies the given middleware. The store enhancer signature is `createStore => createStore` but the easiest way to apply it is to pass it to [`createStore()`](./createStore.md) as the last `enhancer` argument.
+(_函数_) 返回一个 store 增强器，它会应用给定的中间件。store 增强器的签名是 `createStore => createStore`，但最简单的使用方式是将其作为最后一个 `enhancer` 参数传给 [`createStore()`](./createStore.md)。
 
-## Examples
+## 示例
 
-#### Example: Custom Logger Middleware
+#### 示例：自定义日志中间件
 
 ```js
 import { createStore, applyMiddleware } from 'redux'
@@ -43,31 +43,30 @@ import todos from './reducers'
 
 function logger({ getState }) {
   return next => action => {
-    console.log('will dispatch', action)
+    console.log('即将分发', action)
 
-    // Call the next dispatch method in the middleware chain.
+    // 调用链中的下一个 dispatch 方法
     const returnValue = next(action)
 
-    console.log('state after dispatch', getState())
+    console.log('分发后的 state', getState())
 
-    // This will likely be the action itself, unless
-    // a middleware further in chain changed it.
+    // 通常返回的将是 action 本身，除非链中后面的中间件做了修改
     return returnValue
   }
 }
 
-const store = createStore(todos, ['Use Redux'], applyMiddleware(logger))
+const store = createStore(todos, ['使用 Redux'], applyMiddleware(logger))
 
 store.dispatch({
   type: 'ADD_TODO',
-  text: 'Understand the middleware'
+  text: '理解中间件'
 })
-// (These lines will be logged by the middleware:)
-// will dispatch: { type: 'ADD_TODO', text: 'Understand the middleware' }
-// state after dispatch: [ 'Use Redux', 'Understand the middleware' ]
+// （以下这两行会被中间件日志打印出来：）
+// 即将分发: { type: 'ADD_TODO', text: '理解中间件' }
+// 分发后的 state: [ '使用 Redux', '理解中间件' ]
 ```
 
-#### Example: Using Thunk Middleware for Async Actions
+#### 示例：使用 thunk 中间件支持异步动作
 
 ```js
 import { createStore, combineReducers, applyMiddleware } from 'redux'
@@ -75,16 +74,16 @@ import { thunk } from 'redux-thunk'
 import * as reducers from './reducers'
 
 const reducer = combineReducers(reducers)
-// applyMiddleware supercharges createStore with middleware:
+// applyMiddleware 给 createStore 增强了中间件能力：
 const store = createStore(reducer, applyMiddleware(thunk))
 
 function fetchSecretSauce() {
   return fetch('https://www.google.com/search?q=secret+sauce')
 }
 
-// These are the normal action creators you have seen so far.
-// The actions they return can be dispatched without any middleware.
-// However, they only express “facts” and not the “async flow”.
+// 这些是你之前见过的普通 action 创建函数。
+// 它们返回的动作可以不借助中间件直接分发。
+// 不过它们只表达“事实”，而非“异步流程”。
 function makeASandwich(forPerson, secretSauce) {
   return {
     type: 'MAKE_SANDWICH',
@@ -109,70 +108,67 @@ function withdrawMoney(amount) {
   }
 }
 
-// Even without middleware, you can dispatch an action:
+// 即使没有中间件，你可以分发一个动作：
 store.dispatch(withdrawMoney(100))
 
-// But what do you do when you need to start an asynchronous action,
-// such as an API call, or a router transition?
+// 但是当你需要启动异步操作，比如 API 调用或路由切换时，怎么办？
 
-// Meet thunks.
-// A thunk is a function that returns a function.
-// This is a thunk.
+// 这时就用到 thunk。
+// thunk 是一个函数，返回另一个函数。
+// 这是一个 thunk。
 function makeASandwichWithSecretSauce(forPerson) {
-  // Invert control!
-  // Return a function that accepts `dispatch` so we can dispatch later.
-  // Thunk middleware knows how to turn thunk async actions into actions.
+  // 反转控制权！
+  // 返回一个接收 `dispatch` 的函数，这样我们可以之后再分发动作。
+  // thunk 中间件知道如何将 thunk 异步动作转换成普通动作。
   return function (dispatch) {
     return fetchSecretSauce().then(
       sauce => dispatch(makeASandwich(forPerson, sauce)),
-      error => dispatch(apologize('The Sandwich Shop', forPerson, error))
+      error => dispatch(apologize('三明治店', forPerson, error))
     )
   }
 }
 
-// Thunk middleware lets me dispatch thunk async actions
-// as if they were actions!
-store.dispatch(makeASandwichWithSecretSauce('Me'))
+// thunk 中间件让我们能像普通动作一样分发 thunk 异步动作！
+store.dispatch(makeASandwichWithSecretSauce('我'))
 
-// It even takes care to return the thunk's return value
-// from the dispatch, so I can chain Promises as long as I return them.
-store.dispatch(makeASandwichWithSecretSauce('My wife')).then(() => {
-  console.log('Done!')
+// 它还会将 thunk 返回的值从 dispatch 返回，
+// 这样只要返回 Promise 就可以链式调用。
+store.dispatch(makeASandwichWithSecretSauce('我妻子')).then(() => {
+  console.log('完成！')
 })
 
-// In fact I can write action creators that dispatch
-// actions and async actions from other action creators,
-// and I can build my control flow with Promises.
+// 实际上，我可以写出能分发普通动作和异步动作的 action 创建者，
+// 而且能用 Promise 来组织控制流程。
 function makeSandwichesForEverybody() {
   return function (dispatch, getState) {
     if (!getState().sandwiches.isShopOpen) {
-      // You don't have to return Promises, but it's a handy convention
-      // so the caller can always call .then() on async dispatch result.
+      // 你不必总是返回 Promise，但这是个好习惯，
+      // 这样调用者就总能对异步分发结果调用 .then()。
       return Promise.resolve()
     }
 
-    // We can dispatch both plain object actions and other thunks,
-    // which lets us compose the asynchronous actions in a single flow.
-    return dispatch(makeASandwichWithSecretSauce('My Grandma'))
+    // 我们既能分发普通对象动作，也能分发 thunk，
+    // 这样就可以把异步动作组合到一个流程中。
+    return dispatch(makeASandwichWithSecretSauce('我奶奶'))
       .then(() =>
         Promise.all([
-          dispatch(makeASandwichWithSecretSauce('Me')),
-          dispatch(makeASandwichWithSecretSauce('My wife'))
+          dispatch(makeASandwichWithSecretSauce('我')),
+          dispatch(makeASandwichWithSecretSauce('我妻子'))
         ])
       )
-      .then(() => dispatch(makeASandwichWithSecretSauce('Our kids')))
+      .then(() => dispatch(makeASandwichWithSecretSauce('我们的孩子')))
       .then(() =>
         dispatch(
           getState().myMoney > 42
             ? withdrawMoney(42)
-            : apologize('Me', 'The Sandwich Shop')
+            : apologize('我', '三明治店')
         )
       )
   }
 }
 
-// This is very useful for server side rendering, because I can wait
-// until data is available, then synchronously render the app.
+// 这对于服务器端渲染非常有用，因为我可以等数据准备好，
+// 再同步渲染应用。
 
 import { renderToString } from 'react-dom/server'
 
@@ -180,8 +176,7 @@ store
   .dispatch(makeSandwichesForEverybody())
   .then(() => response.send(renderToString(<MyApp store={store} />)))
 
-// I can also dispatch a thunk async action from a component
-// any time its props change to load the missing data.
+// 我还可以在组件的 props 变化时分发 thunk 异步动作加载缺失数据。
 
 import React from 'react'
 import { connect } from 'react-redux'
@@ -201,13 +196,13 @@ export default connect(state => ({
 }))(SandwichShop)
 ```
 
-## Tips
+## 小贴士
 
-- Middleware only wraps the store's [`dispatch`](Store.md#dispatchaction) function. Technically, anything a middleware can do, you can do manually by wrapping every `dispatch` call, but it's easier to manage this in a single place and define action transformations on the scale of the whole project.
+- 中间件只包装 store 的 [`dispatch`](Store.md#dispatchaction) 函数。从技术上讲，中间件能做的，你也可以通过手动包裹每次 `dispatch` 调用来实现，但把它集中管理在一个地方更加方便，可以对整个项目的动作进行统一转换。
 
-- If you use other store enhancers in addition to `applyMiddleware`, make sure to put `applyMiddleware` before them in the composition chain because the middleware is potentially asynchronous. For example, it should go before [redux-devtools](https://github.com/reduxjs/redux-devtools) because otherwise the DevTools won't see the raw actions emitted by the Promise middleware and such.
+- 如果你除了 `applyMiddleware` 还使用了其他 store 增强器，确保在组合链中将 `applyMiddleware` 放在它们之前，因为中间件可能是异步的。例如，它应该放在 [redux-devtools](https://github.com/reduxjs/redux-devtools) 之前，否则 DevTools 看不到 Promise 中间件等发出的原始动作。
 
-- If you want to conditionally apply a middleware, make sure to only import it when it's needed:
+- 如果你想有条件地应用某个中间件，确保只有在需要的时候才导入它：
 
   ```js
   let middleware = [a, b]
@@ -224,10 +219,10 @@ export default connect(state => ({
   )
   ```
 
-  This makes it easier for bundling tools to cut out unneeded modules and reduces the size of your builds.
+  这样有助于打包工具剔除不必要的模块，减小构建体积。
 
-- Ever wondered what `applyMiddleware` itself is? It ought to be an extension mechanism more powerful than the middleware itself. Indeed, `applyMiddleware` is an example of the most powerful Redux extension mechanism called [store enhancers](../understanding/thinking-in-redux/Glossary.md#store-enhancer). It is highly unlikely you'll ever want to write a store enhancer yourself. Another example of a store enhancer is [redux-devtools](https://github.com/reduxjs/redux-devtools). Middleware is less powerful than a store enhancer, but it is easier to write.
+- 你可能想知道 `applyMiddleware` 本身是什么？它应该是一个比中间件更强大的扩展机制。确实，`applyMiddleware` 是最强大的 Redux 扩展机制类型之一——[store enhancers](../understanding/thinking-in-redux/Glossary.md#store-enhancer) 的一个示例。你很少会自己写 store enhancer。另一个 store enhancer 的实例是 [redux-devtools](https://github.com/reduxjs/redux-devtools)。中间件能力不如 store enhancer 强大，但更容易编写。
 
-- Middleware sounds much more complicated than it really is. The only way to really understand middleware is to see how the existing middleware works, and try to write your own. The function nesting can be intimidating, but most of the middleware you'll find are, in fact, 10-liners, and the nesting and composability is what makes the middleware system powerful.
+- 中间件听起来比实际复杂得多。理解中间件的最好方法是查看现有中间件的实现，尝试自己写一个。函数嵌套可能令人望而生畏，但大多数中间件实际上都只有 10 行左右代码，正是嵌套和可组合性让中间件系统如此强大。
 
-- To apply multiple store enhancers, you may use [`compose()`](./compose.md).
+- 如果你要同时应用多个 store enhancer，可以使用 [`compose()`](./compose.md) 来组成它们。

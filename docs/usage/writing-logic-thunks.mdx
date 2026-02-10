@@ -1,52 +1,52 @@
 ---
 id: writing-logic-thunks
-title: Writing Logic with Thunks
-description: 'Usage > Redux Logic > Thunks: writing logic that interacts with the store'
+title: 使用 Thunks 编写逻辑
+description: '用法 > Redux 逻辑 > Thunks：编写与 store 交互的逻辑'
 ---
 
 import { DetailedExplanation } from '../components/DetailedExplanation'
 
-:::tip What You'll Learn
+:::tip 你将学到
 
-- What "thunks" are, and why they're used for writing Redux logic
-- How the thunk middleware works
-- Techniques for writing sync and async logic in thunks
-- Common thunk usage patterns
+- 什么是 “thunks”，以及为何使用它们编写 Redux 逻辑
+- thunk 中间件如何工作
+- 在 thunk 中编写同步和异步逻辑的技巧
+- 常见的 thunk 使用模式
 
 :::
 
-## Thunk Overview
+## Thunk 概述
 
-### What is a "thunk"?
+### 什么是 “thunk”？
 
-The word "thunk" is a programming term that means ["a piece of code that does some delayed work"](https://en.wikipedia.org/wiki/Thunk). Rather than execute some logic _now_, we can write a function body or code that can be used to perform the work _later_.
+“thunk” 这个词是一个编程术语，意指[“一段延迟执行的代码”](https://en.wikipedia.org/wiki/Thunk)。与其立即执行某段逻辑，我们可以写一个函数体或代码，供稍后执行这段工作。
 
-For Redux specifically, **"thunks" are a pattern of writing functions with logic inside that can interact with a Redux store's `dispatch` and `getState` methods**.
+专门针对 Redux，**“thunks” 是一种编写包含逻辑的函数模式，这些函数可以与 Redux store 的 `dispatch` 和 `getState` 方法交互。**
 
-Using thunks requires the [`redux-thunk` middleware](https://github.com/reduxjs/redux-thunk) to be added to the Redux store as part of its configuration.
+使用 thunks 需要将 [`redux-thunk` 中间件](https://github.com/reduxjs/redux-thunk) 添加到 Redux store 的配置中。
 
-Thunks are [a standard approach for writing async logic in Redux apps](../style-guide/style-guide.md#use-thunks-and-listeners-for-other-async-logic), and are commonly used for data fetching. However, they can be used for a variety of tasks, and can contain both synchronous and asynchronous logic.
+Thunks 是[编写 Redux 应用中异步逻辑的标准方法](../style-guide/style-guide.md#use-thunks-and-listeners-for-other-async-logic)，常用于数据请求。然而，它们也可以用于多种任务，且可包含同步和异步逻辑。
 
-### Writing Thunks
+### 编写 Thunks
 
-A _thunk function_ is a function that accepts two arguments: the Redux store `dispatch` method, and the Redux store `getState` method. Thunk functions are not directly called by application code. Instead, they are passed to `store.dispatch()`:
+一个 _thunk 函数_ 是一个接受两个参数的函数：Redux store 的 `dispatch` 方法和 `getState` 方法。Thunk 函数并不是由应用代码直接调用的，而是会传递给 `store.dispatch()`：
 
-```js title="Dispatching thunk functions"
+```js title="派发 thunk 函数"
 const thunkFunction = (dispatch, getState) => {
-  // logic here that can dispatch actions or read state
+  // 这里写逻辑，可以派发 action 或读取 state
 }
 
 store.dispatch(thunkFunction)
 ```
 
-A thunk function may contain _any_ arbitrary logic, sync or async, and can call `dispatch` or `getState` at any time.
+thunk 函数可以包含任意逻辑，同步或异步，并且可以随时调用 `dispatch` 或 `getState`。
 
-In the same way that Redux code normally uses [action creators to generate action objects for dispatching](../tutorials/fundamentals/part-7-standard-patterns.md#action-creators) instead of writing action objects by hand, we normally use _thunk action creators_ to generate the thunk functions that are dispatched. A thunk action creator is a function that may have some arguments, and returns a new thunk function. The thunk typically closes over any arguments passed to the action creator, so they can be used in the logic:
+与 Redux 代码通常使用[动作创建函数(action creators)来生成调度的动作对象](../tutorials/fundamentals/part-7-standard-patterns.md#action-creators)，而不是手写动作对象类似，我们通常使用 _thunk 动作创建函数_ 来生成被派发的 thunk 函数。thunk 动作创建函数是一个可以接收参数并返回新的 thunk 函数的函数。thunk 通常会闭包传入动作创建函数的参数，以便逻辑中使用：
 
-```js title="Thunk action creators and thunk functions"
-// fetchTodoById is the "thunk action creator"
+```js title="Thunk 动作创建函数和 thunk 函数"
+// fetchTodoById 是“thunk 动作创建函数”
 export function fetchTodoById(todoId) {
-  // fetchTodoByIdThunk is the "thunk function"
+  // fetchTodoByIdThunk 是“thunk 函数”
   return async function fetchTodoByIdThunk(dispatch, getState) {
     const response = await client.get(`/fakeApi/todo/${todoId}`)
     dispatch(todosLoaded(response.todos))
@@ -54,115 +54,115 @@ export function fetchTodoById(todoId) {
 }
 ```
 
-Thunk functions and action creators can be written using either the `function` keyword or arrow functions - there's no meaningful difference here. The same `fetchTodoById` thunk could also be written using arrow functions, like this:
+thunk 函数和动作创建函数可以用 `function` 关键字或箭头函数编写——二者没有实质区别。相同的 `fetchTodoById` thunk 也可以用箭头函数写成这样：
 
-```js title="Writing thunks using arrow functions"
+```js title="用箭头函数编写 thunks"
 export const fetchTodoById = todoId => async dispatch => {
   const response = await client.get(`/fakeApi/todo/${todoId}`)
   dispatch(todosLoaded(response.todos))
 }
 ```
 
-In either case, the thunk is dispatched by calling the action creator, in the same way as you'd dispatch any other Redux action:
+无论哪种方式，thunk 是通过调用动作创建函数派发的，就像普通 Redux 动作一样：
 
 ```js
 function TodoComponent({ todoId }) {
   const dispatch = useDispatch()
 
   const onFetchClicked = () => {
-    // Calls the thunk action creator, and passes the thunk function to dispatch
+    // 调用 thunk 动作创建函数，并将 thunk 函数传递给 dispatch
     dispatch(fetchTodoById(todoId))
   }
 }
 ```
 
-### Why Use Thunks?
+### 为什么使用 Thunks？
 
-Thunks allow us to write additional Redux-related logic separate from a UI layer. This logic can include side effects, such as async requests or generating random values, as well as logic that requires dispatching multiple actions or access to the Redux store state.
+Thunks 允许我们编写与 Redux 相关但独立于 UI 层的额外逻辑。这些逻辑可以包含副作用，比如异步请求或生成随机值，也可以包含需要多次派发动作或访问 Redux store 状态的逻辑。
 
-Redux reducers [must not contain side effects](../tutorials/fundamentals/part-3-state-actions-reducers.md#rules-of-reducers), but real applications require logic that has side effects. Some of that may live inside components, but some may need to live outside the UI layer. Thunks (and other Redux middleware) give us a place to put those side effects.
+Redux reducers[不得包含副作用](../tutorials/fundamentals/part-3-state-actions-reducers.md#rules-of-reducers)，但实际应用中必然存在副作用的逻辑。有些可以放在组件中，但有些需要放在 UI 层之外。Thunks（以及其他 Redux 中间件）为我们提供了放置这些副作用的位置。
 
-It's common to have logic directly in components, such as making an async request in a click handler or a `useEffect` hook and then processing the results. However, it's often necessary to move as much of that logic as possible outside the UI layer. This may be done to improve testability of the logic, to keep the UI layer as thin and "presentational" as possible, or to improve code reuse and sharing.
+通常组件内会写逻辑，比如在点击事件处理或 `useEffect` 钩子中发起异步请求并处理结果，但通常需要尽可能将这些逻辑移出 UI 层，以提高逻辑的可测试性，让 UI 层尽量薄且“纯展示”，或增进代码复用和共享。
 
-In a sense, a thunk is a loophole where **you can write any code that needs to interact with the Redux store, ahead of time, without needing to know _which_ Redux store will be used**. This keeps the logic from being bound to any specific Redux store instance and keeps it reusable.
+从某种意义上说，thunk 是一个“漏洞”，允许你**提前编写任何需要与 Redux store 交互的代码，而无需知道最终使用的是哪个 Redux store**。这使逻辑不会绑定到特定 store 实例，从而保持重用性。
 
-<DetailedExplanation title={`Detailed Explanation: Thunks, Connect, and "Container Components"`}>
+<DetailedExplanation title={`详细说明：Thunks、Connect 和“容器组件”`}>
 
-Historically, another reason to use thunks was to help keep React components "unaware of Redux". The `connect` API allowed passing action creators and "binding" them to automatically dispatch actions when called. Since components typically did not have access to `dispatch` internally, passing thunks to `connect` made it possible for components to just call `this.props.doSomething()`, without needing to know if it was a callback from a parent, dispatching a plain Redux action, dispatching a thunk performing sync or async logic, or a mock function in a test.
+历史上，使用 thunks 的另一个原因是帮助保持 React 组件“不了解 Redux”。`connect` API 允许传递动作创建函数并“绑定”它们，使得调用时自动派发动作。由于组件内部通常无法访问 `dispatch`，将 thunks 传给 `connect` 能让组件直接调用 `this.props.doSomething()`，而不必知道它是父组件的回调、派发普通 Redux 动作、派发执行同步或异步逻辑的 thunk，或者测试中的 mock 函数。
 
-With the arrival of [the React-Redux hooks API](https://react-redux.js.org/api/hooks), that situation has changed. The community has switched away from the "container/presentational" pattern in general, and [components now have access to `dispatch` directly via the `useDispatch` hook](../tutorials/fundamentals/part-5-ui-and-react.md#dispatching-actions-with-usedispatch). This _does_ mean that it's possible to have more logic directly inside of a component, such as an async fetch + dispatch of the results. However, thunks have access to `getState`, which components do not, and there's still value in moving that logic outside of components.
+随着 [React-Redux hooks API](https://react-redux.js.org/api/hooks) 的出现，这种情况发生了变化。社区总体上放弃了“容器/展示”模式，[组件现在可以直接通过 `useDispatch` 钩子访问 `dispatch`](../tutorials/fundamentals/part-5-ui-and-react.md#dispatching-actions-with-usedispatch)。这确实使组件内可以写入更多逻辑，比如发起异步请求并派发结果。然而，thunks 可以访问 `getState`，而组件不行，这使得将这部分逻辑移出组件依然很有价值。
 
 </DetailedExplanation>
 
-### Thunk Use Cases
+### Thunk 使用场景
 
-Because thunks are a general-purpose tool that can contain arbitrary logic, they can be used for a wide variety of purposes. The most common use cases are:
+因为 thunks 是通用工具，可以包含任意逻辑，所以用途广泛。最常见的使用场景包括：
 
-- Moving complex logic out of components
-- Making async requests or other async logic
-- Writing logic that needs to dispatch multiple actions in a row or over time
-- Writing logic that needs access to `getState` to make decisions or include other state values in an action
+- 将复杂逻辑移出组件
+- 发起异步请求或其他异步逻辑
+- 写需要连续或多次派发动作的逻辑
+- 写需要访问 `getState` 判断或在动作中包含其他状态的逻辑
 
-Thunks are "one-shot" functions, with no sense of a lifecycle. They also cannot see other dispatched actions. So, they should not generally be used for initializing persistent connections like websockets, and you can't use them to respond to other actions.
+Thunks 是“即用即抛”函数，没有生命周期概念，也不能看到其他已派发动作。因此，通常不应用于初始化长连接（如 websocket），也不能用来响应其他动作。
 
-**Thunks are best used for complex synchronous logic, and simple to moderate async logic such as making a standard AJAX request and dispatching actions based on the request results.**
+**Thunk 最适合用于复杂同步逻辑，以及中简单异步逻辑，如发起标准 AJAX 请求并根据结果派发动作。**
 
-## Redux Thunk Middleware
+## Redux Thunk 中间件
 
-Dispatching thunk functions requires that the [`redux-thunk` middleware](https://github.com/reduxjs/redux-thunk) has been added to the Redux store as part of its configuration.
+派发 thunk 函数需要将 [`redux-thunk` 中间件](https://github.com/reduxjs/redux-thunk) 添加到 Redux store 配置中。
 
-### Adding the Middleware
+### 添加中间件
 
-The [Redux Toolkit `configureStore` API automatically adds the thunk middleware during store creation](../tutorials/fundamentals/part-8-modern-redux.md#using-configurestore), so it should typically be available with no extra configuration needed.
+[Redux Toolkit 的 `configureStore` API 会在创建 store 过程中自动添加 thunk 中间件](../tutorials/fundamentals/part-8-modern-redux.md#using-configurestore)，通常无须额外配置。
 
-If you need to add the thunk middleware to a store manually, that can be done by [passing the thunk middleware to `applyMiddleware()`](..//tutorials/fundamentals/part-6-async-logic.md#configuring-the-store) as part of the setup process.
+如果你需要手动添加 thunk 中间件，可以[将 thunk 中间件传递给 `applyMiddleware()`](..//tutorials/fundamentals/part-6-async-logic.md#configuring-the-store) 来配置。
 
-### How Does the Middleware Work?
+### 中间件是怎么工作的？
 
-To start, let's review how Redux middleware work in general.
+首先，回顾 Redux 中间件的工作原理。
 
-[Redux middleware are all written as a series of 3 nested functions](../tutorials/fundamentals/part-4-store.md#writing-custom-middleware):
+[Redux 中间件都由 3 层嵌套函数组成](../tutorials/fundamentals/part-4-store.md#writing-custom-middleware)：
 
-- The outer function receives a "store API" object with `{dispatch, getState}`
-- The middle function receives the `next` middleware in the chain (or the actual `store.dispatch` method)
-- The inner function will be called with each `action` as it's passed through the middleware chain
+- 最外层函数接受一个包含 `{dispatch, getState}` 的 “store API” 对象
+- 中间层函数接受链中的下一个中间件 `next`（或实际的 `store.dispatch` 方法）
+- 最内层函数会随着每个经过中间件链的 `action` 被调用
 
-It's important to note that middleware can be used to allow passing values that are _not_ action objects into `store.dispatch()`, as long as the middleware intercepts those values and does not let them reach the reducers.
+值得注意的是，中间件可拦截非动作对象的值传入 `store.dispatch()`，只要它们被中间件拦截且不会传递给 reducers。
 
-With that in mind, we can look at the specifics of the thunk middleware.
+考虑这一点，我们可以看看 thunk 中间件的具体实现。
 
-The actual implementation of the thunk middleware is very short - only about 10 lines. Here's the source, with additional added comments:
+thunk 中间件的实现非常简短，只有约 10 行代码。以下是源码，加了额外注释：
 
-```js title="Redux thunk middleware implementation, annotated"
-// standard middleware definition, with 3 nested functions:
-// 1) Accepts `{dispatch, getState}`
-// 2) Accepts `next`
-// 3) Accepts `action`
+```js title="Redux thunk 中间件实现，带注释"
+// 标准中间件定义，3 层嵌套函数：
+// 1) 接收 `{dispatch, getState}`
+// 2) 接收 `next`
+// 3) 接收 `action`
 const thunkMiddleware =
   ({ dispatch, getState }) =>
   next =>
   action => {
-    // If the "action" is actually a function instead...
+    // 如果“action”实际上是一个函数……
     if (typeof action === 'function') {
-      // then call the function and pass `dispatch` and `getState` as arguments
+      // 则调用该函数，并传入 `dispatch` 与 `getState`
       return action(dispatch, getState)
     }
 
-    // Otherwise, it's a normal action - send it onwards
+    // 否则是普通动作，传递下去
     return next(action)
   }
 ```
 
-In other words:
+换句话说：
 
-- If you pass a function into `dispatch`, the thunk middleware sees that it's a function instead of an action object, intercepts it, and calls that function with `(dispatch, getState)` as its arguments
-- If it's a normal action object (or anything else), it's forwarded to the next middleware in the chain
+- 如果你传给 `dispatch` 的是函数，thunk 中间件就会识别它是函数而非动作对象，拦截它并调用该函数，传入 `(dispatch, getState)`
+- 如果是普通动作对象（或其他），则传递给下一个中间件
 
-### Injecting Config Values Into Thunks
+### 给 Thunks 注入配置值
 
-The thunk middleware does have one customization option. You can create a custom instance of the thunk middleware at setup time, and inject an "extra argument" into the middleware. The middleware will then inject that extra value as the third argument of every thunk function. This is most commonly used for injecting an API service layer into thunk functions, so that they don't have hardcoded dependencies on the API methods:
+thunk 中间件有一个自定义选项。你可以在设置阶段创建自定义实例，并注入一个“额外参数”。中间件会将该额外参数作为第三个参数传递给每个 thunk 函数。最常见的用途是注入 API 服务层，使 thunk 函数不用硬编码 API 调用：
 
-```js title="Thunk setup with an extra argument"
+```js title="带额外参数的 thunk 配置"
 import { withExtraArgument } from 'redux-thunk'
 
 const serviceApi = createServiceApi('/some/url')
@@ -170,9 +170,9 @@ const serviceApi = createServiceApi('/some/url')
 const thunkMiddlewareWithArg = withExtraArgument({ serviceApi })
 ```
 
-Redux Toolkit's `configureStore` supports [this as part of its middleware customization in `getDefaultMiddleware`](https://redux-toolkit.js.org/api/getDefaultMiddleware):
+Redux Toolkit 的 `configureStore` 可通过 `getDefaultMiddleware` 的中间件自定义支持[这一功能](https://redux-toolkit.js.org/api/getDefaultMiddleware)：
 
-```js title="Thunk extra argument with configureStore"
+```js title="configureStore 配置 thunk 额外参数"
 const store = configureStore({
   reducer: rootReducer,
   middleware: getDefaultMiddleware =>
@@ -184,30 +184,30 @@ const store = configureStore({
 })
 ```
 
-There can only be one extra argument value. If you need to pass in multiple values, pass in an object containing those.
+额外参数只能有一个值，如需传递多个，就用对象包装。
 
-The thunk function will then receive that extra value as its third argument:
+thunk 函数会收到这个额外参数作为第三个参数：
 
-```js title="Thunk function with extra argument"
+```js title="带额外参数的 thunk 函数"
 export const fetchTodoById =
   todoId => async (dispatch, getState, extraArgument) => {
-    // In this example, the extra arg is an object with an API service inside
+    // 这里 extraArgument 是包含 API 服务的对象
     const { serviceApi } = extraArgument
     const response = await serviceApi.getTodo(todoId)
     dispatch(todosLoaded(response.todos))
   }
 ```
 
-## Thunk Usage Patterns
+## Thunk 的使用模式
 
-### Dispatching Actions
+### 派发动作
 
-Thunks have access to the `dispatch` method. This can be used to dispatch actions, or even other thunks. This can be useful for dispatching multiple actions in a row (although [this is a pattern that should be minimized](../style-guide/style-guide.md#avoid-dispatching-many-actions-sequentially)), or orchestrating complex logic that needs to dispatch at multiple points in the process.
+thunks 可访问 `dispatch` 方法。这可用于派发动作，甚至派发其他 thunks。可以用于连续派发多个动作（虽然[应尽量避免这种模式](../style-guide/style-guide.md#avoid-dispatching-many-actions-sequentially)），亦可用来协调复杂逻辑中在多个时点的派发。
 
-```js title="Example: thunks dispatching actions and thunks"
-// An example of a thunk dispatching other action creators,
-// which may or may not be thunks themselves. No async code, just
-// orchestration of higher-level synchronous logic.
+```js title="示例：thunks 派发动作和其他thunks"
+// 这是一个 thunk 派发其他动作创建函数的例子，
+// 这些动作创建函数可能也是 thunk。无异步代码，
+// 仅仅是同步逻辑的调度。
 function complexSynchronousThunk(someValue) {
   return (dispatch, getState) => {
     dispatch(someBasicActionCreator(someValue))
@@ -216,18 +216,18 @@ function complexSynchronousThunk(someValue) {
 }
 ```
 
-### Accessing State
+### 访问状态
 
-Unlike components, thunks also have access to `getState`. This can be called at any time to retrieve the current root Redux state value. This can be useful for running conditional logic based on the current state. It's common to [use selector functions when reading state inside of thunks](./deriving-data-selectors.md) rather than accessing nested state fields directly, but either approach is fine.
+与组件不同，thunks 还能访问 `getState`。它能随时调用以获取当前的根 Redux 状态。很有用来基于当前状态运行条件逻辑。通常[会在 thunk 内使用 selector 函数读取状态](./deriving-data-selectors.md)，而非直接访问嵌套的状态字段，但两种方式都可。
 
-```js title="Example: Conditional dispatching based on state"
+```js title="示例：基于状态条件派发"
 const MAX_TODOS = 5
 
 function addTodosIfAllowed(todoText) {
   return (dispatch, getState) => {
     const state = getState()
 
-    // Could also check `state.todos.length < MAX_TODOS`
+    // 也可以用 `state.todos.length < MAX_TODOS`
     if (selectCanAddNewTodo(state, MAX_TODOS)) {
       dispatch(todoAdded(todoText))
     }
@@ -235,11 +235,11 @@ function addTodosIfAllowed(todoText) {
 }
 ```
 
-It's preferable to [put as much logic as possible in reducers](../style-guide/style-guide.md#put-as-much-logic-as-possible-in-reducers), but it's fine for thunks to also have additional logic inside as well.
+推荐[尽量把大部分逻辑放入 reducers](../style-guide/style-guide.md#put-as-much-logic-as-possible-in-reducers)，但 thunk 内有额外逻辑也是可接受的。
 
-Since the state is synchronously updated as soon as the reducers process an action, you can call `getState` after a dispatch to get the updated state.
+由于状态在 reducers 处理动作后同步更新，你可以在派发后调用 `getState` 获取最新状态。
 
-```js title="Example: checking state after dispatch"
+```js title="示例：派发后检查状态"
 function checkStateAfterDispatch() {
   return (dispatch, getState) => {
     const firstState = getState()
@@ -254,33 +254,32 @@ function checkStateAfterDispatch() {
 }
 ```
 
-One other reason to consider accessing state in a thunk is to fill out an action with additional info. Sometimes a slice reducer really needs to read a value that isn't in its own slice of state. A possible workaround to that is to dispatch a thunk, extract the needed values from state, and then dispatch a plain action containing the additional info.
+访问 state 的另一个理由是补充动作额外信息。有时 slice reducer 需要读取不在本 slice 里的值，一个解决方法是先派发 thunk，从 state 中提取数据，再派发普通动作包含这些额外信息。
 
-```js title="Example: actions containing cross-slice data"
-// One solution to the "cross-slice state in reducers" problem:
-// read the current state in a thunk, and include all the necessary
-// data in the action
+```js title="示例：动作包含跨切片数据"
+// 解决“reducers 中跨切片状态”问题的一种方法：
+// 在 thunk 中读取当前状态，并把所有需要的数据包含在动作中
 function crossSliceActionThunk() {
   return (dispatch, getState) => {
     const state = getState()
-    // Read both slices out of state
+    // 读取 state 中的两个切片
     const { a, b } = state
 
-    // Include data from both slices in the action
+    // 在动作中包含两个切片的数据
     dispatch(actionThatNeedsMoreData(a, b))
   }
 }
 ```
 
-### Async Logic and Side Effects
+### 异步逻辑和副作用
 
-Thunks may contain async logic, as well as side effects such as updating `localStorage`. That logic may use `Promise` chaining such as `someResponsePromise.then()`, although the `async/await` syntax is usually preferable for readability.
+thunks 里可以包含异步逻辑和副作用，比如更新 `localStorage`。可以用 Promise 链（如 `someResponsePromise.then()`），不过通常为可读性更好用 `async/await`。
 
-When making async requests, it's standard to dispatch actions before and after a request to [help track loading state](../tutorials/fundamentals/part-7-standard-patterns.md#async-request-status). Typically, a "pending" action _before_ the request and a loading state enum is marked as "in progress". If the request succeeds, a "fulfilled" action is dispatched with the result data, or a "rejected" action is dispatched containing the error info.
+发起异步请求时，通常会在请求前后派发动作[帮助跟踪加载状态](../tutorials/fundamentals/part-7-standard-patterns.md#async-request-status)。一般请求开始前先派“pending”动作，标记加载状态为进行中。成功后派“fulfilled”动作带数据，失败派“rejected”动作包含错误信息。
 
-Error handling here can be trickier than most people think. If you chain `resPromise.then(dispatchFulfilled).catch(dispatchRejected)` together, you may end up dispatching a "rejected" action if some non-network error occurs during the process of handling the "fulfilled" action. It's better to use the second argument of `.then()` to ensure you only handle errors related to the request itself:
+这里的错误处理比想象中更复杂。如果用 `resPromise.then(dispatchFulfilled).catch(dispatchRejected)`，可能会在处理“fulfilled”动作时因非网络错误触发“rejected”。最好用 `.then()` 的第二个参数只处理请求相关错误：
 
-```js title="Example: async request with promise chaining"
+```js title="示例：Promise 链式异步请求"
 function fetchData(someValue) {
   return (dispatch, getState) => {
     dispatch(requestStarted())
@@ -293,92 +292,92 @@ function fetchData(someValue) {
 }
 ```
 
-With `async/await`, this can be even trickier, because of how `try/catch` logic is usually organized. In order to ensure that the `catch` block _only_ handles errors from the network level, it may be necessary to reorganize the logic so that the thunk returns early if there's an error, and "fulfilled" action only happens at the end:
+用 `async/await` 时，就更复杂了。`try/catch` 的组织方式需要保证 `catch` 块只捕获网络层错误，可能需要逻辑调整让 thunk 在错误时提前返回，只有最后成功时才派 “fulfilled”：
 
-```js title="Example: error handling with async/await"
+```js title="示例：async/await 错误处理"
 function fetchData(someValue) {
   return async (dispatch, getState) => {
     dispatch(requestStarted())
 
-    // Have to declare the response variable outside the try block
+    // 需要在 try 块外声明 response 变量
     let response
 
     try {
       response = await myAjaxLib.post('/someEndpoint', { data: someValue })
     } catch (error) {
-      // Ensure we only catch network errors
+      // 确保只能捕获网络错误
       dispatch(requestFailed(error.message))
-      // Bail out early on failure
+      // 失败时提前退出
       return
     }
 
-    // We now have the result and there's no error. Dispatch "fulfilled".
+    // 请求成功且无错误，派发 “fulfilled”
     dispatch(requestSucceeded(response.data))
   }
 }
 ```
 
-Note that this issue isn't exclusive to Redux or thunks - it can apply even if you're only working with React component state as well, or any other logic that requires additional processing of a successful result.
+请注意，这个问题不仅限于 Redux 或 thunks，甚至 React 组件状态或任何需要对成功结果做额外处理的逻辑都可能遇到。
 
-This pattern is admittedly awkward to write and read. In most cases you can _probably_ get away with a more typical `try/catch` pattern where the request and the `dispatch(requestSucceeded())` are back-to-back. It's still worth knowing that this _can_ be an issue.
+这种写法确实有点别扭。在大多数情况下，你可能依然可以用更典型的 `try/catch`，将请求和 `dispatch(requestSucceeded())` 紧挨着写。但知道这个问题存在还是很有帮助的。
 
-### Returning Values from Thunks
+### 从 Thunks 返回值
 
-By default, `store.dispatch(action)` returns the actual action object. Middleware can override the return value being passed back from `dispatch`, and substitute whatever other value they want to return. For example, a middleware could choose to always return `42` instead:
+默认情况下，`store.dispatch(action)` 会返回实际的动作对象。中间件可以覆盖 dispatch 的返回值，改为返回任何其他值。例如，中间件可以总是返回 `42`：
 
-```js title="Middleware return values"
+```js title="中间件返回值示例"
 const return42Middleware = storeAPI => next => action => {
   const originalReturnValue = next(action)
   return 42
 }
 
-// later
+// 后续
 const result = dispatch(anyAction())
 console.log(result) // 42
 ```
 
-The thunk middleware does this, by returning whatever the called thunk function returns.
+thunk 中间件就是通过返回被调用的 thunk 函数的返回值来实现的。
 
-The most common use case for this is returning a promise from a thunk. This allows the code that dispatched the thunk to wait on the promise to know that the thunk's async work is complete. This is often used by components to coordinate additional work:
+最常见用例是 thunk 返回一个 Promise。这样派发 thunk 的代码可以等待 Promise，知道异步工作完成。组件常利用此协调后续工作：
 
-```js title="Example: Awaiting a thunk result promise"
+```js title="示例：等待 thunk 返回的 Promise"
 const onAddTodoClicked = async () => {
   await dispatch(saveTodo(todoText))
   setTodoText('')
 }
 ```
 
-There's also a neat trick you can do with this: you can repurpose a thunk as a way to make a one-time selection from the Redux state when you only have access to `dispatch`. Since dispatching a thunk returns the thunk return value, you could write a thunk that accepts a selector, and immediately calls the selector with the state and returns the result. This can be useful in a React component, where you have access to `dispatch` but not `getState`.
+还有一个有趣技巧，可以用 thunk 做一次性基于 Redux state 的选择。由于派发 thunk 会返回 thunk 返回值，你可以写一个接受 selector 的 thunk，立即调用 selector 并返回结果。这在只有 `dispatch` 而无 `getState` 时的 React 组件中很有用。
 
-```js title="Example: reusing thunks for selecting data"
-// In your Redux slices:
+```js title="示例：用 thunk 复用选择数据功能"
+// 在 Redux slices 中：
 const getSelectedData = selector => (dispatch, getState) => {
   return selector(getState())
 }
 
-// in a component
+// 组件中
 const onClick = () => {
   const todos = dispatch(getSelectedData(selectTodos))
-  // do more logic with this data
+  // 用这些数据做其他逻辑
 }
 ```
 
-This is not a _recommended_ practice per se, but it's semantically legal and will work fine.
+这不是推荐做法，但语义上合法且能正常工作。
 
-## Using `createAsyncThunk`
+## 使用 `createAsyncThunk`
 
-Writing async logic with thunks can be somewhat tedious. Each thunk typically requires defining three different action types + matching action creators for "pending/fulfilled/rejected", plus the actual thunk action creator + thunk function. There's also the edge cases with error handling to deal with.
+用 thunks 编写异步逻辑较繁琐。每个 thunk 通常需要定义三种动作类型和匹配的动作创建函数（“pending/fulfilled/rejected”），加上 thunk 动作创建函数和 thunk 函数。错误处理也是一大问题。
 
-Redux Toolkit has [a `createAsyncThunk` API](../tutorials/fundamentals/part-8-modern-redux.md#writing-thunks) that abstracts the process of generating those actions, dispatching them based on a `Promise` lifecycle, and handling the errors correctly. It accepts a partial action type string (used to generate the action types for `pending`, `fulfilled`, and `rejected`), and a "payload creation callback" that does the actual async request and returns a `Promise`. It then automatically dispatches the actions before and after the request, with the right arguments.
+Redux Toolkit 提供了[一个 `createAsyncThunk` API](../tutorials/fundamentals/part-8-modern-redux.md#writing-thunks)，封装了生成这些动作、根据 Promise 生命周期派发它们，以及正确错误处理的过程。它接受一个动作类型部分字符串（用来生成三种动作类型），和一个“有效载荷创建回调”用来执行实际的异步请求并返回 Promise。然后自动在请求前后派发对应动作及参数。
 
-Since this is an abstraction for the specific use case of async requests, **`createAsyncThunk` does not address all possible use cases for thunks**. If you need to write synchronous logic or other custom behavior, you should still write a "normal" thunk by hand yourself instead.
+由于此 API 是针对异步请求的特定用例，**`createAsyncThunk` 并不涵盖所有 thunk 用例**。如果你需要编写同步逻辑或其他自定义行为，仍应手写普通 thunk。
 
-The thunk action creator has the action creators for `pending`, `fulfilled`, and `rejected` attached. You can use the `extraReducers` option in `createSlice` to listen for those action types and update the slice's state accordingly.
+thunk 动作创建函数附带了 `pending`、`fulfilled` 和 `rejected` 的动作创建函数。你可用 `createSlice` 的 `extraReducers` 监听这些动作类型并更新切片状态。
 
-```js title="Example: createAsyncThunk"
+```js title="示例：createAsyncThunk"
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
-// omit imports and state
+// 忽略 imports 和状态定义
 
 export const fetchTodos = createAsyncThunk('todos/fetchTodos', async () => {
   const response = await client.get('/fakeApi/todos')
@@ -389,7 +388,7 @@ const todosSlice = createSlice({
   name: 'todos',
   initialState,
   reducers: {
-    // omit reducer cases
+    // 省略其它 reducers
   },
   extraReducers: builder => {
     builder
@@ -408,15 +407,15 @@ const todosSlice = createSlice({
 })
 ```
 
-## Fetching Data with RTK Query
+## 使用 RTK Query 进行数据请求
 
-Redux Toolkit has a new [**RTK Query data fetching API**](https://redux-toolkit.js.org/rtk-query/overview). RTK Query is a purpose built data fetching and caching solution for Redux apps, and **can eliminate the need to write _any_ thunks or reducers to manage data fetching**.
+Redux Toolkit 提供了一个全新的[**RTK Query 数据请求 API**](https://redux-toolkit.js.org/rtk-query/overview)。RTK Query 是专门为 Redux 应用设计的数据请求与缓存解决方案，**能够消除你编写管理数据请求的任何 thunk 或 reducer 的需求**。
 
-RTK Query actually uses `createAsyncThunk` internally for all requests, along with a custom middleware to manage cache data lifetimes.
+RTK Query 实际上基于 `createAsyncThunk` 实现所有请求，以及使用自定义的中间件管理缓存数据的生命周期。
 
-First, create an "API slice" with definitions for the server endpoints your app will talk to. Each endpoint will auto-generate a React hook with a name based on the endpoint and request type, like `useGetPokemonByNameQuery`:
+首先，创建一个 “API slice”，定义你的应用将访问的服务器端点。每个端点会自动生成一个 React 钩子，名称基于端点和请求类型，例如 `useGetPokemonByNameQuery`：
 
-```js title="RTK Query: API slice (pokemonSlice.js)"
+```js title="RTK Query：API slice（pokemonSlice.js）"
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 export const pokemonApi = createApi({
@@ -432,53 +431,52 @@ export const pokemonApi = createApi({
 export const { useGetPokemonByNameQuery } = pokemonApi
 ```
 
-Then, add the generated API slice reducer and custom middleware to the store:
+然后，将生成的 API slice reducer 和自定义中间件添加到 store：
 
-```js title="RTK Query: store setup"
+```js title="RTK Query：store 配置"
 import { configureStore } from '@reduxjs/toolkit'
-// Or from '@reduxjs/toolkit/query/react'
+// 或者从 '@reduxjs/toolkit/query/react' 导入
 import { setupListeners } from '@reduxjs/toolkit/query'
 import { pokemonApi } from './services/pokemon'
 
 export const store = configureStore({
   reducer: {
     // highlight-start
-    // Add the generated reducer as a specific top-level slice
+    // 将生成的 reducer 作为顶级切片添加
     [pokemonApi.reducerPath]: pokemonApi.reducer
     // highlight-end
   },
   // highlight-start
-  // Adding the api middleware enables caching, invalidation, polling,
-  // and other useful features of `rtk-query`.
+  // 添加 api 中间件启用缓存、失效、轮询
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware().concat(pokemonApi.middleware)
   // highlight-end
 })
 ```
 
-Finally, import the auto-generated React hook into your component and call it. The hook will automatically fetch data when the component mounts, and if multiple components use the same hook with the same arguments, they will share the cached results:
+最后，在组件中导入自动生成的 React 钩子并调用。钩子会在组件挂载时自动请求数据，且如果多个组件用相同参数调用相同钩子，它们会共享缓存结果：
 
-```js title="RTK Query: using fetching hooks"
+```js title="RTK Query：使用数据请求钩子"
 // highlight-next-line
 import { useGetPokemonByNameQuery } from './services/pokemon'
 
 export default function Pokemon() {
   // highlight-start
-  // Using a query hook automatically fetches data and returns query values
+  // 使用查询钩子自动请求数据，返回查询状态及数据
   const { data, error, isLoading } = useGetPokemonByNameQuery('bulbasaur')
   // highlight-end
 
-  // rendering logic
+  // 渲染逻辑
 }
 ```
 
-**We encourage you to try out RTK Query and see if it can help simplify the data fetching code in your own apps.**
+**我们鼓励你试用 RTK Query，看它是否能简化你的应用中的数据请求代码。**
 
-## Further Information
+## 更多资料
 
-- Reason for middleware and side effects:
-  - ["How to dispatch a Redux action with a timeout?"](https://stackoverflow.com/questions/35411423/how-to-dispatch-a-redux-action-with-a-timeout/35415559#35415559)
-  - ["Why do we need middleware for async flow?"](https://stackoverflow.com/questions/34570758/why-do-we-need-middleware-for-async-flow-in-redux/34599594#34599594)
-- Thunk tutorials:
-  - [What the heck is a thunk?](https://daveceddia.com/what-is-a-thunk/)
-  - [Thunks in Redux: the basics](https://medium.com/fullstack-academy/thunks-in-redux-the-basics-85e538a3fe60)
+- 中间件和副作用原因：
+  - ["如何派发带有超时的 Redux 动作？"](https://stackoverflow.com/questions/35411423/how-to-dispatch-a-redux-action-with-a-timeout/35415559#35415559)
+  - ["为什么 Redux 需要中间件来处理异步流程？"](https://stackoverflow.com/questions/34570758/why-do-we-need-middleware-for-async-flow-in-redux/34599594#34599594)
+- Thunk 教程：
+  - [到底什么是 thunk？](https://daveceddia.com/what-is-a-thunk/)
+  - [Redux 中的 thunk：基础知识](https://medium.com/fullstack-academy/thunks-in-redux-the-basics-85e538a3fe60)

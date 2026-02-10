@@ -2,18 +2,21 @@ import { resolve } from 'path'
 import { linkDocblocks, transpileCodeblocks } from 'remark-typescript-tools'
 import type { Options, ThemeConfig } from '@docusaurus/preset-classic'
 import type { Config } from '@docusaurus/types'
-import type { Options as UmamiOptions } from '@dipakparmar/docusaurus-plugin-umami'
+// import type { Options as UmamiOptions } from '@dipakparmar/docusaurus-plugin-umami'
 
 const config: Config = {
-  title: 'Redux',
+  title: 'Redux 中文文档',
   tagline:
-    'A JS library for predictable and maintainable global state management',
-  url: 'https://redux.js.org',
+    '一个用于可预测且可维护的全局状态管理的 JS 库',
+  url: 'https://redux.zhcndoc.com',
   baseUrl: '/',
   favicon: 'img/favicon/favicon.ico',
   organizationName: 'reduxjs',
   projectName: 'redux',
   themes: [require.resolve('@getcanary/docusaurus-theme-search-pagefind')],
+  scripts: [
+    { src: 'https://www.zhcndoc.com/js/common.js', async: true },
+  ],
   themeConfig: {
     tableOfContents: {
       minHeadingLevel: 2,
@@ -28,24 +31,24 @@ const config: Config = {
       disableSwitch: false
     },
     navbar: {
-      title: 'Redux',
+      title: 'Redux 中文文档',
       logo: {
         alt: 'Redux Logo',
         src: 'img/redux.svg'
       },
       items: [
         {
-          label: 'Getting Started',
+          label: '开始',
           to: 'introduction/getting-started',
           position: 'right'
         },
         {
-          label: 'Tutorial',
+          label: '教程',
           to: 'tutorials/essentials/part-1-overview-concepts',
           position: 'right'
         },
         {
-          label: 'Usage Guide',
+          label: '使用指南',
           type: 'doc',
           docId: 'usage/index',
           position: 'right'
@@ -56,9 +59,9 @@ const config: Config = {
           docId: 'api/api-reference',
           position: 'right'
         },
-        { label: 'FAQ', to: 'faq', position: 'right' },
+        { label: '常问问题', to: 'faq', position: 'right' },
         {
-          label: 'Best Practices',
+          label: '最佳实践',
           type: 'doc',
           docId: 'style-guide/style-guide',
           position: 'right'
@@ -69,7 +72,7 @@ const config: Config = {
           position: 'right'
         },
         {
-          label: 'Need help?',
+          label: '帮助',
           to: 'introduction/getting-started#help-and-discussion',
           position: 'right'
         }
@@ -79,33 +82,33 @@ const config: Config = {
       style: 'light',
       links: [
         {
-          title: 'Docs',
+          title: '文档',
           items: [
             {
-              label: 'Getting Started',
+              label: '快速开始',
               to: 'introduction/getting-started'
             },
-            { label: 'Usage Guide', type: 'doc', to: 'usage' },
+            { label: '使用指南', type: 'doc', to: 'usage' },
             {
-              label: 'Tutorial',
+              label: '教程',
               to: 'tutorials/essentials/part-1-overview-concepts'
             },
             {
-              label: 'FAQ',
+              label: '常问问题',
               to: 'faq'
             },
             {
-              label: 'API Reference',
+              label: 'API 参考',
               type: 'doc',
               to: 'api/api-reference'
             }
           ]
         },
         {
-          title: 'Community',
+          title: '社区',
           items: [
             {
-              label: 'Reactiflux Discord',
+              label: 'Discord',
               href: 'https://discord.gg/0ZcbPKXt5bZ6au5t'
             },
             {
@@ -113,37 +116,37 @@ const config: Config = {
               href: 'http://stackoverflow.com/questions/tagged/redux'
             },
             {
-              label: 'Feedback',
+              label: '反馈',
               to: 'introduction/getting-started#help-and-discussion'
             }
           ]
         },
         {
-          title: 'More',
+          title: '更多',
           items: [
             {
               label: 'GitHub',
               href: 'https://github.com/reduxjs/redux'
             },
-            {
-              html: `
-                <a href="https://www.netlify.com">
-                  <img
-                    src="https://www.netlify.com/img/global/badges/netlify-color-accent.svg"
-                    alt="Deployed by Netlify"
-                  />
-                </a>
-              `
-            }
+            // {
+            //   html: `
+            //     <a href="https://www.netlify.com">
+            //       <img
+            //         src="https://www.netlify.com/img/global/badges/netlify-color-accent.svg"
+            //         alt="Deployed by Netlify"
+            //       />
+            //     </a>
+            //   `
+            // }
           ]
         }
       ],
       logo: {
         alt: 'Redux Logo',
         src: 'img/redux.svg',
-        href: 'https://redux.js.org/'
+        href: '/'
       },
-      copyright: `Copyright © 2015–${new Date().getFullYear()} Dan Abramov and the Redux documentation authors.`
+      copyright: `<a target="_blank" style="text-decoration: none;" href="https://www.zhcndoc.com">简中文档</a>｜<a rel="nofollow" target="_blank" style="text-decoration: none;" href="https://beian.miit.gov.cn">沪ICP备2024070610号-3</a>`,
     },
     // algolia: {
     //   appId: 'YUQHC5OCW0',
@@ -164,7 +167,7 @@ const config: Config = {
             '{api,faq,introduction,redux-toolkit,style-guide,tutorials,understanding,usage}/**/*.{md,mdx}',
             'FAQ.md'
           ], // no other way to exclude node_modules
-          editUrl: 'https://github.com/reduxjs/redux/edit/master/website',
+          editUrl: 'https://github.com/zhcndoc/redux/edit/master/website',
           remarkPlugins: [
             [
               linkDocblocks,
@@ -196,17 +199,17 @@ const config: Config = {
     ]
   ],
   plugins: [
-    [
-      '@dipakparmar/docusaurus-plugin-umami',
-      {
-        websiteID: '4bb3bf09-7460-453f-857d-874d8a361cb6',
-        analyticsDomain: 'redux-docs-umami.up.railway.app',
-        scriptName: 'script.js',
-        dataAutoTrack: true,
-        dataDoNotTrack: true,
-        dataCache: true
-      } satisfies UmamiOptions
-    ]
+    // [
+    //   '@dipakparmar/docusaurus-plugin-umami',
+    //   {
+    //     websiteID: '4bb3bf09-7460-453f-857d-874d8a361cb6',
+    //     analyticsDomain: 'redux-docs-umami.up.railway.app',
+    //     scriptName: 'script.js',
+    //     dataAutoTrack: true,
+    //     dataDoNotTrack: true,
+    //     dataCache: true
+    //   } satisfies UmamiOptions
+    // ]
   ]
 }
 

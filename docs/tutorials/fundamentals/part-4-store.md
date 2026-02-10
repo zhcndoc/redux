@@ -1,8 +1,8 @@
 ---
 id: part-4-store
-title: 'Redux Fundamentals, Part 4: Store'
-sidebar_label: 'Store'
-description: 'The official Redux Fundamentals tutorial: learn how to create and use a Redux store'
+title: 'Redux 基础，第 4 部分：存储（Store）'
+sidebar_label: '存储（Store）'
+description: '官方 Redux 基础教程：学习如何创建和使用 Redux store'
 ---
 
 import { DetailedExplanation } from '../../components/DetailedExplanation'
@@ -10,45 +10,40 @@ import { DetailedExplanation } from '../../components/DetailedExplanation'
 <!-- prettier-ignore -->
 import FundamentalsWarning from "../../components/_FundamentalsWarning.mdx";
 
-:::tip What You'll Learn
+:::tip 你将学到的内容
 
-- How to create a Redux store
-- How to use the store to update state and listen for updates
-- How to configure the store to extend its capabilities
-- How to set up the Redux DevTools Extension to debug your app
+- 如何创建 Redux store
+- 如何使用 store 来更新状态并监听状态更新
+- 如何配置 store 扩展其功能
+- 如何设置 Redux DevTools 扩展以调试你的应用
 
 :::
 
-## Introduction
+## 介绍
 
-In [Part 3: State, Actions, and Reducers](./part-3-state-actions-reducers.md), we started writing our example todo app. We
-listed business requirements, defined the **state** structure we need to make the app work, and created a series of action types
-to describe "what happened" and match the kinds of events that can happen as a user interacts with our app. We also wrote **reducer** functions that can handle updating our `state.todos` and `state.filters` sections, and saw how we can use the Redux `combineReducers` function
-to create a "root reducer" based on the different "slice reducers" for each feature in our app.
+在[第3部分：状态、动作和 reducers](./part-3-state-actions-reducers.md)中，我们开始编写示例待办事项应用。我们列出了业务需求，定义了使应用正常运行所需的**状态**结构，并创建了一系列动作类型来描述“发生了什么”，以匹配用户与应用交互时可能发生的事件。我们还编写了可以更新 `state.todos` 和 `state.filters` 部分的**reducer**函数，并看到了如何使用 Redux 的 `combineReducers` 函数来基于应用中每个功能的不同“切片 reducer”创建“根 reducer”。
 
-Now, it's time to pull those pieces together, with the central piece of a Redux app: the **store**.
+现在，是时候将这些部分组合起来，Redux 应用的核心部分：**store（存储）**。
 
 <FundamentalsWarning />
 
-## Redux Store
+## Redux Store（存储）
 
-The Redux **store** brings together the state, actions, and reducers that make up your app. The store has several responsibilities:
+Redux **store** 将组成你应用的状态、动作和 reducers 结合起来。store 有几个职责：
 
-- Holds the current application state inside
-- Allows access to the current state via [`store.getState()`](../../api/Store.md#getState);
-- Allows state to be updated via [`store.dispatch(action)`](../../api/Store.md#dispatch);
-- Registers listener callbacks via [`store.subscribe(listener)`](../../api/Store.md#subscribe);
-- Handles unregistering of listeners via the `unsubscribe` function returned by [`store.subscribe(listener)`](../../api/Store.md#subscribe).
+- 内部保存当前应用状态
+- 通过 [`store.getState()`](../../api/Store.md#getState) 访问当前状态
+- 通过 [`store.dispatch(action)`](../../api/Store.md#dispatch) 更新状态
+- 通过 [`store.subscribe(listener)`](../../api/Store.md#subscribe) 注册监听回调
+- 通过 [`store.subscribe(listener)`](../../api/Store.md#subscribe) 返回的 `unsubscribe` 函数取消注册监听
 
-It's important to note that **you'll only have a single store in a Redux application**. When you want to split your data handling logic, you'll use [reducer composition](./part-3-state-actions-reducers.md#splitting-reducers) and create multiple reducers that
-can be combined together, instead of creating separate stores.
+需要注意的是，**在 Redux 应用中你只会有一个单一的 store**。当你想拆分数据处理逻辑时，应使用[reducer 组合](./part-3-state-actions-reducers.md#splitting-reducers)，创建多个 reducer 并将它们合并，而不是创建多个 store。
 
-### Creating a Store
+### 创建 Store
 
-**Every Redux store has a single root reducer function**. In the previous section, we [created a root reducer function using `combineReducers`](./part-3-state-actions-reducers.md#combinereducers). That root reducer is currently defined in `src/reducer.js` in our example app. Let's import that root reducer and create our first store.
+**每个 Redux store 都有一个唯一的根 reducer 函数**。在上一节中，我们[使用 `combineReducers` 创建了根 reducer 函数](./part-3-state-actions-reducers.md#combinereducers)。该根 reducer 当前在示例应用的 `src/reducer.js` 中定义。让我们导入根 reducer 并创建第一个 store。
 
-The Redux core library has [**a `createStore` API**](../../api/createStore.md) that will create the store. Add a new file
-called `store.js`, and import `createStore` and the root reducer. Then, call `createStore` and pass in the root reducer:
+Redux 核心库提供了[**`createStore` API**](../../api/createStore.md) 用于创建 store。新建一个文件 `store.js`，导入 `createStore` 和根 reducer，然后调用 `createStore`，传入根 reducer：
 
 ```js title="src/store.js"
 import { createStore } from 'redux'
@@ -60,11 +55,9 @@ const store = createStore(rootReducer)
 export default store
 ```
 
-### Loading Initial State
+### 加载初始状态
 
-`createStore` can also accept a `preloadedState` value as its second argument. You could use this to add
-initial data when the store is created, such as values that were included in an HTML page sent from the server, or persisted in
-`localStorage` and read back when the user visits the page again, like this:
+`createStore` 也可以接受第二个参数 `preloadedState`，用于添加初始数据，比如从服务器发送的 HTML 页面中包含的值，或持久化存储在 `localStorage` 中并在用户再次访问时读取的状态，如下示例：
 
 ```js title="storeStatePersistenceExample.js"
 import { createStore } from 'redux'
@@ -84,35 +77,35 @@ const store = createStore(rootReducer, preloadedState)
 // highlight-end
 ```
 
-## Dispatching Actions
+## 派发动作（Dispatching Actions）
 
-Now that we have created a store, let's verify our program works! Even without any UI, we can already test the update logic.
+现在我们创建了 store，来验证程序是否正常工作！即使没有 UI，我们也能测试更新逻辑。
 
 :::tip
 
-Before you run this code, try going back to `src/features/todos/todosSlice.js`, and remove all the example todo objects from the `initialState` so that it's an empty array. That will make the output from this example a bit easier to read.
+在运行以下代码前，试着回到 `src/features/todos/todosSlice.js`，将 `initialState` 中所有示例待办事项对象删除，使其成为一个空数组。这样示例的输出会更易读。
 
 :::
 
 ```js title="src/index.js"
-// Omit existing React imports
+// 省略已有的 React 导入
 
 import store from './store'
 
-// Log the initial state
+// 打印初始状态
 // highlight-next-line
 console.log('Initial state: ', store.getState())
 // {todos: [....], filters: {status, colors}}
 
-// Every time the state changes, log it
-// Note that subscribe() returns a function for unregistering the listener
+// 每次状态改变时打印状态
+// 注意 subscribe() 返回一个用来注销监听的函数
 // highlight-start
 const unsubscribe = store.subscribe(() =>
   console.log('State after dispatch: ', store.getState())
 )
 // highlight-end
 
-// Now, dispatch some actions
+// 现在，派发一些动作
 
 // highlight-next-line
 store.dispatch({ type: 'todos/todoAdded', payload: 'Learn about actions' })
@@ -129,45 +122,42 @@ store.dispatch({
   payload: { color: 'red', changeType: 'added' }
 })
 
-// Stop listening to state updates
+// 停止监听状态更新
 // highlight-next-line
 unsubscribe()
 
-// Dispatch one more action to see what happens
+// 派发最后一个动作看看结果
 
 store.dispatch({ type: 'todos/todoAdded', payload: 'Try creating a store' })
 
-// Omit existing React rendering logic
+// 省略已有的 React 渲染逻辑
 ```
 
-Remember, every time we call `store.dispatch(action)`:
+请记住，每次调用 `store.dispatch(action)` 时：
 
-- The store calls `rootReducer(state, action)`
-  - That root reducer may call other slice reducers inside of itself, like `todosReducer(state.todos, action)`
-- The store saves the _new_ state value inside
-- The store calls all the listener subscription callbacks
-- If a listener has access to the `store`, it can now call `store.getState()` to read the latest state value
+- store 会调用 `rootReducer(state, action)`
+  - 根 reducer 可能会调用其内部其他切片 reducer，如 `todosReducer(state.todos, action)`
+- store 保存新的状态值
+- store 调用所有监听订阅回调函数
+- 如果监听器访问了 `store`，就可以调用 `store.getState()` 读取最新状态
 
-If we look at the console log output from that example, you can see how the
-Redux state changes as each action was dispatched:
+从上面示例的控制台输出，可以看到每个动作派发后，Redux 状态是如何变化的：
 
-![Logged Redux state after dispatching actions](/img/tutorials/fundamentals/initial-state-updates.png)
+![派发动作后日志的 Redux 状态](/img/tutorials/fundamentals/initial-state-updates.png)
 
-Notice that our app did _not_ log anything from the last action. That's because we removed the listener callback when we called `unsubscribe()`, so nothing else ran after the action was dispatched.
+注意我们的应用并没有记录最后一个动作的任何日志，因为我们调用了 `unsubscribe()` 取消了监听器，因此该动作派发后没有任何监听回调运行。
 
-We specified the behavior of our app before we even started writing the UI. That
-helps give us confidence that the app will work as intended.
+我们在开始写 UI 前就指定了应用的行为，这有助于我们确信应用会按预期工作。
 
 :::info
 
-If you want, you can now try writing tests for your reducers. Because they're [pure functions](../../understanding/thinking-in-redux/ThreePrinciples.md#changes-are-made-with-pure-functions), it should be straightforward to test them. Call them with an example `state` and `action`,
-take the result, and check to see if it matches what you expect:
+你也可以尝试编写 reducer 的测试用例。由于 reducer 是[纯函数](../../understanding/thinking-in-redux/ThreePrinciples.md#changes-are-made-with-pure-functions)，测试非常直接。调用 reducer，传入示例 `state` 和 `action`，并检查结果是否符合预期：
 
 ```js title="todosSlice.spec.js"
 import todosReducer from './todosSlice'
 
-test('Toggles a todo based on id', () => {
-  const initialState = [{ id: 0, text: 'Test text', completed: false }]
+test('根据 id 切换待办状态', () => {
+  const initialState = [{ id: 0, text: '测试文本', completed: false }]
 
   const action = { type: 'todos/todoToggled', payload: 0 }
   const result = todosReducer(initialState, action)
@@ -177,9 +167,9 @@ test('Toggles a todo based on id', () => {
 
 :::
 
-## Inside a Redux Store
+## Redux Store 内部
 
-It might be helpful to take a peek inside a Redux store to see how it works. Here's a miniature example of a working Redux store, in about 25 lines of code:
+看一下 Redux store 内部是如何工作的也很有帮助。下面是一个大约 25 行代码的迷你 Redux store 实现示例：
 
 ```js title="miniReduxStoreExample.js"
 function createStore(reducer, preloadedState) {
@@ -209,54 +199,54 @@ function createStore(reducer, preloadedState) {
 }
 ```
 
-This small version of a Redux store works well enough that you could use it to replace the actual Redux `createStore` function you've been using in your app so far. (Try it and see for yourself!) [The actual Redux store implementation is longer and a bit more complicated](https://github.com/reduxjs/redux/blob/v4.0.5/src/createStore.js), but most of that is comments, warning messages, and handling some edge cases.
+这个 Redux store 版本足够好用，甚至可以用它替换你应用中实际用的 Redux `createStore` 函数（不妨试试！）。[Redux 的真实实现更长且复杂一些](https://github.com/reduxjs/redux/blob/v4.0.5/src/createStore.js)，但大部分是注释、警告消息和一些异常情况处理。
 
-As you can see, the actual logic here is fairly short:
+核心逻辑看起来相当简洁：
 
-- The store has the current `state` value and `reducer` function inside of itself
-- `getState` returns the current state value
-- `subscribe` keeps an array of listener callbacks and returns a function to remove the new callback
-- `dispatch` calls the reducer, saves the state, and runs the listeners
-- The store dispatches one action on startup to initialize the reducers with their state
-- The store API is an object with `{dispatch, subscribe, getState}` inside
+- store 内部保存当前 `state` 和 `reducer`
+- `getState` 返回当前状态
+- `subscribe` 管理监听回调数组，并返回一个注销监听的函数
+- `dispatch` 调用 reducer 更新状态，并通知每个监听者
+- store 初始化时派发一次动作，初始化状态
+- store API 是一个包含 `{dispatch, subscribe, getState}` 的对象
 
-To emphasize one of those in particular: notice that `getState` just returns whatever the current `state` value is. That means that **by default, nothing prevents you from accidentally mutating the current state value!** This code will run without any errors, but it's incorrect:
+特别强调一点：注意 `getState` 只是返回当前 `state` 的引用。也就是说 **默认情况下，没有机制防止你意外修改状态！** 下面的代码虽然能运行，但不正确：
 
 ```js
 const state = store.getState()
-// ❌ Don't do this - it mutates the current state!
+// ❌ 不要这样做 — 它会修改当前状态！
 state.filters.status = 'Active'
 ```
 
-In other words:
+换句话说：
 
-- The Redux store doesn't make an extra copy of the `state` value when you call `getState()`. It's exactly the same reference that was returned from the root reducer function
-- The Redux store doesn't do anything else to prevent accidental mutations. It _is_ possible to mutate the state, either inside a reducer or outside the store, and you must always be careful to avoid mutations.
+- Redux store 调用 `getState()` 返回的状态是根 reducer 返回的相同引用，没有额外拷贝
+- Redux store 不会阻止你意外修改状态。状态既可以在 reducer 内部修改，也可以在 store 外部修改，你必须小心避免这种情况
 
-One common cause of accidental mutations is sorting arrays. [**Calling `array.sort()` actually mutates the existing array**](https://doesitmutate.xyz/sort/). If we called `const sortedTodos = state.todos.sort()`, we'd end up mutating the real store state unintentionally.
+一个常见引发意外修改的例子是对数组排序。[**调用 `array.sort()` 实际是修改了原数组**](https://doesitmutate.xyz/sort/)。如果执行 `const sortedTodos = state.todos.sort()`，那么就会无意中修改真实的 store 状态。
 
 :::tip
 
-In [Part 8: Modern Redux](./part-8-modern-redux.md), we'll see how Redux Toolkit helps avoid mutations in reducers, and detects and warns about accidental mutations outside of reducers.
+在[第 8 部分：现代 Redux](./part-8-modern-redux.md)中，我们会看到 Redux Toolkit 如何帮助避免在 reducer 内的状态修改，并检测和警告 reducer 外的意外修改。
 
 :::
 
-## Configuring the Store
+## 配置 Store
 
-We've already seen that we can pass `rootReducer` and `preloadedState` arguments to `createStore`. However, `createStore` can also take one more argument, which is used to customize the store's abilities and give it new powers.
+我们已经看到传入 `rootReducer` 和 `preloadedState` 可以创建 store。但是 `createStore` 还接受一个额外参数，用于定制 store 的功能并赋予它新能力。
 
-Redux stores are customized using something called a **store enhancer**. A store enhancer is like a special version of `createStore` that adds another layer wrapping around the original Redux store. An enhanced store can then change how the store behaves, by supplying its own versions of the store's `dispatch`, `getState`, and `subscribe` functions instead of the originals.
+Redux store 通过**store enhancer（增强器）**定制。store enhancer 就是一个特殊版本的 `createStore`，它包裹住原 Redux store，对其行为进行改变，为 store 的 `dispatch`、`getState` 和 `subscribe` 方法提供自定义版本。
 
-For this tutorial, we won't go into details about how store enhancers actually work - we'll focus on how to use them.
+本教程不深入增强器的内部工作原理，而专注于如何使用它们。
 
-### Creating a Store with Enhancers
+### 使用增强器创建 Store
 
-Our project has two small example store enhancers available, in the `src/exampleAddons/enhancers.js` file:
+我们项目中有两个示例 store enhancer，位于 `src/exampleAddons/enhancers.js`：
 
-- `sayHiOnDispatch`: an enhancer that always logs `'Hi'!` to the console every time an action is dispatched
-- `includeMeaningOfLife`: an enhancer that always adds the field `meaningOfLife: 42` to the value returned from `getState()`
+- `sayHiOnDispatch`：每当派发动作时，都会在控制台打印 `'Hi!'`
+- `includeMeaningOfLife`：每次调用 `getState()` 都会返回一个带有 `meaningOfLife: 42` 字段的状态对象
 
-Let's start by using `sayHiOnDispatch`. First, we'll import it, and pass it to `createStore`:
+先来看使用 `sayHiOnDispatch`。导入它，并传递给 `createStore`：
 
 ```js title="src/store.js"
 import { createStore } from 'redux'
@@ -268,9 +258,9 @@ const store = createStore(rootReducer, undefined, sayHiOnDispatch)
 export default store
 ```
 
-We don't have a `preloadedState` value here, so we'll pass `undefined` as the second argument instead.
+我们这里没有 `preloadedState`，所以第二参数传 `undefined`。
 
-Next, let's try dispatching an action:
+接着派发一个动作了解效果：
 
 ```js title="src/index.js"
 import store from './store'
@@ -282,17 +272,17 @@ console.log('Dispatch complete')
 // highlight-end
 ```
 
-Now look at the console. You should see `'Hi!'` logged there, in between the other two log statements:
+看看控制台，你会发现 `'Hi!'` 被打印在两条日志语句之间：
 
-![sayHi store enhancer logging](/img/tutorials/fundamentals/sayhi-enhancer-logging.png)
+![sayHi store enhancer 日志](/img/tutorials/fundamentals/sayhi-enhancer-logging.png)
 
-The `sayHiOnDispatch` enhancer wrapped the original `store.dispatch` function with its own specialized version of `dispatch`. When we called `store.dispatch()`, we were actually calling the wrapper function from `sayHiOnDispatch`, which called the original and then printed 'Hi'.
+`sayHiOnDispatch` 用自己的 `dispatch` 函数包装了原始的 `store.dispatch`。当我们调用 `store.dispatch()`，实际执行的是这个包装函数，它调用原始 `dispatch` 后再打印“Hi”。
 
-Now, let's try adding a second enhancer. We can import `includeMeaningOfLife` from that same file... but we have a problem. **`createStore` only accepts one enhancer as its third argument!** How can we pass _two_ enhancers at the same time?
+接下来试着添加第二个 enhancer。我们可以同时导入 `includeMeaningOfLife`，但问题来了。**`createStore` 作为第三个参数只接受一个 enhancer！** 如何同时传入两个 enhancer 呢？
 
-What we really need is some way to merge both the `sayHiOnDispatch` enhancer and the `includeMeaningOfLife` enhancer into a single combined enhancer, and then pass that instead.
+此时我们需要一个合并多个 enhancer 的方法，生成一个组合 enhancer，然后传入。
 
-Fortunately, **the Redux core includes [a `compose` function](../../api/compose.md) that can be used to merge multiple enhancers together**. Let's use that here:
+幸运的是，**Redux 核心提供了[一个 `compose` 函数](../../api/compose.md)，可以合并多个 enhancer**。我们这样用：
 
 ```js title="src/store.js"
 // highlight-next-line
@@ -312,7 +302,7 @@ const store = createStore(rootReducer, undefined, composedEnhancer)
 export default store
 ```
 
-Now we can see what happens if we use the store:
+然后运行看看：
 
 ```js title="src/index.js"
 import store from './store'
@@ -324,17 +314,17 @@ console.log('State after dispatch: ', store.getState())
 // log: {todos: [...], filters: {status, colors}, meaningOfLife: 42}
 ```
 
-And the logged output looks like this:
+输出日志如下：
 
-![meaningOfLife store enhancer logging](/img/tutorials/fundamentals/meaningOfLife-enhancer-logging.png)
+![meaningOfLife store enhancer 日志](/img/tutorials/fundamentals/meaningOfLife-enhancer-logging.png)
 
-So, we can see that both enhancers are modifying the behavior of the store at the same time. `sayHiOnDispatch` has changed how `dispatch` works, and `includeMeaningOfLife` has changed how `getState` works.
+所以两个 enhancer 同时修改了 store 行为。`sayHiOnDispatch` 修改了 `dispatch`，`includeMeaningOfLife` 修改了 `getState`。
 
-Store enhancers are a very powerful way to modify the store, and almost all Redux apps will include at least one enhancer when setting up the store.
+store enhancer 是非常强大的，可以深度定制 store，大多数 Redux 应用设置 store 时都会用到至少一个 enhancer。
 
 :::tip
 
-If you don't have any `preloadedState` to pass in, you can pass the `enhancer` as the second argument instead:
+如果没有传入 `preloadedState`，也可以把 enhancer 作为第二参数传入：
 
 ```js
 const store = createStore(rootReducer, storeEnhancer)
@@ -342,25 +332,25 @@ const store = createStore(rootReducer, storeEnhancer)
 
 :::
 
-## Middleware
+## 中间件（Middleware）
 
-Enhancers are powerful because they can override or replace any of the store's methods: `dispatch`, `getState`, and `subscribe`.
+增强器很强大，因为它们能覆盖或替换 store 的任意方法：`dispatch`、`getState` 和 `subscribe`。
 
-But, much of the time, we only need to customize how `dispatch` behaves. It would be nice if there was a way to add some customized behavior when `dispatch` runs.
+不过很多时候，我们只想自定义 `dispatch` 的行为，希望在 `dispatch` 被调用时添加自定义逻辑。
 
-Redux uses a special kind of addon called **middleware** to let us customize the `dispatch` function.
+Redux 使用一种特殊的插件称为**中间件（middleware）**来实现对 `dispatch` 的自定义。
 
-If you've ever used a library like Express or Koa, you might already be familiar with the idea of adding middleware to customize behavior. In these frameworks, middleware is some code you can put between the framework receiving a request, and the framework generating a response. For example, Express or Koa middleware may add CORS headers, logging, compression, and more. The best feature of middleware is that it's composable in a chain. You can use multiple independent third-party middleware in a single project.
+如果你用过 Express 或 Koa 之类的库，可能已经熟悉中间件概念。这些框架中，中间件是放在请求和响应之间的代码，比如添加 CORS 头部、日志、压缩等。中间件的最大特性是它们可以串联组合，在一个项目中同时使用多个独立中间件。
 
-Redux middleware solves different problems than Express or Koa middleware, but in a conceptually similar way. **Redux middleware provides a third-party extension point between dispatching an action, and the moment it reaches the reducer.** People use Redux middleware for logging, crash reporting, talking to an asynchronous API, routing, and more.
+Redux 中间件解决的是不同的问题，但理念类似。**Redux 中间件提供了一个第三方扩展点，介于派发动作和动作到达 reducer 之间。** 中间件可用于日志记录、崩溃报告、异步 API 调用、路由等。
 
-First, we'll look at how to add middleware to the store, then we'll show how you can write your own.
+先来看如何把中间件加入 store，再见识如何编写自定义中间件。
 
-### Using Middleware
+### 使用中间件
 
-We already saw that you can customize a Redux store using store enhancers. Redux middleware are actually implemented on top of a very special store enhancer that comes built in with Redux, called **`applyMiddleware`**.
+我们已经知道通过 store enhancer 可以自定义 store。Redux 中间件是基于 Redux 自带的一个特殊 store enhancer——**`applyMiddleware`** 实现的。
 
-Since we already know how to add enhancers to our store, we should be able to do that now. We'll start with `applyMiddleware` by itself, and we'll add three example middleware that have been included in this project.
+因为我们会用增强器，所以也可以使用中间件。以下示例使用了三个项目中包含的示例中间件：
 
 ```js title="src/store.js"
 import { createStore, applyMiddleware } from 'redux'
@@ -369,15 +359,15 @@ import { print1, print2, print3 } from './exampleAddons/middleware'
 
 const middlewareEnhancer = applyMiddleware(print1, print2, print3)
 
-// Pass enhancer as the second arg, since there's no preloadedState
+// 没有 preloadedState，第二参数传 enhancer
 const store = createStore(rootReducer, middlewareEnhancer)
 
 export default store
 ```
 
-As their names say, each of these middleware will print a number when an action is dispatched.
+这些中间件就是分别打印数字的函数。
 
-What happens if we dispatch now?
+派发动作时会怎样？
 
 ```js title="src/index.js"
 import store from './store'
@@ -388,42 +378,42 @@ store.dispatch({ type: 'todos/todoAdded', payload: 'Learn about actions' })
 // log: '3'
 ```
 
-And we can see the output in the console:
+控制台输出：
 
-![print middleware logging](/img/tutorials/fundamentals/print-middleware-logging.png)
+![打印中间件日志](/img/tutorials/fundamentals/print-middleware-logging.png)
 
-So how does that work?
+这是怎么做到的？
 
-**Middleware form a pipeline around the store's `dispatch` method**. When we call `store.dispatch(action)`, we're _actually_ calling the first middleware in the pipeline. That middleware can then do anything it wants when it sees the action. Typically, a middleware will check to see if the action is a specific type that it cares about, much like a reducer would. If it's the right type, the middleware might run some custom logic. Otherwise, it passes the action to the next middleware in the pipeline.
+**中间件是包裹在 store 的 `dispatch` 方法外层的一条管线**。调用 `store.dispatch(action)`，实际执行的是管线中的第一个中间件。它可以对动作做任何处理。通常，中间件会检测动作类型，如果是它感兴趣的类型，就执行自定义逻辑，否则将动作传给下一个中间件。
 
-_Unlike_ a reducer, **middleware can have side effects inside**, including timeouts and other async logic.
+与 reducer 不同的是，**中间件允许执行副作用代码**，包括定时器和其它异步逻辑。
 
-In this case, the action is passed through:
+此例中，动作依次经过：
 
-1. The `print1` middleware (which we see as `store.dispatch`)
-2. The `print2` middleware
-3. The `print3` middleware
-4. The original `store.dispatch`
-5. The root reducer inside `store`
+1. `print1` 中间件（即 `store.dispatch`）
+2. `print2` 中间件
+3. `print3` 中间件
+4. 原始的 `store.dispatch`
+5. store 中的根 reducer
 
-And since these are all function calls, they all _return_ from that call stack. So, the `print1` middleware is the first to run, and the last to finish.
+因为这些都是函数调用，所以调用栈会依次返回。因此 `print1` 是第一个运行的，也是最后完成的。
 
-### Writing Custom Middleware
+### 编写自定义中间件
 
-We can also write our own middleware. You might not need to do this all the time, but custom middleware are a great way to add specific behaviors to a Redux application.
+你也可以编写自己的中间件。虽然没必要一直写自定义中间件，但中间件是向 Redux 应用添加特定行为的绝佳方式。
 
-**Redux middleware are written as a series of three nested functions**. Let's see what that pattern looks like. We'll start by trying to write this middleware using the `function` keyword, so that it's more clear what's happening:
+**Redux 中间件形态是一组嵌套的三层函数**。来看用 `function` 关键字写的例子，方便理解：
 
 ```js
-// Middleware written as ES5 functions
+// 使用 ES5 函数写的中间件
 
-// Outer function:
+// 外层函数：
 function exampleMiddleware(storeAPI) {
   return function wrapDispatch(next) {
     return function handleAction(action) {
-      // Do anything here: pass the action onwards with next(action),
-      // or restart the pipeline with storeAPI.dispatch(action)
-      // Can also use storeAPI.getState() here
+      // 这里可以传递动作给 next(action),
+      // 或调用 storeAPI.dispatch(action) 从管线起点重新开始，
+      // 还可以使用 storeAPI.getState()
 
       return next(action)
     }
@@ -431,47 +421,45 @@ function exampleMiddleware(storeAPI) {
 }
 ```
 
-Let's break down what these three functions do and what their arguments are.
+解释这三层函数及参数：
 
-- `exampleMiddleware`: The outer function is actually the "middleware" itself. It will be called by `applyMiddleware`, and receives a `storeAPI` object containing the store's `{dispatch, getState}` functions. These are the same `dispatch` and `getState` functions that are actually part of the store. If you call this `dispatch` function, it will send the action to the _start_ of the middleware pipeline. This is only called once.
-- `wrapDispatch`: The middle function receives a function called `next` as its argument. This function is actually the _next middleware_ in the pipeline. If this middleware is the last one in the sequence, then `next` is actually the original `store.dispatch` function instead. Calling `next(action)` passes the action to the _next_ middleware in the pipeline. This is also only called once
-- `handleAction`: Finally, the inner function receives the current `action` as its argument, and will be called _every_ time an action is dispatched.
+- `exampleMiddleware`：外层函数即中间件本体，会被 `applyMiddleware` 调用，接收 `storeAPI`，包含 `{dispatch, getState}`。调用这个 `dispatch` 将动作送入中间件管线起点。此函数只调用一次。
+- `wrapDispatch`：中间层函数参数是 `next`，表示管线中的下一个中间件函数。如果当前是最后一个中间件，则 `next` 是原始的 `store.dispatch`。调用 `next(action)` 把动作传给管线下一个。此函数也只调用一次。
+- `handleAction`：内层函数接收当前 `action`，每次派发动作时都会调用。
 
 :::tip
 
-You can give these middleware functions any names you want, but it can help to use these names to remember what each one does:
+你可以给这三个函数起任意名字，但使用下面名字有助理解：
 
-- Outer: `someCustomMiddleware` (or whatever your middleware is called)
-- Middle: `wrapDispatch`
-- Inner: `handleAction`
+- 外层：`someCustomMiddleware`（你的中间件名）
+- 中层：`wrapDispatch`
+- 内层：`handleAction`
 
 :::
 
-Because these are normal functions, we can also write them using ES2015 arrow functions. This lets us write them shorter because arrow functions don't have to have a `return` statement, but it can also be a bit harder to read if you're not yet familiar with arrow functions and implicit returns.
-
-Here's the same example as above, using arrow functions:
+用箭头函数也能写得更短，利用隐式返回：
 
 ```js
 const anotherExampleMiddleware = storeAPI => next => action => {
-  // Do something in here, when each action is dispatched
+  // 每次动作派发时这里执行
 
   return next(action)
 }
 ```
 
-We're still nesting those three functions together, and returning each function, but the implicit returns make this shorter.
+依然是三层嵌套并返回函数，只是代码更简洁。
 
-### Your First Custom Middleware
+### 你的第一个自定义中间件
 
-Let's say we want to add some logging to our application. We'd like to see the contents of each action in the console when it's dispatched, and we'd like to see what the state is after the action has been handled by the reducers.
+假如我们想给应用添加日志，打印每个动作和动作后状态：
 
 :::info
 
-These example middleware aren't specifically part of the actual todo app, but you can try adding them to your project to see what happens when you use them.
+这些示例中间件不属于实际 todo 应用，但你可以添加进项目看看效果。
 
 :::
 
-We can write a small middleware that will log that information to the console for us:
+示例中间件：
 
 ```js
 const loggerMiddleware = storeAPI => next => action => {
@@ -482,20 +470,20 @@ const loggerMiddleware = storeAPI => next => action => {
 }
 ```
 
-Whenever an action is dispatched:
+动作被派发时：
 
-- The first part of the `handleAction` function runs, and we print `'dispatching'`
-- We pass the action to the `next` section, which may be another middleware or the real `store.dispatch`
-- Eventually the reducers run and the state is updated, and the `next` function returns
-- We can now call `storeAPI.getState()` and see what the new state is
-- We finish by returning whatever `result` value came from the `next` middleware
+- `handleAction` 的第一条语句打印 'dispatching'
+- 调用 `next(action)` 传给下一个中间件或真实的 `store.dispatch`
+- reducer 运行，状态更新，`next` 返回
+- 调用 `storeAPI.getState()` 查看新状态并打印
+- 最后返回执行结果
 
-Any middleware can return any value, and the return value from the first middleware in the pipeline is actually returned when you call `store.dispatch()`. For example:
+任何中间件都能够返回任何值，而管线第一个中间件的返回值会成为调用 `store.dispatch()` 的返回结果。例如：
 
 ```js
 const alwaysReturnHelloMiddleware = storeAPI => next => action => {
   const originalResult = next(action)
-  // Ignore the original result, return something else
+  // 忽略原始结果，返回其它值
   return 'Hello!'
 }
 
@@ -507,7 +495,7 @@ console.log(dispatchResult)
 // log: 'Hello!'
 ```
 
-Let's try one more example. Middleware often look for a specific action, and then do something when that action is dispatched. Middleware also have the ability to run async logic inside. We can write a middleware that prints something on a delay when it sees a certain action:
+再尝试一个中间件，监听特定动作，并在延时后打印内容：
 
 ```js
 const delayedMessageMiddleware = storeAPI => next => action => {
@@ -521,41 +509,37 @@ const delayedMessageMiddleware = storeAPI => next => action => {
 }
 ```
 
-This middleware will look for "todo added" actions. Every time it sees one, it sets a 1-second timer, and then prints the action's payload to the console.
+此中间件监听“待办添加”动作，每次见到时设置 1 秒定时器，然后打印动作的有效载荷。
 
-### Middleware Use Cases
+### 中间件的实际应用
 
-So, what can we do with middleware? Lots of things!
+中间件能对派发的动作做任何事：
 
-A middleware can do anything it wants when it sees a dispatched action:
+- 打印日志
+- 设置定时器
+- 发起异步 API 调用
+- 修改动作
+- 暂停甚至阻止动作传递
 
-- Log something to the console
-- Set timeouts
-- Make asynchronous API calls
-- Modify the action
-- Pause the action or even stop it entirely
+以及你能想到的其他操作。
 
-and anything else you can think of.
-
-In particular, **middleware are _intended_ to contain logic with side effects**. In addition, **middleware can modify `dispatch` to accept things that are _not_ plain action objects**. We'll talk more about both of these [in Part 6: Async Logic](./part-6-async-logic.md).
+特别是，**中间件旨在执行副作用逻辑**。此外，**中间件还可以修改 `dispatch`，使它接受非普通动作对象**。这部分内容我们将在[第 6 部分：异步逻辑](./part-6-async-logic.md)中详细讲解。
 
 ## Redux DevTools
 
-Finally, there's one more very important thing to cover with configuring the store.
+最后，还有一件重要的事要讲：配置 store。
 
-**Redux was specifically designed to make it easier to understand when, where, why, and how your state has changed over time**. As part of that, Redux was built to enable the use of the **Redux DevTools** - an addon that shows you a history of what actions were dispatched, what those actions contained, and how the state changed after each dispatched action.
+**Redux 的设计初衷之一是方便理解状态随时间如何被改变**。因此，Redux 支持使用 **Redux DevTools** —— 一个展示动作历史、动作内容和状态变化的调试插件。
 
-The Redux DevTools UI is available as a browser extension for [Chrome](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en) and [Firefox](https://addons.mozilla.org/en-US/firefox/addon/reduxdevtools/). If you haven't already added that to your browser, go ahead and do that now.
+Redux DevTools UI 作为浏览器扩展提供，下载地址为 Chrome：[https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en) 以及 Firefox：[https://addons.mozilla.org/en-US/firefox/addon/reduxdevtools/](https://addons.mozilla.org/en-US/firefox/addon/reduxdevtools/)。如果还没安装，赶紧安装一下。
 
-Once that's installed, open up the browser's DevTools window. You should now see a new "Redux" tab there. It doesn't do anything, yet - we've got to set it up to talk to a Redux store first.
+安装后打开浏览器开发者工具，你会看到多了个 “Redux” 标签。但它现在还没作用，需要先配置 store 让它能通信。
 
-### Adding the DevTools to the Store
+### 在 Store 中添加 DevTools 支持
 
-Once the extension is installed, we need to configure the store so that the DevTools can see what's happening inside. The DevTools require a specific store enhancer to be added to make that possible.
+安装扩展后，需要配置 store，添加 DevTools 增强器。官方文档（[Redux DevTools Extension docs](https://github.com/reduxjs/redux-devtools/tree/main/extension)）中配置方式略显复杂，但有个 NPM 包 `redux-devtools-extension` 能简化配置，它导出一个 `composeWithDevTools` 函数，替代 Redux 原来的 `compose`。
 
-The [Redux DevTools Extension docs](https://github.com/reduxjs/redux-devtools/tree/main/extension) have some instructions on how to set up the store, but the steps listed are a bit complicated. However, there's an NPM package called `redux-devtools-extension` that takes care of the complicated part. That package exports a specialized `composeWithDevTools` function that we can use instead of the original Redux `compose` function.
-
-Here's how that looks:
+示例：
 
 ```js title="src/store.js"
 import { createStore, applyMiddleware } from 'redux'
@@ -564,39 +548,39 @@ import rootReducer from './reducer'
 import { print1, print2, print3 } from './exampleAddons/middleware'
 
 const composedEnhancer = composeWithDevTools(
-  // EXAMPLE: Add whatever middleware you actually want to use here
+  // EXAMPLE：这里添加你想用的中间件
   applyMiddleware(print1, print2, print3)
-  // other store enhancers if any
+  // 其它 store 增强器，如果有的话
 )
 
 const store = createStore(rootReducer, composedEnhancer)
 export default store
 ```
 
-Make sure that `index.js` is still dispatching an action after importing the store. Now, open up the Redux DevTools tab in the browser's DevTools window. You should see something that looks like this:
+确保 `index.js` 在导入 store 后仍派发动作。打开浏览器 DevTools 里的 Redux 标签页，应该会看到类似下面界面：
 
-![Redux DevTools Extension: action tab](/img/tutorials/fundamentals/devtools-action-tab.png)
+![Redux DevTools 扩展：动作标签](/img/tutorials/fundamentals/devtools-action-tab.png)
 
-There's a list of dispatched actions on the left. If we click one of them, the right panel shows several tabs:
+左侧是派发动作列表。点击某个动作，右侧显示多个标签：
 
-- The contents of that action object
-- The entire Redux state as it looked after the reducer ran
-- The diff between the previous state and this state
-- If enabled, the function stack trace leading back to the line of code that called `store.dispatch()` in the first place
+- 动作对象内容
+- 运行 reducer 后完整状态
+- 状态差异（diff）
+- 开启时，调用 `store.dispatch()` 的代码堆栈跟踪
 
-Here's what the "State" and "Diff" tabs look like after we dispatched that "add todo" action:
+以下展示“State”和“Diff”标签页，执行 “add todo” 动作后：
 
-![Redux DevTools Extension: state tab](/img/tutorials/fundamentals/devtools-state-tab.png)
+![Redux DevTools 扩展：状态标签](/img/tutorials/fundamentals/devtools-state-tab.png)
 
-![Redux DevTools Extension: diff tab](/img/tutorials/fundamentals/devtools-diff-tab.png)
+![Redux DevTools 扩展：差异标签](/img/tutorials/fundamentals/devtools-diff-tab.png)
 
-These are very powerful tools that can help us debug our apps and understand exactly what's happening inside.
+这些都是非常强大的工具，帮助我们调试应用，准确理解内部发生了什么。
 
-## What You've Learned
+## 你学到了什么
 
-As you've seen, the store is the central piece of every Redux application. Stores contain state and handle actions by running reducers, and can be customized to add additional behaviors.
+如你所见，store 是 Redux 应用的核心部分。store 包含状态，通过 reducer 处理动作，并且能够被定制以扩展额外功能。
 
-Let's see how our example app looks now:
+来看我们示例应用此刻的样貌：
 
 <iframe
   class="codesandbox"
@@ -606,35 +590,35 @@ Let's see how our example app looks now:
   sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
 ></iframe>
 
-And as a reminder, here's what we covered in this section:
+再来回顾本节内容：
 
-:::tip Summary
+:::tip 总结
 
-- **Redux apps always have a single store**
-  - Stores are created with the Redux `createStore` API
-  - Every store has a single root reducer function
-- **Stores have three main methods**
-  - `getState` returns the current state
-  - `dispatch` sends an action to the reducer to update the state
-  - `subscribe` takes a listener callback that runs each time an action is dispatched
-- **Store enhancers let us customize the store when it's created**
-  - Enhancers wrap the store and can override its methods
-  - `createStore` accepts one enhancer as an argument
-  - Multiple enhancers can be merged together using the `compose` API
-- **Middleware are the main way to customize the store**
-  - Middleware are added using the `applyMiddleware` enhancer
-  - Middleware are written as three nested functions inside each other
-  - Middleware run each time an action is dispatched
-  - Middleware can have side effects inside
-- **The Redux DevTools let you see what's changed in your app over time**
-  - The DevTools Extension can be installed in your browser
-  - The store needs the DevTools enhancer added, using `composeWithDevTools`
-  - The DevTools show dispatched actions and changes in state over time
+- **Redux 应用始终只有一个 store**
+  - 使用 Redux 的 `createStore` API 创建 store
+  - 每个 store 有一个根 reducer 函数
+- **store 有三个主要方法**
+  - `getState` 返回当前状态
+  - `dispatch` 派发动作给 reducer 更新状态
+  - `subscribe` 注册监听器，每次动作派发时被调用
+- **store enhancer 用于定制 store**
+  - enhancer 包裹 store，可以覆盖 store 方法
+  - `createStore` 只接受一个 enhancer 参数
+  - 多个 enhancer 可以用 `compose` API 合并
+- **中间件是定制 store 的主要方式**
+  - 使用 `applyMiddleware` enhancer 添加中间件
+  - 中间件由三层嵌套函数组成
+  - 每次动作派发时都会执行中间件
+  - 中间件中可以执行副作用
+- **Redux DevTools 让你看到应用状态随时间变化**
+  - 在浏览器安装 DevTools 扩展
+  - store 需要用 `composeWithDevTools` 添加 DevTools enhancer
+  - DevTools 显示派发动作和状态变化
 
 :::
 
-## What's Next?
+## 接下来？
 
-We now have a working Redux store that can run our reducers and update the state when we dispatch actions.
+我们现在有了一个能运行 reducer、并响应动作更新状态的 store。
 
-However, every app needs a user interface to display the data and let the user do something useful. In [Part 5: UI and React](./part-5-ui-and-react.md), we'll see how the Redux store works with a UI, and specifically see how Redux can work together with React.
+然而，每个应用都需要 UI 来展示数据并让用户交互。在[第5部分：UI 和 React](./part-5-ui-and-react.md)中，我们将了解 Redux store 如何和 UI 配合，特别是在 React 中的应用。

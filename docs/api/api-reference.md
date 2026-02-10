@@ -1,34 +1,34 @@
 ---
 id: api-reference
-title: API Reference
+title: API 参考
 ---
 
-# API Reference
+# API 参考
 
-This section documents the original Redux core API. The Redux core is small - it defines a set of contracts for you to implement (such as [reducers](../understanding/thinking-in-redux/Glossary.md#reducer)) and provides a few helper functions to tie these contracts together.
+本节记录了 Redux 核心 API。Redux 核心较小——它定义了一组供你实现的契约（例如 [reducers](../understanding/thinking-in-redux/Glossary.md#reducer)），并提供了一些辅助函数来将这些契约结合起来。
 
-**In practice, you won't use the Redux core directly**. [**Redux Toolkit**](https://redux-toolkit.js.org) is our official recommended approach for writing Redux logic. It wraps around the Redux core, and contains packages and functions that we think are essential for building a Redux app. Redux Toolkit builds in our suggested best practices, simplifies most Redux tasks, prevents common mistakes, and makes it easier to write Redux applications. Additionally, [**React-Redux**](https://react-redux.js.org) lets your React components talk to the Redux store.
+**实际上，你不会直接使用 Redux 核心。** [**Redux Toolkit**](https://redux-toolkit.js.org) 是我们推荐的官方编写 Redux 逻辑的方法。它围绕 Redux 核心进行封装，包含了我们认为构建 Redux 应用必需的包和函数。Redux Toolkit 内置了我们的最佳实践，简化了大多数 Redux 任务，避免常见错误，且让编写 Redux 应用变得更简单。此外，[**React-Redux**](https://react-redux.js.org) 让你的 React 组件能够与 Redux store 交互。
 
-See their API docs here:
+请查看它们的 API 文档：
 
 - https://redux-toolkit.js.org/
 - https://react-redux.js.org/
 
 :::danger
 
-**The original Redux core `createStore` method is deprecated!**
+**原生 Redux 核心的 `createStore` 方法已被弃用！**
 
-`createStore` will continue to work indefinitely, but we discourage direct use of `createStore` or the original `redux` package.
+`createStore` 将继续无限期工作，但我们不建议直接使用 `createStore` 或原先的 `redux` 包。
 
-Instead, you should use [the `configureStore` method](https://redux-toolkit.js.org/api/configureStore) from our official [Redux Toolkit](https://redux-toolkit.js.org) package, which wraps `createStore` to provide a better default setup and configuration approach. You should also use Redux Toolkit's [`createSlice` method](https://redux-toolkit.js.org/api/createSlice) for writing reducer logic.
+你应当改用我们官方 [Redux Toolkit](https://redux-toolkit.js.org) 包中的 [ `configureStore` 方法](https://redux-toolkit.js.org/api/configureStore)，该方法封装了 `createStore`，提供了更好的默认配置和设置方式。编写 reducer 逻辑时，也应使用 Redux Toolkit 的 [`createSlice` 方法](https://redux-toolkit.js.org/api/createSlice)。
 
-Redux Toolkit also re-exports all of the other APIs included in the `redux` package as well.
+Redux Toolkit 还重新导出了 `redux` 包中包含的所有其他 API。
 
-See the [**Migrating to Modern Redux** page](../usage/migrating-to-modern-redux.mdx) for details on how to update your existing legacy Redux codebase to use Redux Toolkit.
+详见[**迁移到现代 Redux**页面](../usage/migrating-to-modern-redux.mdx)，了解如何将现有的旧版 Redux 代码库升级到使用 Redux Toolkit。
 
 :::
 
-## Top-Level Exports
+## 顶层导出
 
 - [createStore(reducer, preloadedState?, enhancer?)](createStore.md)
 - [combineReducers(reducers)](combineReducers.md)

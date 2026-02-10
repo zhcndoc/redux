@@ -1,16 +1,16 @@
 ---
 id: installation
-title: Installation
-description: 'Introduction > Installation: Installation instructions for Redux and related packages'
+title: 安装
+description: '介绍 > 安装：Redux 及相关包的安装说明'
 ---
 
-# Installation
+# 安装
 
 ## Redux Toolkit
 
-Redux Toolkit includes the Redux core, as well as other key packages we feel are essential for building Redux applications (such as Redux Thunk and Reselect).
+Redux Toolkit 包含 Redux 核心，以及其他我们认为构建 Redux 应用必备的关键包（例如 Redux Thunk 和 Reselect）。
 
-It's available as a package on NPM for use with a module bundler or in a Node application:
+它作为一个 NPM 包可用，适用于模块打包器或 Node 应用：
 
 ```bash
 # NPM
@@ -20,57 +20,57 @@ npm install @reduxjs/toolkit
 yarn add @reduxjs/toolkit
 ```
 
-The package includes a precompiled ESM build that can be used as a [`<script type="module">` tag](https://unpkg.com/redux/dist/redux.browser.mjs) directly in the browser.
+该包包含预编译的 ESM 构建，可以直接在浏览器中作为 [`<script type="module">` 标签](https://unpkg.com/redux/dist/redux.browser.mjs) 使用。
 
-## Complementary Packages
+## 补充包
 
 ### React-Redux
 
-Most likely, you'll also need [the `react-redux` bindings for use with React](https://github.com/reduxjs/react-redux)
+你很可能还需要 [用于 React 的 `react-redux` 绑定](https://github.com/reduxjs/react-redux)
 
 ```bash
 npm install react-redux
 ```
 
-Note that unlike Redux itself, many packages in the Redux ecosystem don't provide UMD builds, so we recommend using module bundlers like [Vite](https://vitejs.dev/) and [Webpack](https://webpack.js.org/) for the most comfortable development experience.
+请注意，与 Redux 本身不同，Redux 生态系统中的许多包不提供 UMD 构建，因此我们建议使用模块打包器，如 [Vite](https://vitejs.dev/) 和 [Webpack](https://webpack.js.org/)，以获得更舒适的开发体验。
 
-### Redux DevTools Extension
+### Redux DevTools 扩展
 
-Redux Toolkit's `configureStore` automatically sets up integration with the [Redux DevTools](https://github.com/reduxjs/redux-devtools/tree/main/extension). You'll want to install the browser extensions to view the store state and actions:
+Redux Toolkit 的 `configureStore` 会自动设置与 [Redux DevTools](https://github.com/reduxjs/redux-devtools/tree/main/extension) 的集成。你需要安装浏览器扩展来查看 store 状态和操作：
 
-- Redux DevTools Extension:
-  - [Redux DevTools Extension for Chrome](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)
-  - [Redux DevTools Extension for Firefox](https://addons.mozilla.org/en-US/firefox/addon/reduxdevtools/)
+- Redux DevTools 扩展：
+  - [Chrome 版 Redux DevTools 扩展](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)
+  - [Firefox 版 Redux DevTools 扩展](https://addons.mozilla.org/en-US/firefox/addon/reduxdevtools/)
 
-If you're using React, you'll want the React DevTools extension as well:
+如果你使用 React，还需要安装 React DevTools 扩展：
 
-- React DevTools Extension:
-  - [React DevTools Extension for Chrome](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=en)
-  - [React DevTools Extension for Firefox](https://addons.mozilla.org/en-US/firefox/addon/react-devtools/)
+- React DevTools 扩展：
+  - [Chrome 版 React DevTools 扩展](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=en)
+  - [Firefox 版 React DevTools 扩展](https://addons.mozilla.org/en-US/firefox/addon/react-devtools/)
 
-## Create a React Redux App
+## 创建 React Redux 应用
 
-The recommended way to start new apps with React and Redux is by using [our official Redux+TS template for Vite](https://github.com/reduxjs/redux-templates), or by creating a new Next.js project using [Next's `with-redux` template](https://github.com/vercel/next.js/tree/canary/examples/with-redux).
+启动 React 和 Redux 新应用的推荐方式是使用 [我们官方的 Vite Redux+TS 模板](https://github.com/reduxjs/redux-templates)，或使用 [Next.js 的 `with-redux` 模板](https://github.com/vercel/next.js/tree/canary/examples/with-redux) 创建新项目。
 
-Both of these already have Redux Toolkit and React-Redux configured appropriately for that build tool, and come with a small example app that demonstrates how to use several of Redux Toolkit's features.
+这两个模板都已为各自的构建工具适当配置了 Redux Toolkit 和 React-Redux，并附带一个小型示例应用，演示如何使用 Redux Toolkit 的多个功能。
 
 ```bash
-# Vite with our Redux+TS template
-# (using the `degit` tool to clone and extract the template)
+# 使用我们的 Redux+TS Vite 模板
+# （使用 `degit` 工具克隆并提取模板）
 npx degit reduxjs/redux-templates/packages/vite-template-redux my-app
 
-# Next.js using the `with-redux` template
+# 使用 Next.js 的 `with-redux` 模板
 npx create-next-app --example with-redux my-app
 ```
 
-We do not currently have official React Native templates, but recommend these templates for standard React Native and for Expo:
+我们当前没有官方的 React Native 模板，但推荐以下 React Native 和 Expo 的模板：
 
 - https://github.com/rahsheen/react-native-template-redux-typescript
 - https://github.com/rahsheen/expo-template-redux-typescript
 
-## Redux Core
+## Redux 核心
 
-To install the `redux` core package by itself:
+单独安装 `redux` 核心包：
 
 ```bash
 # NPM
@@ -80,4 +80,4 @@ npm install redux
 yarn add redux
 ```
 
-If you're not using a bundler, you can [access these files on unpkg](https://unpkg.com/redux/), download them, or point your package manager to them.
+如果你不使用打包器，可以[访问 unpkg 上的这些文件](https://unpkg.com/redux/)、下载它们，或让你的包管理器指向它们。
