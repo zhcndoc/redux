@@ -1,6 +1,6 @@
 {
   "app_dir": "/",
   "build_command": "cd docs && yarn && cd ../website && yarn build && cp _redirects ./build",
-  "install_command": "yarn install",
+  "install_command": "cd website && yarn install",
   "output_dir": "website/build"
 }
