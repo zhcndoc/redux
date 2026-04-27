@@ -50,7 +50,7 @@ Pages Router 是 Next.js 的原始架构。如果你使用 Pages Router，Redux 
 
 Next.js App Router 的主要新特性是支持 React Server Components（RSCs）。RSC 是一种只在服务器端渲染的 React 组件，与在客户端和服务器端都渲染的“客户端”组件不同。RSC 可以定义为 `async` 函数，并在渲染时返回 Promise，以异步请求渲染所需数据。
 
-RSC 阻塞数据请求的能力意味着在 App Router 下，不再使用 `getServerSideProps` 来获取渲染数据。树中的任何组件都可以异步请求数据。虽然这很方便，但意味着如果定义了全局变量（比如 Redux store），它们将在请求间共享。这会导致 Redux store 被其它请求的数据污染。
+RSC 的数据请求阻塞能力意味着在 App Router 中，你不再拥有 `getServerSideProps` 来为渲染获取数据。树中的任何组件都可以发起异步数据请求。虽然这非常方便，但也意味着如果你定义了全局变量（例如 Redux store），它们会在请求之间共享。这是个问题，因为 Redux store 可能会被其他请求的数据污染。
 
 基于 App Router 架构，针对 Redux 的一般建议有：
 
@@ -124,9 +124,9 @@ export const makeStore = () => {
   })
 }
 
-// Infer the type of makeStore
+// 推断 makeStore 的返回类型
 export type AppStore = ReturnType<typeof makeStore>
-// Infer the `RootState` and `AppDispatch` types from the store itself
+// 从 store 本身推断 `RootState` 和 `AppDispatch` 类型
 export type RootState = ReturnType<AppStore['getState']>
 export type AppDispatch = AppStore['dispatch']
 
@@ -137,7 +137,7 @@ import { useDispatch, useSelector, useStore } from 'react-redux'
 import type { AppDispatch, AppStore, RootState } from './store'
 
 // highlight-start
-// Use throughout your app instead of plain `useDispatch` and `useSelector`
+// 在整个应用中使用这些，而不是直接使用 `useDispatch` 和 `useSelector`
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>()
 export const useAppSelector = useSelector.withTypes<RootState>()
 export const useAppStore = useStore.withTypes<AppStore>()
@@ -158,9 +158,9 @@ export const makeStore = () => {
   })
 }
 
-// Infer the type of makeStore
+// 推断 makeStore 的返回类型
 export type AppStore = ReturnType<typeof makeStore>
-// Infer the `RootState` and `AppDispatch` types from the store itself
+// 从 store 本身推断 `RootState` 和 `AppDispatch` 类型
 export type RootState = ReturnType<AppStore['getState']>
 export type AppDispatch = AppStore['dispatch']
 
@@ -182,7 +182,7 @@ export default function StoreProvider({
   // highlight-start
   const storeRef = useRef<AppStore | null>(null)
   if (!storeRef.current) {
-    // Create the store instance the first time this renders
+    // 第一次渲染时创建 store 实例
     storeRef.current = makeStore()
   }
   // highlight-end
@@ -236,11 +236,11 @@ export const makeStore = () =>
     }
   })
 
-// Infer the type of makeStore
+// 推断 makeStore 的返回类型
 export type AppStore = ReturnType<typeof makeStore>
-// Infer the `RootState` and `AppDispatch` types from the store itself
+// 从 store 本身推断 `RootState` 和 `AppDispatch` 类型
 export type RootState = ReturnType<AppStore['getState']>
-// Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
+// 推断类型：{posts: PostsState, comments: CommentsState, users: UsersState}
 export type AppDispatch = AppStore['dispatch']
 
 /* prettier-ignore */
@@ -321,11 +321,11 @@ export const makeStore = () =>
     }
   })
 
-// Infer the type of makeStore
+// 推断 makeStore 的返回类型
 export type AppStore = ReturnType<typeof makeStore>
-// Infer the `RootState` and `AppDispatch` types from the store itself
+// 从 store 本身推断 `RootState` 和 `AppDispatch` 类型
 export type RootState = ReturnType<AppStore['getState']>
-// Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
+// 推断类型：{posts: PostsState, comments: CommentsState, users: UsersState}
 export type AppDispatch = AppStore['dispatch']
 
 // file: lib/hooks.ts noEmit
@@ -333,7 +333,7 @@ import { useDispatch, useSelector, useStore } from 'react-redux'
 import type { AppDispatch, AppStore, RootState } from './store'
 
 // highlight-start
-// Use throughout your app instead of plain `useDispatch` and `useSelector`
+// 在整个应用中使用这些，而不是直接使用 `useDispatch` 和 `useSelector`
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>()
 export const useAppSelector = useSelector.withTypes<RootState>()
 export const useAppStore = useStore.withTypes<AppStore>()
@@ -353,7 +353,7 @@ import {
 
 export default function ProductName({ product }: { product: Product }) {
   // highlight-start
-  // Initialize the store with the product information
+  // 使用产品信息初始化 store
   const store = useAppStore()
   const initialized = useRef(false)
   if (!initialized.current) {

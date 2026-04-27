@@ -225,7 +225,7 @@ const fetchIssuesCount = (org: string, repo: string) => {
 
 #### 手写 Thunk 的类型定义
 
-如果手写 thunk，可以显式声明参数类型为 `(dispatch: AppDispatch, getState: () => RootState)`。这很常用，所以也可以定义可复用的 `AppThunk` 类型来替代：
+如果你手写 thunk，可以显式将 thunk 参数类型写为 `(dispatch: AppDispatch, getState: () => RootState)`。由于这种写法很常见，你也可以定义一个可复用的 `AppThunk` 类型并改用它：
 
 ```ts title="app/store.ts"
 // highlight-next-line
@@ -477,7 +477,7 @@ console.log(
 
 也见过 [`createSlice` 中的 `extraReducers` 字段可以响应 slice 外定义的动作](./part-4-using-data.md##using-extrareducers-to-handle-other-actions)。
 
-这次需要监听 `fetchPosts` thunk 派发的 “pending” 和 “fulfilled” 动作。该 thunk 函数上附带这些动作创建器，我们能传给 `extraReducers` 监听它们：
+In this case, we need to listen for the "pending" and "fulfilled" action types dispatched by our `fetchPosts` thunk. Those action creators are attached to our actual `fetchPosts` function, and we can pass those to `extraReducers` to listen for those actions:
 
 ```ts title="features/posts/postsSlice.ts"
 export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => {

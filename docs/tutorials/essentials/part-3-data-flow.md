@@ -441,9 +441,15 @@ export const AddPostForm = () => {
     <section>
       <h2>添加新帖子</h2>
       <form onSubmit={handleSubmit}>
-        <label htmlFor="postTitle">帖子标题：</label>
-        <input type="text" id="postTitle" defaultValue="" required />
-        <label htmlFor="postContent">正文：</label>
+        <label htmlFor="postTitle">Post Title:</label>
+        <input
+          type="text"
+          id="postTitle"
+          name="postTitle"
+          defaultValue=""
+          required
+        />
+        <label htmlFor="postContent">Content:</label>
         <textarea
           id="postContent"
           name="postContent"
@@ -601,9 +607,15 @@ export const AddPostForm = () => {
     <section>
       <h2>添加新帖子</h2>
       <form onSubmit={handleSubmit}>
-        <label htmlFor="postTitle">帖子标题：</label>
-        <input type="text" id="postTitle" defaultValue="" required />
-        <label htmlFor="postContent">正文：</label>
+        <label htmlFor="postTitle">Post Title:</label>
+        <input
+          type="text"
+          id="postTitle"
+          name="postTitle"
+          defaultValue=""
+          required
+        />
+        <label htmlFor="postContent">Content:</label>
         <textarea
           id="postContent"
           name="postContent"

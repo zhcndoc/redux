@@ -927,8 +927,8 @@ export const apiSlice = createApi({
 
 还有两个 Promise：
 
-- `cacheDataLoaded`，在首次成功缓存数据后解决，一般挂起等待数据就绪
-- `cacheEntryRemoved`，缓存条目被移除（无活跃订阅且超时）时解决
+- `cacheDataLoaded`: 在接收到的第一个缓存值加载完成时 resolve，通常用于在继续处理前等待缓存中确实已有一个实际值
+- `cacheEntryRemoved`: 在该缓存条目被移除时 resolve（即不再有订阅者，且该缓存条目已被垃圾回收）
 
 只要有任意订阅，该缓存就保留。订阅挂起且缓存超时后移除，`cacheEntryRemoved` 解决。基本用法：
 
