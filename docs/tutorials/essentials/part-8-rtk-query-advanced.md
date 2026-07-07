@@ -652,12 +652,12 @@ import { useGetPostsQuery, Post } from '@/features/api/apiSlice'
 import { selectUserById } from './usersSlice'
 
 // highlight-start
-// 创建 TS 类型表示传入给 `selectFromResult` 的 hook 结果类型
-type GetPostSelectFromResultArg = TypedUseQueryStateResult<Post[], any, any>
+// 创建一个 TS 类型，用来表示“传入该钩子 `selectFromResult` 函数的结果值”
+type GetPostsSelectFromResultArg = TypedUseQueryStateResult<Post[], any, any>
 
 const selectPostsForUser = createSelector(
-  (res: GetPostSelectFromResultArg) => res.data,
-  (res: GetPostSelectFromResultArg, userId: string) => userId,
+  (res: GetPostsSelectFromResultArg) => res.data,
+  (res: GetPostsSelectFromResultArg, userId: string) => userId,
   (data, userId) => data?.filter(post => post.user === userId)
 )
 // highlight-end
@@ -815,13 +815,13 @@ export const ReactionButtons = ({ post }: ReactionButtonsProps) => {
 
 ### 点赞的乐观更新
 
-点赞这种小操作，不必重新获取 *整个* 帖子列表。可以直接修改客户端缓存数据，模拟服务器端修改效果。且提前更新缓存，用户点击后反馈立刻可见，无需等待请求返回。**这一先更新客户端状态的做法称为“乐观更新”**，在 Web 应用很常见。
+点赞这种小操作，不必重新获取 *整个* 帖子列表。可以直接修改客户端缓存数据，模拟服务器端修改效果。且提前更新缓存，用户点击后反馈立刻可见，无需等待请求返回。**这种先更新客户端状态的做法称为“乐观更新”**，在 Web 应用中很常见。
 
 RTK Query 包含 **直接操作客户端缓存的工具**。可结合 RTK Query 的 **请求生命周期方法** 来实现乐观更新。
 
 #### 缓存更新工具
 
-API 切片有附加方法在 `api.util` 下（[文档](https://redux-toolkit.js.org/rtk-query/api/created-api/api-slice-utils)）。包括修改缓存的 thunk：`upsertQueryData` 以添加或替换缓存项，和 `updateQueryData` 以修改缓存数据。它们是 thunk，可在任何能访问 `dispatch` 的地方使用。
+API 切片有附加方法在 `api.util` 下（[文档](https://redux-toolkit.js.org/rtk-query/api/created-api/api-slice-utils)）。包括修改缓存的 thunk：`upsertQueryData` 用于添加或替换缓存项，以及 `updateQueryData` 用于修改缓存数据。它们都是 thunk，可在任何能访问 `dispatch` 的地方使用。
 
 其中 `updateQueryData` 接收三个参数：要更新的端点名称、缓存键参数，以及用于更新缓存的回调。**回调通过 Immer 拦截，可“直接 mutate”缓存数据，操作类似 `createSlice` 里的 reducers**：
 
@@ -842,11 +842,11 @@ dispatch(
 
 每当发起请求，该回调会执行。这里可放额外代码响应请求。
 
-类似异步 thunk 和监听器，`onQueryStarted` 接受两个参数：请求参数 `arg` 和生命周期 API `lifecycleApi`。后者包含 `{dispatch, getState, extra, requestId}`，还有额外方法，最重要是 `lifecycleApi.queryFulfilled`，这是一个在请求返回（成功或失败）时解决的 Promise。
+类似异步 thunk 和监听器，`onQueryStarted` 接受两个参数：请求参数 `arg` 和生命周期 API `lifecycleApi`。后者包含 `{dispatch, getState, extra, requestId}`，还有额外方法，最重要的是 `lifecycleApi.queryFulfilled`，这是一个在请求返回（成功或失败）时解决的 Promise。
 
 #### 实现乐观更新
 
-我们可在 `onQueryStarted` 用缓存更新工具实现乐观更新（请求返回前更新缓存）或悲观更新（请求返回后更新缓存）。
+我们可在 `onQueryStarted` 中用缓存更新工具实现乐观更新（请求返回前更新缓存）或悲观更新（请求返回后更新缓存）。
 
 这里实现乐观更新：查找 `getPosts` 缓存中对应帖子，递增该点赞计数。因为存在另一份同样帖子的 `getPost` 缓存，也需同步更新。
 
@@ -907,7 +907,7 @@ export const apiSlice = createApi({
 
 现在快速点击点赞按钮，UI 上点赞数量会即时递增。网络请求也会发出，但用户感觉不会卡顿。
 
-有时变更返回重要数据（如服务器生成的 ID），也可以等请求成功后再基于响应更新缓存，称为悲观更新。
+有时变更返回重要数据（如服务器生成的 ID），也可以等请求成功后再基于响应更新缓存，这称为悲观更新。
 
 ### 通知的流更新
 
@@ -937,7 +937,7 @@ export const apiSlice = createApi({
 - 接收数据后用 `updateCachedData` 更新缓存
 - 等待 `cacheEntryRemoved`，做清理动作
 
-`onCacheEntryAdded` 适合放长时间运行的逻辑，如聊天应用在打开频道时请求初始消息，保持 WebSocket 监听新消息，关闭频道时断开。
+`onCacheEntryAdded` 适合放长时间运行的逻辑，如聊天应用在打开频道时请求初始消息，保持 WebSocket 监听新消息，关闭频道时断开频道。
 
 #### 获取通知
 
