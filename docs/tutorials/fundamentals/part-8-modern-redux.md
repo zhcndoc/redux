@@ -58,7 +58,7 @@ import { LiveExample } from '@site/src/components/LiveExample'
 
 正如你所见，Redux 的许多方面都涉及编写一些可能比较冗长的代码，例如不变更新、动作类型和动作创建函数、以及归一化状态等。这些模式存在着合理的原因，但“手写”那些代码可能很困难。此外，搭建 Redux store 的过程需要多个步骤，我们还需要为诸如在 thunk 中派发“加载”动作或处理归一化数据等逻辑自行设计流程。最后，很多时候用户也不确定该如何写出“正确的” Redux 逻辑。
 
-That's why the Redux team created [**Redux Toolkit**: our official, opinionated, "batteries included" toolset for efficient Redux development](/toolkit).
+因此，Redux 团队创建了 [**Redux Toolkit**](/toolkit)：我们官方推荐、内置所需功能的高效 Redux 开发工具集。
 
 Redux Toolkit 包含我们认为构建 Redux 应用不可或缺的包和函数。Redux Toolkit 内置了我们推荐的最佳实践，简化了大多数 Redux 任务，防止常见错误，并让编写 Redux 应用更容易。
 
@@ -121,7 +121,7 @@ export default store
 
 如果能减少这些步骤就好了。
 
-### 使用 `configureStore`
+### 使用 `configureStore` {#using-configurestore}
 
 **Redux Toolkit 提供了 `configureStore` API 来简化 store 设置过程**。`configureStore` 是对 Redux 核心 `createStore` API 的封装，自动帮我们完成大部分 store 设置。实际上，我们可以把它简化成一步：
 
@@ -190,7 +190,7 @@ npm uninstall redux redux-thunk reselect
 
 需要说明的是，**我们依然在用这些包，也需要它们被安装**。不过，由于 Redux Toolkit 依赖这些包，当你安装 `@reduxjs/toolkit` 时它们会自动安装，因此不必在 `package.json` 中单独声明。
 
-We can also remove the `@redux-devtools/extension` package entirely, since `configureStore` sets up the Redux DevTools connection for us:
+由于 `configureStore` 会替我们配置 Redux DevTools 连接，因此也可以完全移除 `@redux-devtools/extension` 包：
 
 ```js
 npm uninstall @redux-devtools/extension
@@ -273,7 +273,7 @@ console.log(todoToggled(42))
 
 值得深入说说 “修改” 这一点。
 
-### 使用 Immer 实现不变更新
+### 使用 Immer 实现不变更新 {#immutable-updates-with-immer}
 
 前面讲过 “修改”（直接改动对象/数组）和“不变性”（数据不可修改）的概念。
 
@@ -453,7 +453,7 @@ export default todosSlice.reducer
   title="Redux Fundamentals: createSlice"
 />
 
-## 编写 Thunks
+## 编写 Thunks {#writing-thunks}
 
 我们之前看过如何[写 thunk 来派发 “加载中”、“请求成功” 和 “请求失败” 动作](./part-7-standard-patterns.md#loading-state-enum-values)，要写动作创建函数、动作类型和 reducers。
 
@@ -461,9 +461,9 @@ export default todosSlice.reducer
 
 :::tip
 
-Redux Toolkit has a new [**RTK Query data fetching API**](/toolkit/rtk-query/overview). RTK Query is a purpose built data fetching and caching solution for Redux apps, and **can eliminate the need to write _any_ thunks or reducers to manage data fetching**. We encourage you to try it out and see if it can help simplify the data fetching code in your own apps!
+Redux Toolkit 提供了新的 [**RTK Query 数据获取 API**](/toolkit/rtk-query/overview)。RTK Query 是专为 Redux 应用设计的数据获取和缓存方案，**可以免去编写 thunk 或 reducer 来管理数据获取的需要**。欢迎试用，看看它能否简化你应用中的数据获取代码！
 
-We'll be updating the Redux tutorials soon to include sections on using RTK Query. Until then, see [the RTK Query section in the Redux Toolkit docs](/toolkit/rtk-query/overview).
+我们很快会更新 Redux 教程，加入使用 RTK Query 的章节。在此之前，请参阅 [Redux Toolkit 文档中的 RTK Query 章节](/toolkit/rtk-query/overview)。
 
 :::
 

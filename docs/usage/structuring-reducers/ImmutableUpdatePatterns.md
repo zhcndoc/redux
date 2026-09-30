@@ -7,13 +7,13 @@ description: '结构化 Reducers > 不可变更新模式：如何正确地不可
 <!-- prettier-ignore -->
 import HandWrittenReducersNote from "../../components/_HandWrittenReducersNote.mdx";
 
-# Immutable Update Patterns
+# 不可变更新模式
 
 <HandWrittenReducersNote />
 
-The articles listed in [Prerequisite Concepts#Immutable Data Management](PrerequisiteConcepts.md#immutable-data-management) give a number of good examples for how to perform basic update operations immutably, such as updating a field in an object or adding an item to the end of an array. However, reducers will often need to use those basic operations in combination to perform more complicated tasks. Here are some examples for some of the more common tasks you might have to implement.
+在[先决概念：不可变数据管理](PrerequisiteConcepts.md#immutable-data-management)一节中，列出了一些如何执行基本不可变更新的示例，例如更新对象字段或在数组末尾添加条目。不过，reducer 往往需要组合这些基本操作来完成更复杂的任务。下面介绍一些常见的实现方式。
 
-## 更新嵌套对象
+## 更新嵌套对象 {#updating-nested-objects}
 
 更新嵌套数据的关键是**_每个_嵌套层级都必须被复制并适当更新**。这通常是刚学习 Redux 时比较难理解的概念，也经常出现特定问题导致对嵌套对象的直接意外修改，应当避免。
 
@@ -41,13 +41,13 @@ function updateVeryNestedField(state, action) {
 
 显然，每加一层嵌套，代码的可读性就会降低，出错的机会也增多。这也是我们鼓励尽量让状态扁平化，以及尽量采用组合 reducers 的若干原因之一。
 
-##### Simplifying Nested Updates with Redux Toolkit and Immer
+##### 使用 Redux Toolkit 和 Immer 简化嵌套更新
 
-Redux Toolkit's [`createSlice`](/toolkit/api/createSlice) and [`createReducer`](/toolkit/api/createReducer) wrap your case reducers in Immer's [`produce` function](https://immerjs.github.io/immer/produce). Inside them, the update above is a single line: `state.first.second[action.payload.id].fourth = action.payload.value`. Immer copies exactly the levels that changed. **This only works inside `createSlice`, `createReducer`, or a manual `produce` call; the same line outside Immer really mutates the state.** See [Writing Reducers with Immer](/toolkit/usage/immer-reducers) for how Immer works, its usage patterns, and its gotchas.
+Redux Toolkit 的 [`createSlice`](/toolkit/api/createSlice) 和 [`createReducer`](/toolkit/api/createReducer) 会使用 Immer 的 [`produce` 函数](https://immerjs.github.io/immer/produce)包装 case reducer。在其中，上面的更新只需一行：`state.first.second[action.payload.id].fourth = action.payload.value`。Immer 只复制发生变化的层级。**这只在 `createSlice`、`createReducer` 或手动调用 `produce` 时有效；在 Immer 外部写同样的代码会真正修改状态。**Immer 的工作方式、用法模式和注意事项请参阅[使用 Immer 编写 Reducer](/toolkit/usage/immer-reducers)。
 
-Even if you write all of your reducers with Redux Toolkit, understanding the rest of this page tells you what Immer is doing on your behalf when something goes wrong. The remaining sections show how to write these updates by hand.
+即使所有 reducer 都使用 Redux Toolkit 编写，了解本页其余内容也能帮助你在出错时理解 Immer 代为完成了什么。后续章节将介绍如何手动编写这些更新。
 
-##### Common Mistake #1: New variables that point to the same objects
+##### 常见错误 #1：新变量仍指向同一个对象
 
 定义新变量并不会创建新的实际对象——它只是创建了对同一对象的另一引用。举例来说：
 

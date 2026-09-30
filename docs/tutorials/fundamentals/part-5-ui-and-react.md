@@ -23,7 +23,7 @@ import { LiveExample } from '@site/src/components/LiveExample'
 
 :::caution
 
-Note that **this page and all of the "Essentials" tutorial teach how to use [our modern React-Redux hooks API](/react-redux/api/hooks)**. The old-style [`connect` API](/react-redux/api/connect) still works, but today we want all Redux users using the hooks API.
+请注意，**本页和所有“Essentials”教程都会介绍如何使用[现代 React-Redux hooks API](/react-redux/api/hooks)**。旧版 [`connect` API](/react-redux/api/connect) 仍然可用，但如今我们希望所有 Redux 用户都使用 hooks API。
 
 此外，本教程的其他页面故意展示了更传统的 Redux 逻辑模式，这些模式代码较多，目的是为了讲解 Redux 背后的原理和概念。而我们推荐用 Redux Toolkit 中的“现代 Redux”模式，这是构建 Redux 应用的推荐方式。
 
@@ -92,7 +92,7 @@ document.getElementById('increment').addEventListener('click', function () {
 
 ## 在 React 中使用 Redux
 
-The official [**React-Redux UI bindings library**](/react-redux) is a separate package from the Redux core. You'll need to install that in addition:
+[官方的 **React-Redux UI 绑定库**](/react-redux)是独立于 Redux 核心的一个包。还需要单独安装：
 
 ```sh
 npm install react-redux
@@ -128,7 +128,7 @@ npm install react-redux
   repo="reduxjs/redux-fundamentals-example-app"
   ref="checkpoint-3-initialUI"
   view="preview"
-  title="Redux Fundamentals: initial UI"
+  title="Redux 基础：初始 UI"
 />
 
 ### 使用 `useSelector` 从存储读取状态
@@ -137,9 +137,9 @@ npm install react-redux
 
 你应该熟悉像 [React hooks 的 `useState`](https://react.dev/reference/react/useState)，它可在函数组件中使组件拥有 React 状态。React 也让我们编写[自定义 Hooks](https://react.dev/learn/reusing-logic-with-custom-hooks)，抽取可重用逻辑，封装在自己的 Hook 里。
 
-Like many other libraries, React-Redux includes [its own custom hooks](/react-redux/api/hooks), which you can use in your own components. The React-Redux hooks give your React component the ability to talk to the Redux store by reading state and dispatching actions.
+与许多其他库一样，React-Redux 也包含[自己的自定义 hooks](/react-redux/api/hooks)，可以在组件中使用。React-Redux hooks 让 React 组件能够通过读取状态和派发 action 与 Redux store 交互。
 
-The first React-Redux hook that we'll look at is the [**`useSelector` hook**](/react-redux/api/hooks#useselector), which **lets your React components read data from the Redux store**.
+我们要介绍的第一个 React-Redux hook 是 [**`useSelector` hook**](/react-redux/api/hooks#useselector)，它**允许 React 组件从 Redux store 中读取数据**。
 
 `useSelector` 接收一个函数，称为**selector 选择器函数**。**选择器函数接收整个 Redux 存储状态作为参数，从状态中读取某个值并返回该结果**。
 
@@ -224,11 +224,11 @@ const selectTodoDescriptions = state => {
 const todos = useSelector(state => state.todos)
 ```
 
-### 使用 `useDispatch` 派发动作
+### 使用 `useDispatch` 派发动作 {#dispatching-actions-with-usedispatch}
 
 现在我们知道如何将存储数据读取到组件，但如何从组件派发动作？我们知道在 React 外部可以直接写 `store.dispatch(action)`，但组件里没法直接访问 store，我们需要某种方式单独拿到 `dispatch` 函数。
 
-The React-Redux [**`useDispatch` hook**](/react-redux/api/hooks#usedispatch) gives us the store's `dispatch` method as its result. (In fact, the implementation of the hook really is `return store.dispatch`.)
+React-Redux 的 [**`useDispatch` hook**](/react-redux/api/hooks#usedispatch) 会返回 store 的 `dispatch` 方法。（事实上，这个 hook 的实现就是 `return store.dispatch`。）
 
 因此，我们可以在任何需要派发动作的组件里调用 `const dispatch = useDispatch()`，然后按需用 `dispatch(someAction)` 派发动作。
 
@@ -282,7 +282,7 @@ export default Header
 
 我们必须明确告诉 React-Redux 用哪个存储。在整个 `<App>` 组件外围渲染一个 `<Provider>` 组件，并将存储作为 prop 传给它。这样之后，应用中所有组件都能访问到该存储。
 
-Let's add that to our main `main.jsx` file:
+将其添加到主入口文件 `main.jsx` 中：
 
 ```jsx title="src/main.jsx"
 import React from 'react'
@@ -414,7 +414,7 @@ const Footer = () => {
 export default Footer
 ```
 
-### 通过 ID 选择列表项中的数据
+### 通过 ID 选择列表项中的数据 {#selecting-data-in-list-items-by-id}
 
 当前，`<TodoList>` 组件读取整个 `state.todos` 数组，并将待办对象作为 prop 传给每个 `<TodoListItem>`。
 

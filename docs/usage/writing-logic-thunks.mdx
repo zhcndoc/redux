@@ -90,7 +90,7 @@ Redux reducers[不得包含副作用](../tutorials/fundamentals/part-3-state-act
 
 历史上，使用 thunks 的另一个原因是帮助保持 React 组件“不了解 Redux”。`connect` API 允许传递动作创建函数并“绑定”它们，使得调用时自动派发动作。由于组件内部通常无法访问 `dispatch`，将 thunks 传给 `connect` 能让组件直接调用 `this.props.doSomething()`，而不必知道它是父组件的回调、派发普通 Redux 动作、派发执行同步或异步逻辑的 thunk，或者测试中的 mock 函数。
 
-With the arrival of [the React-Redux hooks API](/react-redux/api/hooks), that situation has changed. The community has switched away from the "container/presentational" pattern in general, and [components now have access to `dispatch` directly via the `useDispatch` hook](../tutorials/fundamentals/part-5-ui-and-react.md#dispatching-actions-with-usedispatch). This _does_ mean that it's possible to have more logic directly inside of a component, such as an async fetch + dispatch of the results. However, thunks have access to `getState`, which components do not, and there's still value in moving that logic outside of components.
+随着 [React-Redux hooks API](/react-redux/api/hooks) 的出现，情况已经改变。社区整体上不再采用“容器/展示组件”模式，而是[让组件通过 `useDispatch` hook 直接访问 `dispatch`](../tutorials/fundamentals/part-5-ui-and-react.md#dispatching-actions-with-usedispatch)。这_确实_意味着可以将更多逻辑直接放在组件中，例如异步获取数据并派发结果。不过，thunk 可以访问组件无法访问的 `getState`，而且将逻辑移出组件仍有其价值。
 
 </DetailedExplanation>
 
@@ -103,7 +103,7 @@ With the arrival of [the React-Redux hooks API](/react-redux/api/hooks), that si
 - 写需要连续或多次派发动作的逻辑
 - 写需要访问 `getState` 判断或在动作中包含其他状态的逻辑
 
-Thunks are "one-shot" functions, with no sense of a lifecycle. They also cannot see other dispatched actions. So, they should not generally be used for initializing persistent connections like websockets, and you can't use them to respond to other actions. For those cases, use Redux Toolkit's [listener middleware](/toolkit/api/createListenerMiddleware), which runs logic in response to dispatched actions or state changes. See [Side Effects Approaches](./side-effects-approaches.mdx) for a comparison.
+Thunk 是没有生命周期概念的“一次性”函数，也无法观察其他已派发的 action。因此通常不应用它来初始化 WebSocket 等持久连接，也不能用它响应其他 action。这些场景可以使用 Redux Toolkit 的 [listener middleware](/toolkit/api/createListenerMiddleware)，它会响应已派发的 action 或状态变化来运行逻辑。方案比较请参阅[副作用处理方式](./side-effects-approaches.mdx)。
 
 **Thunk 最适合用于复杂同步逻辑，以及中简单异步逻辑，如发起标准 AJAX 请求并根据结果派发动作。**
 
@@ -158,7 +158,7 @@ const thunkMiddleware =
 - 如果你传给 `dispatch` 的是函数，thunk 中间件就会识别它是函数而非动作对象，拦截它并调用该函数，传入 `(dispatch, getState)`
 - 如果是普通动作对象（或其他），则传递给下一个中间件
 
-### 给 Thunks 注入配置值
+### 给 Thunks 注入配置值 {#injecting-config-values-into-thunks}
 
 thunk 中间件有一个自定义选项。你可以在设置阶段创建自定义实例，并注入一个“额外参数”。中间件会将该额外参数作为第三个参数传递给每个 thunk 函数。最常见的用途是注入 API 服务层，使 thunk 函数不用硬编码 API 调用：
 
@@ -170,7 +170,7 @@ const serviceApi = createServiceApi('/some/url')
 const thunkMiddlewareWithArg = withExtraArgument({ serviceApi })
 ```
 
-Redux Toolkit's `configureStore` supports [this as part of its middleware customization in `getDefaultMiddleware`](/toolkit/api/getDefaultMiddleware):
+Redux Toolkit 的 `configureStore` 支持[通过 `getDefaultMiddleware` 自定义 middleware](/toolkit/api/getDefaultMiddleware)：
 
 ```js title="configureStore 配置 thunk 额外参数"
 const store = configureStore({
@@ -364,9 +364,9 @@ const onClick = () => {
 
 这不是推荐做法，但语义上合法且能正常工作。
 
-### Typing Thunks
+### 为 Thunk 添加类型 {#typing-thunks}
 
-The default `Dispatch` type from the Redux core doesn't know about thunks, so `dispatch(someThunk())` is a type error unless the dispatch type includes the thunk middleware. The usual setup is to derive `AppDispatch` from the store, define an `AppThunk` type for hand-written thunks, and use a pre-typed `useAppDispatch` hook in components:
+Redux 核心默认的 `Dispatch` 类型不了解 thunk，因此除非 dispatch 类型包含 thunk middleware，否则 `dispatch(someThunk())` 会产生类型错误。常见做法是从 store 推断 `AppDispatch`，为手写 thunk 定义 `AppThunk` 类型，并在组件中使用预设类型的 `useAppDispatch` hook：
 
 ```ts title="Typing hand-written thunks" no-transpile
 // app/store.ts
@@ -405,7 +405,7 @@ dispatch(addTodosIfAllowed('Buy milk'))
 
 `configureStore` infers the dispatch type from its middleware, so `AppDispatch` already includes the thunk middleware's overload. See [Usage with TypeScript](./UsageWithTypescript.md#define-root-state-and-dispatch-types) for the full setup.
 
-## Using `createAsyncThunk`
+## 使用 `createAsyncThunk` {#using-createasyncthunk}
 
 用 thunks 编写异步逻辑较繁琐。每个 thunk 通常需要定义三种动作类型和匹配的动作创建函数（“pending/fulfilled/rejected”），加上 thunk 动作创建函数和 thunk 函数。错误处理也是一大问题。
 
@@ -450,7 +450,7 @@ const todosSlice = createSlice({
 
 ## 使用 RTK Query 进行数据请求
 
-Redux Toolkit includes the [**RTK Query data fetching API**](/toolkit/rtk-query/overview). RTK Query is a purpose built data fetching and caching solution for Redux apps, and **can eliminate the need to write _any_ thunks or reducers to manage data fetching**.
+Redux Toolkit 包含 [**RTK Query 数据获取 API**](/toolkit/rtk-query/overview)。RTK Query 是专为 Redux 应用设计的数据获取和缓存解决方案，**可以免去编写任何 thunk 或 reducer 来管理数据获取的需要**。
 
 RTK Query 实际上基于 `createAsyncThunk` 实现所有请求，以及使用自定义的中间件管理缓存数据的生命周期。
 

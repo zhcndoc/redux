@@ -94,7 +94,7 @@ RTK Query 专为 Redux 应用设计，是一套完整的数据获取与缓存解
 
 近年来，官方 Redux Toolkit 新增了两款副作用处理 API：监听器中间件用来编写响应式逻辑，以及 RTK Query 用于数据获取和缓存。
 
-### Thunks
+### Thunk {#thunks}
 
 [Redux thunk 中间件](./writing-logic-thunks.mdx)传统上是最广泛使用的异步逻辑解决方案。
 
@@ -104,7 +104,7 @@ thunk 使用方式是向 `dispatch` 传入一个函数。thunk 中间件拦截�
 
 thunk 最适合处理需要访问 `dispatch` 和 `getState` 的复杂同步逻辑，或中等复杂度异步逻辑，如一次性“异步请求数据并以结果分发动作”。
 
-We have traditionally recommended thunks as the default approach, and Redux Toolkit specifically includes the [`createAsyncThunk` API](/toolkit/api/createAsyncThunk) for the "request and dispatch" use case. For other use cases, you can write your own thunk functions.
+过去我们一直建议默认使用 thunk，Redux Toolkit 也专门提供了 [`createAsyncThunk` API](/toolkit/api/createAsyncThunk) 来处理“请求并派发结果”的用例。其他场景则可以编写自己的 thunk 函数。
 
 #### Thunk 权衡
 
@@ -149,7 +149,7 @@ const fetchUserById2 = createAsyncThunk('fetchUserById', async userId => {
 })
 ```
 
-### Sagas
+### Saga {#sagas}
 
 [Redux-Saga 中间件](https://redux-saga.js.org/)历来是第二常用的副作用工具，仅次于 thunk。它受到后端“saga”模式启发，可以让长流程异步工作流响应系统内任意事件。
 
@@ -205,7 +205,7 @@ function* fetchResource(resource) {
 }
 ```
 
-### Observables
+### Observable {#observables}
 
 [Redux-Observable 中间件](https://redux-observable.js.org/)允许你使用 RxJS observable 创建称为“epics”的处理管道。
 
@@ -252,7 +252,7 @@ const fetchReposEpic = action$ =>
 
 ### 监听器（Listeners）
 
-Redux Toolkit includes [the `createListenerMiddleware` API](/toolkit/api/createListenerMiddleware) to handle "reactive" logic. It's specifically intended to be a lighter-weight alternative to sagas and observables that handles 90% of the same use cases, with a smaller bundle size, simpler API, and better TypeScript support.
+Redux Toolkit 提供了 [`createListenerMiddleware` API](/toolkit/api/createListenerMiddleware) 来处理“响应式”逻辑。它是 saga 和 observable 的轻量替代方案，可覆盖其中 90% 的相同用例，同时 bundle 更小、API 更简单、TypeScript 支持也更好。
 
 概念上类似 React 的 `useEffect`，但用于 Redux store 更新。
 
@@ -327,7 +327,7 @@ listenerMiddleware.startListening({
 
 ### RTK Query
 
-Redux Toolkit includes [RTK Query](/toolkit/rtk-query/overview), a purpose-built data fetching and caching solution for Redux apps. It's designed to simplify common cases for loading data in a web application, eliminating the need to hand-write data fetching & caching logic yourself.
+Redux Toolkit 包含 [RTK Query](/toolkit/rtk-query/overview)，这是专为 Redux 应用设计的数据获取和缓存解决方案。它旨在简化 Web 应用中常见的数据加载用例，让你无需手动编写数据获取和缓存逻辑。
 
 RTK Query 借助定义 API 及“端点”实现功能。端点可以是获取数据的“查询”，或发送更新的“变更”。RTKQ 内部管理数据获取和缓存，追踪缓存条目使用情况，自动移除不再需要的缓存。采用独特的“标签”机制，能在变更更新服务器状态时自动触发重抓取。
 
@@ -405,7 +405,7 @@ const delayedActionMiddleware = storeAPI => next => action => {
 }
 ```
 
-### Websockets
+### WebSocket {#websockets}
 
 许多应用使用 websocket 或其他持久化连接，主要为了接收服务器的流式更新。
 
@@ -420,13 +420,13 @@ const delayedActionMiddleware = storeAPI => next => action => {
 
 也可以在 RTK Query 生命周期回调里启用 websocket，实时响应消息刷新缓存。
 
-### XState
+### XState {#xstate}
 
 状态机有助于定义系统的可能状态以及状态间的过渡，也能在状态转移时触发副作用。
 
 Redux reducer 可以写成真正的有限状态机，但 RTK 并未提供专门支持。实际上它们更像是针对动作判断的“部分”状态机。监听器、saga 和 observable 可以负责“派发后执行副作用”场景，但有时需花更多工夫确保副作用只在特定时刻运行。
 
-[XState](https://stately.ai/docs) is a powerful library for defining true state machines and executing them, including managing state transitions based on events and triggering related side effects. It also has related tools for creating state machine definitions via a graphical editor, which can then be loaded into the XState logic for execution.
+[XState](https://stately.ai/docs) 是一个功能强大的库，可用于定义和执行真正的状态机，包括根据事件管理状态转换并触发相关副作用。它还提供图形化编辑器等工具来创建状态机定义，再加载到 XState 逻辑中执行。
 
 目前 XState 与 Redux 无官方集成，但可用 XState 机器作为 Redux reducer，且 XState 开发者有一个以 Redux 侧效果中间件形式演示的有趣 POC：
 

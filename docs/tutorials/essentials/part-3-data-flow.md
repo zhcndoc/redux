@@ -42,18 +42,18 @@ import { LiveExample } from '@site/src/components/LiveExample'
 
 为本教程我们准备了一个预配置的起始项目，已经集成了React和Redux，包含了一些默认样式，并提供了假REST API接口，让我们能在应用中编写真实的API请求。您将基于此进行实际代码开发。
 
-To get started, you can open and fork this StackBlitz project:
+开始前，可以打开并 fork 这个 StackBlitz 项目：
 
 <LiveExample
   repo="reduxjs/redux-essentials-example-app"
   ref="ts-checkpoint-0-setup"
   file="src/main.tsx"
-  title="Redux Essentials: starter project"
+  title="Redux Essentials：起始项目"
 />
 
-You can also [clone the same project from this Github repo](https://github.com/reduxjs/redux-essentials-example-app). The project is configured to use [NPM](https://docs.npmjs.com/cli/v10) as the package manager, but you can use any package manager ([pnpm](https://pnpm.io/), [Yarn](https://yarnpkg.com/), or [Bun](https://bun.sh/docs/cli/install)) as you prefer. After installing packages, you can start the local dev server with the `npm run dev` command.
+你也可以从这个 [GitHub 仓库克隆同一项目](https://github.com/reduxjs/redux-essentials-example-app)。项目默认使用 [NPM](https://docs.npmjs.com/cli/v10) 作为包管理器，但也可以根据偏好使用其他包管理器（[pnpm](https://pnpm.io/)、[Yarn](https://yarnpkg.com/) 或 [Bun](https://bun.sh/docs/cli/install)）。安装依赖后，运行 `npm run dev` 即可启动本地开发服务器。
 
-If you'd like to see the final version of what we're going to build, you can check out [the **`tutorial-steps-ts` branch**](https://github.com/reduxjs/redux-essentials-example-app/tree/tutorial-steps-ts), or [open the final version on StackBlitz](https://stackblitz.com/github/reduxjs/redux-essentials-example-app/tree/ts-checkpoint-6-rtkqConversion).
+如果想查看教程最终构建出的版本，可以查看 [**`tutorial-steps-ts` 分支**](https://github.com/reduxjs/redux-essentials-example-app/tree/tutorial-steps-ts)，或在 [StackBlitz 上打开最终版本](https://stackblitz.com/github/reduxjs/redux-essentials-example-app/tree/ts-checkpoint-6-rtkqConversion)。
 
 > 特别感谢[Tania Rascia](https://www.taniarascia.com/)的[《在React中使用Redux》](https://www.taniarascia.com/redux-react-guide/)教程，启发了本页面示例。示例中也使用了她的[Primitive UI CSS样式起始模板](https://taniarascia.github.io/primitive/)。
 

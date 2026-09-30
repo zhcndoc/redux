@@ -6,15 +6,15 @@ title: API 参考
 <!-- prettier-ignore -->
 import CoreApiNote from "../components/_CoreApiNote.mdx";
 
-# API Reference
+# API 参考
 
 本节记录了 Redux 核心 API。Redux 核心较小——它定义了一组供你实现的契约（例如 [reducers](../understanding/thinking-in-redux/Glossary.md#reducer)），并提供了一些辅助函数来将这些契约结合起来。
 
 <CoreApiNote />
 
-Redux Toolkit re-exports all of the APIs included in the `redux` package, so you don't need to install `redux` separately. The original [`createStore`](createStore.md) method is deprecated in favor of `configureStore`, but will continue to work indefinitely.
+Redux Toolkit 重新导出了 `redux` 包中的所有 API，因此无需单独安装 `redux`。原始的 [`createStore`](createStore.md) 方法已弃用，推荐改用 `configureStore`，但它仍会继续工作。
 
-For the APIs you'll use day to day, see the [Redux Toolkit API docs](/toolkit) and the [React-Redux API docs](/react-redux).
+日常开发中会用到的 API，请参阅 [Redux Toolkit API 文档](/toolkit)和 [React-Redux API 文档](/react-redux)。
 
 ## 顶层导出
 
@@ -23,7 +23,7 @@ For the APIs you'll use day to day, see the [Redux Toolkit API docs](/toolkit) a
 - [applyMiddleware(...middlewares)](applyMiddleware.md)
 - [bindActionCreators(actionCreators, dispatch)](bindActionCreators.md)
 - [compose(...functions)](compose.md)
-- [Utility functions](utils.md): `isAction`, `isPlainObject`
+- [实用工具函数](utils.md)：`isAction`、`isPlainObject`
 
 ## Store API
 

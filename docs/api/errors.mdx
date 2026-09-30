@@ -1,17 +1,17 @@
 ---
 id: errors
-title: Production Error Codes
-sidebar_label: Error Messages
+title: 生产环境错误代码
+sidebar_label: 错误信息
 slug: /errors
-description: 'API > Production Error Codes: the full text of each Redux production error code'
+description: 'API > 生产环境错误代码：Redux 各生产环境错误代码的完整说明'
 hide_table_of_contents: true
 ---
 
 import ErrorCodesPage from '@site/src/components/ErrorCodesPage'
 import errorCodes from '../../errors.json'
 
-# Production Error Codes
+# 生产环境错误代码
 
-When Redux is built and running in production, error text is replaced by indexed error codes to save on bundle size. These errors will provide a link to this page with more information about the error below.
+Redux 以生产模式构建和运行时，会将错误文本替换为带索引的错误代码，以减小 bundle 体积。发生错误时，代码中会附带指向本页的链接，下面列出了更多错误说明。
 
 <ErrorCodesPage errorCodes={errorCodes} />

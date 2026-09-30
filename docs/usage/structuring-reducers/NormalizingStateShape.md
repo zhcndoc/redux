@@ -7,11 +7,11 @@ description: 'Structuring Reducers > 标准化 State 结构：为何及如何基
 <!-- prettier-ignore -->
 import HandWrittenReducersNote from "../../components/_HandWrittenReducersNote.mdx";
 
-# Normalizing State Shape
+# 标准化 State 结构
 
 <HandWrittenReducersNote />
 
-Many applications deal with data that is nested or relational in nature. For example, a blog editor could have many Posts, each Post could have many Comments, and both Posts and Comments would be written by a User. Data for this kind of application might look like:
+许多应用会处理嵌套数据或关系型数据。例如，博客编辑器可能有多篇帖子，每篇帖子有多条评论，而帖子和评论都由用户撰写。这类应用的数据可能如下所示：
 
 ```js
 const blogPosts = [
@@ -60,13 +60,13 @@ const blogPosts = [
 
 注意数据结构稍显复杂，并且一些数据是重复的。这存在几个问题：
 
-- When a piece of data is duplicated in several places, it becomes harder to make sure that it is updated appropriately.
-- Nested data means that the corresponding reducer logic has to be more nested and therefore more complex. In particular, trying to update a deeply nested field can become very ugly very fast.
-- Since immutable data updates require all ancestors in the state tree to be copied and updated as well, and new object references will cause components that read them with `useSelector` to re-render, an update to a deeply nested data object could force totally unrelated UI components to re-render even if the data they're displaying hasn't actually changed.
+- 当某条数据在多处重复时，就更难确保它们都被正确更新。
+- 嵌套数据会使对应的 reducer 逻辑也更深、更复杂。尤其是更新深层嵌套字段时，代码很快就会变得难以维护。
+- 不可变更新要求同时复制并更新状态树中的所有祖先对象；而新对象引用会导致使用 `useSelector` 读取它们的组件重新渲染。因此，更新一个深层嵌套数据对象，可能会迫使完全不相关的 UI 组件重新渲染，即使它们显示的数据实际上没有变化。
 
 因此，管理 Redux store 中的关系型或嵌套数据时，推荐的做法是将部分 store 视为数据库，并将数据存储为_标准化_形式。
 
-## 设计标准化的 State
+## 设计标准化的 State {#designing-a-normalized-state}
 
 标准化数据的基本概念是：
 
@@ -75,9 +75,9 @@ const blogPosts = [
 - 任何对单个条目的引用应通过存储条目 ID 来完成。
 - 使用 ID 数组来表示顺序。
 
-Redux Toolkit's [`createEntityAdapter`](/toolkit/api/createEntityAdapter) implements this shape for you as `{ ids: [], entities: {} }`, and generates the reducer functions and selectors for working with it. The examples on this page use the equivalent field names `allIds` and `byId` so that the structure is spelled out, but the idea is the same: one lookup object keyed by ID, plus one array of IDs for ordering.
+Redux Toolkit 的 [`createEntityAdapter`](/toolkit/api/createEntityAdapter) 会替你实现 `{ ids: [], entities: {} }` 这种结构，并生成用于处理该结构的 reducer 函数和 selector。本页示例使用等价的字段名 `allIds` 和 `byId`，以便清楚展示其结构，但基本思路相同：使用一个以 ID 为键的查找对象，以及一个用于排序的 ID 数组。
 
-An example of a normalized state structure for the blog example above might look like:
+上面博客示例的标准化状态结构可能如下所示：
 
 ```js
 {
@@ -155,7 +155,7 @@ An example of a normalized state structure for the blog example above might look
 - 读取或更新某条目逻辑变得简单且统一：给定条目的类型和 ID，能通过简单几步直接查找，无需翻遍其他对象。
 - 由于数据类型被分离，类似修改评论文本的更新仅需要新复制 “comments > byId > 某评论” 这部分树。这样 UI 仅需更新少部分组件，从而提高性能。反观原先嵌套结构中修改一条评论，则需更新评论对象、父帖对象、所有帖子数组，且很可能导致所有 Post 和 Comment 组件都重新渲染。
 
-Note that a normalized state structure generally implies that more components read from the store, and each component is responsible for looking up its own data with `useSelector`, as opposed to a few components selecting large amounts of data and passing all that data downwards. As it turns out, having parent components simply pass item IDs to children that select their own item is a good pattern for optimizing UI performance in a React Redux application, so keeping state normalized plays a key role in improving performance.
+需要注意，标准化状态结构通常意味着会有更多组件从 store 读取数据，由每个组件使用 `useSelector` 查询自己的数据，而不是让少数组件选取大量数据再层层传递。让父组件只向子组件传递条目 ID，再由子组件自行选择对应条目，是优化 React Redux 应用 UI 性能的良好模式，因此保持状态标准化对提升性能很重要。
 
 ## 在 State 中组织标准化数据
 
@@ -180,11 +180,11 @@ Note that a normalized state structure generally implies that more components re
 
 ## 关系和表
 
-Because we're treating a portion of our Redux store as a "database", many of the principles of database design also apply here as well. There is no single required way to store relationships. Choose the shape that makes the reads and updates your application needs straightforward.
+由于我们将 Redux store 的一部分视作“数据库”，许多数据库设计原则也适用于此。存储关系并没有唯一固定的方式，应选择便于应用读取和更新所需数据的结构。
 
-### Storing related IDs on an entity
+### 在实体上存储相关 ID {#storing-related-ids-on-an-entity}
 
-If you usually navigate a relationship in one direction and the relationship has no data of its own, an array of related IDs on the entity is often the simplest option. For example, an author record can store the IDs of that author's books:
+如果通常只沿一个方向查询关系，而且关系本身没有需要存储的数据，那么在实体上保存相关 ID 数组通常是最简单的做法。例如，作者记录可以保存其书籍的 ID：
 
 ```js
 {
@@ -208,11 +208,11 @@ If you usually navigate a relationship in one direction and the relationship has
 }
 ```
 
-Looking up an author's books is then a direct mapping from `bookIds` to the corresponding records in `books.byId`. This is a good fit for one-to-many relationships or when one direction is the main query your UI needs.
+这样查找作者的书籍时，只需根据 `bookIds` 到 `books.byId` 中直接读取对应记录。这适用于一对多关系，或 UI 主要沿一个方向查询的场景。
 
-### Using a join table
+### 使用联结表 {#using-a-join-table}
 
-For many-to-many relationships, or when the relationship itself has data that must be stored, use an intermediate table that stores the IDs of the corresponding items. This is often known as a "join table" or an "associative table". For example, an `authorBook` record can also describe the author's role for that specific book:
+对于多对多关系，或关系本身包含需要存储的数据时，可以使用中间表保存相关条目的 ID。这通常称为“联结表”或“关联表”。例如，`authorBook` 记录还可以描述作者在特定书籍中的角色：
 
 ```js
 {
@@ -252,14 +252,14 @@ For many-to-many relationships, or when the relationship itself has data that mu
 }
 ```
 
-Operations like "look up all books by this author" can then be accomplished with a loop over the join table, filtering for the desired `authorId` and retrieving each matching `bookId`. Given the typical amounts of data in a client application and the speed of JavaScript engines, this is likely to be sufficiently fast for most use cases.
+此时，“查找某个作者的所有书籍”等操作可以遍历联结表，筛选所需的 `authorId` 并读取每个匹配的 `bookId`。考虑到客户端应用通常处理的数据规模以及 JavaScript 引擎的速度，这对大多数用例来说已经足够快。
 
-If profiling shows that a particular relationship lookup is a bottleneck, you can maintain an additional index such as `bookIdsByAuthorId`. Keep that index derived from the same actions that update the relationship records so it cannot become inconsistent. Start with the simpler shape that matches your use case, and add indexes only when a measured read pattern needs them.
+如果性能分析表明某种关系查询已成为瓶颈，可以维护额外的索引，例如 `bookIdsByAuthorId`。应使用与更新关系记录相同的 action 派生该索引，避免数据不一致。先采用符合用例的简单结构，只有在测量确认读取模式确实需要时才添加索引。
 
-## 标准化嵌套数据
+## 标准化嵌套数据 {#normalizing-nested-data}
 
-Because APIs frequently send back data in a nested form, that data needs to be transformed into a normalized shape before it can be included in the state tree.
+由于 API 经常以嵌套形式返回数据，因此在将其放入状态树之前，需要先转换为标准化结构。
 
-For most applications, [Redux Toolkit's `createEntityAdapter`](/toolkit/api/createEntityAdapter) is the recommended way to store and update normalized entity collections in your slices. It provides a standard `{ ids, entities }` state shape along with generated reducers and selectors. See [Performance and Normalizing Data](../../tutorials/essentials/part-6-performance-normalization.md) for a walkthrough.
+对于大多数应用，推荐使用 [Redux Toolkit 的 `createEntityAdapter`](/toolkit/api/createEntityAdapter) 在 slice 中存储和更新标准化的实体集合。它提供标准的 `{ ids, entities }` 状态结构，并生成相应的 reducer 和 selector。完整示例请参阅[性能与数据标准化](../../tutorials/essentials/part-6-performance-normalization.md)。
 
-If you need to transform deeply nested API responses with complex relational schemas into normalized data, the [Normalizr](https://github.com/paularmstrong/normalizr) library is still a common option. You can define schema types and relations, feed the schema and the response data to Normalizr, and it will output a normalized transformation of the response. That output can then be included in an action and used to update the store (including slices that use `createEntityAdapter`). Normalizr is stable and feature-rich for relational normalization, but it is [no longer actively maintained](https://github.com/paularmstrong/normalizr/discussions/493#discussioncomment-2395540).
+如果需要将具有复杂关系结构的深层嵌套 API 响应转换为标准化数据，[Normalizr](https://github.com/paularmstrong/normalizr) 仍是常用选择。你可以定义 schema 类型和关系，将 schema 与响应数据交给 Normalizr，它会输出标准化后的响应数据。随后可以将结果放入 action 并用于更新 store（包括使用 `createEntityAdapter` 的 slice）。Normalizr 稳定且功能丰富，但它[已不再积极维护](https://github.com/paularmstrong/normalizr/discussions/493#discussioncomment-2395540)。

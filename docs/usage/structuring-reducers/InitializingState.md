@@ -7,15 +7,15 @@ description: '结构化 Reducers > 初始化状态：Redux 状态是如何初始
 <!-- prettier-ignore -->
 import HandWrittenReducersNote from "../../components/_HandWrittenReducersNote.mdx";
 
-# Initializing State
+# 初始化状态
 
 <HandWrittenReducersNote />
 
-There are two main ways to initialize state for your application. `configureStore` accepts an optional `preloadedState` value (the same value is the second argument to the core `createStore` function). Reducers can also specify an initial value by looking for an incoming state argument that is `undefined`, and returning the value they'd like to use as a default. This can either be done with an explicit check inside the reducer, or by using the default argument value syntax: `function myReducer(state = someDefaultValue, action)`.
+为应用初始化状态主要有两种方式。`configureStore` 接受可选的 `preloadedState` 值（这也是核心 `createStore` 函数的第二个参数）。Reducer 也可以通过检查传入的状态参数是否为 `undefined`，并返回想要使用的默认值来指定初始值。你可以在 reducer 中显式检查，也可以使用默认参数语法：`function myReducer(state = someDefaultValue, action)`。
 
 这两种方法如何交互并不总是立刻很清楚。幸运的是，这个过程遵循一些可预测的规则。以下是它们如何结合在一起的说明。
 
-## 概要
+## 概要 {#summary}
 
 没有使用 `combineReducers()` 或类似的手动代码时，`preloadedState` 总是优先于 reducer 中的 `state = ...`，因为传递给 reducer 的 `state` 就是 `preloadedState`，且不是 `undefined`，所以默认参数语法不会生效。
 
@@ -27,7 +27,7 @@ _注意：使用 `preloadedState` 来填充初始状态的 reducer **仍然需�
 
 ## 深入解析
 
-### 单个简单 Reducer
+### 单个简单 Reducer {#single-simple-reducer}
 
 先考虑一个只有单个 reducer 的情况，假设没有使用 `combineReducers()`。
 
@@ -54,7 +54,7 @@ const store = configureStore({ reducer: counter })
 console.log(store.getState()) // 0
 ```
 
-The initial state is zero. Why? Because no `preloadedState` was passed, so it was `undefined`. This is the `state` passed to your reducer the first time. When Redux initializes it dispatches a "dummy" action to fill the state. So your `counter` reducer was called with `state` equal to `undefined`. **This is exactly the case that "activates" the default argument.** Therefore, `state` is now `0` as per the default `state` value (`state = 0`). This state (`0`) will be returned.
+初始状态是 0。为什么？因为没有传入 `preloadedState`，所以它是 `undefined`。这就是 reducer 首次接收到的 `state`。Redux 初始化时会派发一个“虚拟”action 来填充状态，因此 `counter` reducer 收到的 `state` 为 `undefined`。**这正是会“激活”默认参数的情况。**所以，`state` 会采用默认值 `state = 0`，并返回状态值 `0`。
 
 再看一种不同的场景：
 
@@ -64,9 +64,9 @@ const store = configureStore({ reducer: counter, preloadedState: 42 })
 console.log(store.getState()) // 42
 ```
 
-Why is it `42`, and not `0`, this time? Because `42` was passed as the `preloadedState`. This value becomes the `state` passed to your reducer along with the dummy action. **This time, `state` is not undefined (it's `42`!), so default argument syntax has no effect.** The `state` is `42`, and `42` is returned from the reducer.
+这次为什么是 `42`，而不是 `0`？因为传入的 `preloadedState` 是 `42`。该值会与虚拟 action 一起作为 `state` 传给 reducer。**这次 `state` 不是 `undefined`（它是 `42`！），因此默认参数语法不会生效。**`state` 的值就是 `42`，reducer 也会返回 `42`。
 
-### 组合 Reducers
+### 组合 Reducer {#combined-reducers}
 
 再来看使用 `combineReducers()` 的情况。假设有两个 reducer：
 
@@ -92,7 +92,7 @@ function combined(state = {}, action) {
 }
 ```
 
-If we create the store without a `preloadedState`, the combined reducer is going to initialize the `state` to `{}`. Therefore, `state.a` and `state.b` will be `undefined` by the time it calls `a` and `b` reducers. **Both `a` and `b` reducers will receive `undefined` as _their_ `state` arguments, and if they specify default `state` values, those will be returned.** This is how the combined reducer returns a `{ a: 'lol', b: 'wat' }` state object on the first invocation.
+如果创建 store 时未传入 `preloadedState`，组合后的 reducer 会将 `state` 初始化为 `{}`。因此调用 `a` 和 `b` reducer 时，`state.a` 和 `state.b` 都是 `undefined`。**`a` 和 `b` reducer 各自收到的 `state` 参数都是 `undefined`；如果它们指定了默认 `state` 值，就会返回这些默认值。**这就是组合 reducer 首次运行时返回 `{ a: 'lol', b: 'wat' }` 状态对象的过程。
 
 ```js
 import { configureStore } from '@reduxjs/toolkit'
@@ -111,7 +111,7 @@ const store = configureStore({
 console.log(store.getState()) // { a: 'horse', b: 'wat' }
 ```
 
-Now I specified a `preloadedState`. The state returned from the combined reducer _combines_ the initial state I specified for the `a` reducer with the `'wat'` default argument specified that `b` reducer chose itself.
+现在我指定了 `preloadedState`。组合 reducer 返回的状态会_结合_我为 `a` reducer 指定的初始值，以及 `b` reducer 自己选择的默认值 `'wat'`。
 
 回顾 combined reducer 的实现：
 
@@ -127,8 +127,8 @@ function combined(state = {}, action) {
 
 这里 `state` 有值，不再是默认的 `{}`。它是一个包含字段 `a: 'horse'`，但没有字段 `b` 的对象。因此，`a` reducer 收到的 `state` 是 `'horse'` 并直接返回它，而 `b` reducer 收到的是 `undefined`，因而返回自己设定的默认值 `'wat'`。这就得到最终的状态 `{ a: 'horse', b: 'wat' }`。
 
-## 总结
+## 总结 {#summary}
 
-To sum this up, if you stick to Redux conventions and return the initial state from reducers when they're called with `undefined` as the `state` argument (the easiest way to implement this is to specify the `state` default argument value), you're going to have a nice useful behavior for combined reducers. **They will prefer the corresponding value in the `preloadedState` object you pass when creating the store, but if you didn't pass any, or if the corresponding field is not set, the default `state` argument specified by the reducer is chosen instead.** This approach works well because it provides both initialization and hydration of existing data, but lets individual reducers reset their state if their data was not preserved. Of course you can apply this pattern recursively, as you can use `combineReducers()` on many levels, or even compose reducers manually by calling reducers and giving them the relevant part of the state tree.
+总而言之，只要遵循 Redux 约定，在 reducer 收到 `undefined` 状态参数时返回初始状态值（最简单的方式是指定 `state` 默认参数），组合 reducer 就会表现得很实用。**它们会优先采用创建 store 时传入的 `preloadedState` 中对应的值；如果没有传入，或对应字段未设置，则使用 reducer 指定的 `state` 默认参数。**这种方式既支持初始化，也支持对已有数据进行水合；如果某个 reducer 的数据未保留，也能让它单独重置状态。当然，你可以递归应用这一模式，因为 `combineReducers()` 可以在多个层级使用，也可以手动调用 reducer 并传入状态树的相关部分来组合 reducer。
 
-The `initialState` option of Redux Toolkit's `createSlice` works the same way: the generated slice reducer returns that value when it receives `undefined`, and a `preloadedState` passed to `configureStore` still takes precedence for that slice.
+Redux Toolkit 的 `createSlice` 选项 `initialState` 也遵循相同规则：生成的 slice reducer 在收到 `undefined` 时会返回该值，而传给 `configureStore` 的 `preloadedState` 对该 slice 仍有更高优先级。

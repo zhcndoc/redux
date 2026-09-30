@@ -18,36 +18,36 @@ sidebar_label: 使用指南索引
 
 本节涵盖了如何设置和组织基于 Redux 的项目的信息。
 
-- [Configuring Your Store](ConfiguringYourStore.md)
-- [Redux Toolkit Setup with Next.js](nextjs.mdx)
-- [Code Splitting](CodeSplitting.md)
-- [Server Rendering](ServerRendering.md)
-- [Isolating Redux Sub-Apps](IsolatingSubapps.md)
+- [配置 Store](ConfiguringYourStore.md)
+- [使用 Next.js 配置 Redux Toolkit](nextjs.mdx)
+- [代码拆分](CodeSplitting.md)
+- [服务器渲染](ServerRendering.md)
+- [隔离 Redux 子应用](IsolatingSubapps.md)
 
-## Migrations
+## 迁移 {#migrations}
 
-This section covers how to update existing Redux code to current patterns and versions.
+本节介绍如何将现有 Redux 代码更新到当前的模式和版本。
 
-- [Migrating to Modern Redux](migrating-to-modern-redux.mdx)
-- [Migrating to RTK 2.0 and Redux 5.0](migrations/migrating-rtk-2.md)
+- [迁移到现代 Redux](migrating-to-modern-redux.mdx)
+- [迁移到 RTK 2.0 和 Redux 5.0](migrations/migrating-rtk-2.md)
 
-## Code Quality
+## 代码质量 {#code-quality}
 
 本节提供了用于提升 Redux 代码质量的工具和技术信息。
 
-- [Usage with TypeScript](UsageWithTypescript.md)
-- [Writing Tests](WritingTests.mdx)
-- [Troubleshooting](Troubleshooting.md)
-- [Debugging Redux](DebuggingRedux.md)
+- [TypeScript 使用指南](UsageWithTypescript.md)
+- [编写测试](WritingTests.mdx)
+- [故障排查](Troubleshooting.md)
+- [调试 Redux](DebuggingRedux.md)
 
 ## Redux 逻辑与模式
 
 本节提供了有关典型 Redux 模式和编写各种 Redux 逻辑方法的信息。
 
-- [Structuring Reducers](structuring-reducers/StructuringReducers.md)
-- [Reducing Boilerplate](ReducingBoilerplate.md)
-- [Deriving Data with Selectors](deriving-data-selectors.md)
-- [Writing Logic with Thunks](writing-logic-thunks.mdx)
-- [Side Effects Approaches](side-effects-approaches.mdx)
-- [Writing Custom Middleware](WritingCustomMiddleware.md)
-- [Implementing Undo History](ImplementingUndoHistory.md)
+- [结构化 Reducer](structuring-reducers/StructuringReducers.md)
+- [减少样板代码](ReducingBoilerplate.md)
+- [使用 Selector 派生数据](deriving-data-selectors.md)
+- [使用 Thunk 编写逻辑](writing-logic-thunks.mdx)
+- [副作用处理方案](side-effects-approaches.mdx)
+- [编写自定义 Middleware](WritingCustomMiddleware.md)
+- [实现撤销历史](ImplementingUndoHistory.md)

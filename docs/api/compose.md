@@ -22,7 +22,7 @@ import CoreApiNote from "../components/_CoreApiNote.mdx";
 
 <CoreApiNote />
 
-You shouldn't have to call `compose` directly. `configureStore` sets up the standard `applyMiddleware` and Redux DevTools store enhancers, and offers an `enhancers` callback for adding more.
+通常无需直接调用 `compose`。`configureStore` 会配置标准的 `applyMiddleware` 和 Redux DevTools store enhancer，并提供 `enhancers` 回调以便添加其他 enhancer。
 
 ## 参数
 
@@ -34,7 +34,7 @@ You shouldn't have to call `compose` directly. `configureStore` sets up the stan
 
 ## 示例
 
-This example demonstrates how to use `compose` to enhance a [store](Store.md) with [`applyMiddleware`](applyMiddleware.md) and a second store enhancer. The enhancers are applied from right to left, so `applyMiddleware` wraps the store that `persistEnhancer` produced.
+此示例展示如何使用 `compose` 将 [`applyMiddleware`](applyMiddleware.md) 和另一个 store enhancer 应用到 [store](Store.md)。enhancer 会从右向左应用，因此 `applyMiddleware` 会包装 `persistEnhancer` 生成的 store。
 
 ```js
 import { createStore, applyMiddleware, compose } from 'redux'

@@ -20,13 +20,13 @@ npm install @reduxjs/toolkit
 yarn add @reduxjs/toolkit
 ```
 
-The package includes a precompiled ESM build that can be used as a [`<script type="module">` tag](https://unpkg.com/@reduxjs/toolkit/dist/redux-toolkit.browser.mjs) directly in the browser.
+此包包含预编译的 ESM 版本，可直接在浏览器中通过 [`<script type="module">` 标签](https://unpkg.com/@reduxjs/toolkit/dist/redux-toolkit.browser.mjs)使用。
 
-## Create a React Redux App
+## 创建 React Redux 应用 {#create-a-react-redux-app}
 
-The recommended way to start a new app with React and Redux is to use one of our [official templates](https://github.com/reduxjs/redux-templates). These come with Redux Toolkit and React-Redux already configured for that build tool, and include a small example app that shows how to use several of Redux Toolkit's features.
+使用 React 和 Redux 创建新应用时，推荐使用我们的[官方模板](https://github.com/reduxjs/redux-templates)。模板已针对相应构建工具配置好 Redux Toolkit 和 React-Redux，并附带一个小型示例应用，展示 Redux Toolkit 的多项功能。
 
-Use a tool like `tiged` to clone and extract a template:
+可以使用 `tiged` 等工具克隆并提取模板：
 
 ```bash
 # Vite + TypeScript
@@ -39,7 +39,7 @@ npx tiged reduxjs/redux-templates/packages/expo-template-redux-typescript my-app
 npx tiged reduxjs/redux-templates/examples/rtk-app-structure-example my-app
 ```
 
-For Next.js, use [Next's `with-redux` example](https://github.com/vercel/next.js/tree/canary/examples/with-redux) and see our [Redux with Next.js guide](../usage/nextjs.mdx):
+对于 Next.js，请使用 [Next.js 的 `with-redux` 示例](https://github.com/vercel/next.js/tree/canary/examples/with-redux)，并参阅我们的 [Next.js 与 Redux 指南](../usage/nextjs.mdx)：
 
 ```bash
 npx create-next-app --example with-redux my-app
@@ -72,9 +72,9 @@ Redux Toolkit 的 `configureStore` 会自动设置与 [Redux DevTools](https://g
   - [Chrome 版 React DevTools 扩展](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=en)
   - [Firefox 版 React DevTools 扩展](https://addons.mozilla.org/en-US/firefox/addon/react-devtools/)
 
-## Redux Core
+## Redux 核心
 
-Redux Toolkit already includes and re-exports the `redux` core package, so most apps do not need to install it separately. To install the `redux` core package by itself:
+Redux Toolkit 已包含并重新导出 `redux` 核心包，因此大多数应用无需单独安装。若要单独安装 `redux` 核心包：
 
 ```bash
 # NPM

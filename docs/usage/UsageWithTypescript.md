@@ -34,19 +34,19 @@ title: TypeScript 使用指南
 
 有多种方式可对 Redux 代码进行类型检查。**本页展示了我们推荐的 Redux 和 TypeScript 结合使用的标准模式**，并非详尽指南。遵循这些模式可以获得良好的 TS 使用体验，**在类型安全与需要为代码库添加的类型声明数量之间取得最佳平衡**。
 
-## 标准 Redux Toolkit + TypeScript 项目搭建
+## 标准 Redux Toolkit + TypeScript 项目搭建 {#standard-redux-toolkit-project-setup-with-typescript}
 
 我们假设典型 Redux 项目同时使用 Redux Toolkit 和 React Redux。
 
-[Redux Toolkit](/toolkit) (RTK) is the standard approach for writing modern Redux logic. RTK is already written in TypeScript, and its API is designed to provide a good experience for TypeScript usage.
+[Redux Toolkit](/toolkit)（RTK）是编写现代 Redux 逻辑的标准方式。RTK 本身使用 TypeScript 编写，其 API 也经过设计，能提供良好的 TypeScript 使用体验。
 
-[React Redux](/react-redux) is also written in TypeScript and ships its own type definitions, so no separate `@types` package is needed. In addition to typing the library functions, the types also export some helpers to make it easier to write typesafe interfaces between your Redux store and your React components.
+[React Redux](/react-redux) 同样使用 TypeScript 编写，并自带类型定义，因此无需单独安装 `@types` 包。除了为库函数提供类型外，它还导出了一些辅助工具，方便你在 Redux store 和 React 组件之间编写类型安全的接口。
 
-The [Redux+TS project templates](https://github.com/reduxjs/redux-templates) come with a working example of these patterns already configured.
+[Redux + TypeScript 项目模板](https://github.com/reduxjs/redux-templates)已经配置好了这些模式的可运行示例。
 
-### 定义 Root State 和 Dispatch 类型
+### 定义 Root State 和 Dispatch 类型 {#define-root-state-and-dispatch-types}
 
-Using [configureStore](/toolkit/api/configureStore) should not need any additional typings. You will, however, want to extract the `RootState` type and the `Dispatch` type so that they can be referenced as needed. Inferring these types from the store itself means that they correctly update as you add more state slices or modify middleware settings.
+使用 [configureStore](/toolkit/api/configureStore) 时无需额外添加类型声明。不过，你需要提取 `RootState` 和 `Dispatch` 类型，以便在需要时引用。从 store 本身推断这些类型，可以确保你添加状态切片或修改 middleware 配置后，类型也会正确更新。
 
 因为它们是类型，直接从 store 设置文件（如 `app/store.ts`）导出并在其他文件导入是安全的。
 
@@ -72,7 +72,7 @@ export type AppDispatch = AppStore['dispatch']
 // highlight-end
 ```
 
-### 定义已类型化的 Hooks
+### 定义已类型化的 Hooks {#define-typed-hooks}
 
 虽然可以把 `RootState` 和 `AppDispatch` 类型导入到每个组件，但**最好为 `useDispatch` 和 `useSelector` hooks 创建预定义类型的版本以供全应用使用**。这样做有几个原因：
 
@@ -81,7 +81,7 @@ export type AppDispatch = AppStore['dispatch']
 
 这些是实际变量，不是类型，最好定义在 `app/hooks.ts` 这样的独立文件中，而不是 store 设置文件。这样能在任意组件文件导入，避免循环依赖风险。
 
-Each of the React Redux hooks has a `.withTypes()` method (added in React Redux v9.1.0) that returns a copy of the hook with the given types built in, analogous to the [`.withTypes`](/toolkit/usage/usage-with-typescript#defining-a-pre-typed-createasyncthunk) method on Redux Toolkit's `createAsyncThunk`:
+每个 React Redux hook 都有一个 `.withTypes()` 方法（在 React Redux v9.1.0 中新增），可返回内置指定类型的 hook 副本。它类似于 Redux Toolkit 的 `createAsyncThunk` 上的 [`.withTypes`](/toolkit/usage/usage-with-typescript#defining-a-pre-typed-createasyncthunk) 方法：
 
 ```ts title="app/hooks.ts"
 import { useDispatch, useSelector, useStore } from 'react-redux'
@@ -263,7 +263,7 @@ export const exampleMiddleware: Middleware<
 
 :::caution
 
-If you are using `typescript-eslint`, the `@typescript-eslint/no-empty-object-type` rule (formerly part of `@typescript-eslint/ban-types`) might report an error if you use `{}` for the dispatch value. The recommended changes it makes are incorrect and will break your Redux store types, you should disable the rule for this line and keep using `{}`.
+如果你使用 `typescript-eslint`，当你用 `{}` 表示 dispatch 值时，`@typescript-eslint/no-empty-object-type` 规则（以前属于 `@typescript-eslint/ban-types`）可能会报错。它建议的改法并不正确，反而会破坏 Redux store 类型，因此应对这一行禁用该规则并继续使用 `{}`。
 
 :::
 
@@ -292,7 +292,7 @@ const store = configureStore({
 type RootState = ReturnType<typeof rootReducer>
 ```
 
-### 为 Redux Thunks 添加类型检查
+### 为 Redux Thunks 添加类型检查 {#type-checking-redux-thunks}
 
 [Redux Thunk](https://github.com/reduxjs/redux-thunk) 是编写同步与异步逻辑中与 store 交互的标准中间件。thunk 函数接收 `dispatch` 和 `getState` 两参数。Redux Thunk 提供了内建的 `ThunkAction` 类型，可用来定义这些参数：
 
@@ -352,9 +352,9 @@ export type AppThunk<ReturnType = void> = ThunkAction<
 
 ## React Redux 使用指南
 
-While [React Redux](/react-redux) is a separate library from Redux itself, it is commonly used with React.
+虽然 [React Redux](/react-redux) 是独立于 Redux 本身的库，但它通常与 React 配合使用。
 
-React Redux ships its own type definitions as part of the `react-redux` package, so there is nothing extra to install. The recommended approach is the pre-typed `useAppSelector` and `useAppDispatch` hooks shown in [Define Typed Hooks](#define-typed-hooks) above. This section covers what those hooks are doing, in case you need to type the base hooks by hand.
+React Redux 已在 `react-redux` 包中附带类型定义，因此无需额外安装。推荐使用上文[定义类型化 Hooks](#define-typed-hooks)中展示的预设类型 `useAppSelector` 和 `useAppDispatch` hooks。本节会介绍这些 hooks 的工作方式，以便你在需要时手动为基础 hooks 添加类型。
 
 ### 为 `useSelector` 添加类型
 
@@ -392,27 +392,27 @@ const dispatch = useDispatch()
 
 ### 为 `connect` 高阶组件添加类型
 
-If you are still using the deprecated `connect` API, use the `ConnectedProps<T>` type exported by `react-redux` to infer the props that `connect` injects. See [Typing `connect` with TypeScript](/react-redux/using-react-redux/usage-with-typescript) in the React Redux docs for the full pattern.
+如果仍在使用已弃用的 `connect` API，可以使用 `react-redux` 导出的 `ConnectedProps<T>` 类型，推断 `connect` 注入的 props。完整模式请参阅 React Redux 文档中的[使用 TypeScript 为 `connect` 添加类型](/react-redux/using-react-redux/usage-with-typescript)。
 
 ## Redux Toolkit 使用指南
 
-The [Standard Redux Toolkit Project Setup with TypeScript](#standard-redux-toolkit-project-setup-with-typescript) section above covers the normal usage patterns for `configureStore` and `createSlice`. The [Redux Toolkit "Usage with TypeScript" page](/toolkit/usage/usage-with-typescript) is the detailed reference for typing every RTK API. The points below are the ones that come up most often:
+上文的[标准 Redux Toolkit + TypeScript 项目搭建](#standard-redux-toolkit-project-setup-with-typescript)一节介绍了 `configureStore` 和 `createSlice` 的常见用法。[Redux Toolkit 的“TypeScript 使用指南”页面](/toolkit/usage/usage-with-typescript)详细介绍了各 RTK API 的类型写法。以下是最常遇到的几点：
 
-- **`configureStore`** infers the state type from the root reducer, so no type declarations are needed. When adding middleware, use the `.concat()` and `.prepend()` methods on the array returned by `getDefaultMiddleware()` rather than array spreads, so the middleware types are preserved. See [Correct typings for the `Dispatch` type](/toolkit/usage/usage-with-typescript#correct-typings-for-the-dispatch-type).
-- **Matching actions**: RTK action creators have a `match` method that acts as a type predicate, so `if (increment.match(action))` narrows `action` to the right type. This is useful in middleware and in RxJS `filter` calls. See [Alternative to using a literally-typed `action.type`](/toolkit/usage/usage-with-typescript#alternative-to-using-a-literally-typed-actiontype).
-- **`createSlice`**: declare `action: PayloadAction<T>` on each case reducer; use the `CaseReducer<State, Action>` type to define case reducers outside the slice; always use the builder callback form of `extraReducers` so action types can be inferred; use the `{ reducer, prepare }` form when an action needs `meta` or a customized `payload`. See the [`createSlice` section](/toolkit/usage/usage-with-typescript#createslice).
-- **`createAsyncThunk`**: for basic usage, type the payload creator's argument and return value and let the rest infer. To type the `thunkApi` fields (`state`, `dispatch`, `extra`), pass the return type, argument type, and a config object as the three generic arguments, or define a [pre-typed `createAsyncThunk`](/toolkit/usage/usage-with-typescript#defining-a-pre-typed-createasyncthunk) once per app. See the [`createAsyncThunk` section](/toolkit/usage/usage-with-typescript#createasyncthunk).
-- **`createEntityAdapter`**: pass the entity type as the single generic argument when entities have an `id` field; when they use a different key, pass a typed `selectId` function instead so the ID type is inferred. See the [`createEntityAdapter` section](/toolkit/usage/usage-with-typescript#createentityadapter).
+- **`configureStore`**：它会从根 reducer 推断状态类型，因此无需声明类型。添加 middleware 时，使用 `getDefaultMiddleware()` 返回数组上的 `.concat()` 和 `.prepend()` 方法，而不是展开数组，以保留 middleware 类型。请参阅[正确标注 `Dispatch` 类型](/toolkit/usage/usage-with-typescript#correct-typings-for-the-dispatch-type)。
+- **匹配 action**：RTK action creator 有一个充当类型谓词的 `match` 方法，因此 `if (increment.match(action))` 能将 `action` 收窄为正确类型。这在 middleware 和 RxJS `filter` 调用中很有用。请参阅[为 `action.type` 指定字面类型的替代方案](/toolkit/usage/usage-with-typescript#alternative-to-using-a-literally-typed-actiontype)。
+- **`createSlice`**：为每个 case reducer 的 `action` 声明 `PayloadAction<T>`；在 slice 外定义 case reducer 时使用 `CaseReducer<State, Action>` 类型；始终使用 `extraReducers` 的 builder callback 形式，以便推断 action 类型；action 需要 `meta` 或自定义 `payload` 时，使用 `{ reducer, prepare }` 形式。请参阅[`createSlice` 一节](/toolkit/usage/usage-with-typescript#createslice)。
+- **`createAsyncThunk`**：基本用法中，只需为 payload creator 的参数和返回值标注类型，其余部分可以自动推断。要为 `thunkApi` 字段（`state`、`dispatch`、`extra`）添加类型，可以将返回类型、参数类型和配置对象作为三个泛型参数传入，或在应用中定义一次[预设类型的 `createAsyncThunk`](/toolkit/usage/usage-with-typescript#defining-a-pre-typed-createasyncthunk)。请参阅[`createAsyncThunk` 一节](/toolkit/usage/usage-with-typescript#createasyncthunk)。
+- **`createEntityAdapter`**：实体有 `id` 字段时，将实体类型作为唯一泛型参数；如果使用其他键，则传入带类型的 `selectId` 函数，以便推断 ID 类型。请参阅[`createEntityAdapter` 一节](/toolkit/usage/usage-with-typescript#createentityadapter)。
 
-### Fixing Circular Types in Exported Slices
+### 修复导出 Slice 中的循环类型 {#fixing-circular-types-in-exported-slices}
 
-On rare occasions you might need to export the slice reducer with a specific type in order to break a circular type dependency problem. This might look like:
+少数情况下，你可能需要为导出的 slice reducer 指定具体类型，以打破循环类型依赖问题。写法如下：
 
 ```ts
 export default counterSlice.reducer as Reducer<Counter>
 ```
 
-## Additional Recommendations
+## 其他建议 {#additional-recommendations}
 
 ### 使用 React Redux Hooks API
 
@@ -430,9 +430,9 @@ export default counterSlice.reducer as Reducer<Counter>
 
 更多信息见以下资源：
 
-- Redux library documentation:
-  - [Redux Toolkit docs: Usage with TypeScript](/toolkit/usage/usage-with-typescript): Detailed typing patterns for each Redux Toolkit API
-  - [RTK Query docs: Usage with TypeScript](/toolkit/rtk-query/usage-with-typescript): Typing `createApi`, endpoints, and hooks
+- Redux 库文档：
+  - [Redux Toolkit 文档：TypeScript 使用指南](/toolkit/usage/usage-with-typescript)：各 Redux Toolkit API 的详细类型模式。
+  - [RTK Query 文档：TypeScript 使用指南](/toolkit/rtk-query/usage-with-typescript)：为 `createApi`、endpoint 和 hooks 添加类型。
   - [React Redux docs: Typing `connect`](/react-redux/using-react-redux/usage-with-typescript): Typing the deprecated `connect` API
 - React + TypeScript guides:
   - [React+TypeScript Cheatsheet](https://github.com/typescript-cheatsheets/react): a comprehensive guide to using React with TypeScript

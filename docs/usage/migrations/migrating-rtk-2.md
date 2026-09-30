@@ -58,7 +58,7 @@ Redux 一直附带 UMD 构建产物，主要供直接作为 script 标签导入�
 
 目前，我们决定从发布包中移除这些 UMD 构建产物，因为这类用例如今很少见。
 
-We do have a browser-ready ESM build artifact included at `dist/$PACKAGE_NAME.browser.mjs`, which can be loaded via a `<script type="module">` tag. Since the browser build still imports dependencies by package name, no-bundler usage also needs an import map that maps those package names to browser-loadable ESM files.
+我们仍包含可直接在浏览器中使用的 ESM 构建产物 `dist/$PACKAGE_NAME.browser.mjs`，可通过 `<script type="module">` 标签加载。由于浏览器构建仍按包名导入依赖，不使用打包器时还需要配置 import map，将这些包名映射到浏览器可加载的 ESM 文件。
 
 如果你有强烈的需求需要我们继续包含 UMD 构建产物，请告知！
 
@@ -92,7 +92,7 @@ We do have a browser-ready ESM build artifact included at `dist/$PACKAGE_NAME.br
 
 <div class="typescript-only">
 
-#### TypeScript rewrite
+#### 使用 TypeScript 重写 {#typescript-rewrite}
 
 2019 年，我们开启了社区驱动的 Redux 代码库 TypeScript 转换工作。最初工作在 [#3500: Port to TypeScript](https://github.com/reduxjs/redux/issues/3500) 中讨论，后来在 PR [#3536: Convert to TypeScript](https://github.com/reduxjs/redux/issues/3536) 中整合完成。
 
@@ -100,7 +100,7 @@ We do have a browser-ready ESM build artifact included at `dist/$PACKAGE_NAME.br
 
 Redux 核心 5 现基于该 TS 源码构建。理论上，其运行时行为和类型应与 4.x 版本极为相似，但某些改动可能导致类型不兼容。
 
-Please report any unexpected compatibility issues on [GitHub](https://github.com/reduxjs/redux/issues)!
+如果遇到意料之外的兼容性问题，请在 [GitHub](https://github.com/reduxjs/redux/issues) 上报告！
 
 #### `AnyAction` 被废弃，推荐使用 `UnknownAction`
 
@@ -112,7 +112,7 @@ Redux TS 类型一直导出 `AnyAction` 类型，其定义为 `{type: string}`�
 
 `AnyAction` 为兼容保留，但已标记为弃用。
 
-Note that [Redux Toolkit's action creators have a `.match()` method](/toolkit/api/createAction#actioncreatormatch) that acts as a useful type guard:
+请注意，[Redux Toolkit 的 action creator 提供了 `.match()` 方法](/toolkit/api/createAction#actioncreatormatch)，可用作类型守卫：
 
 ```ts
 if (todoAdded.match(someUnknownAction)) {
@@ -122,7 +122,7 @@ if (todoAdded.match(someUnknownAction)) {
 
 你也可以用新的 `isAction` 工具检查未知值是否为 action 对象。
 
-#### `Middleware` 类型变化 —— 中间件的 `action` 和 `next` 类型改为 `unknown`
+#### `Middleware` 类型变化 —— 中间件的 `action` 和 `next` 类型改为 `unknown` {#middleware-type-changed---middleware-action-and-next-are-typed-as-unknown}
 
 之前，`next` 参数类型为传入的泛型 `D`，`action` 类型为从 dispatch 类型提取的 `Action`。这些假设并不总安全：
 
@@ -169,7 +169,7 @@ type Reducer<S, A extends Action, PreloadedState = S> = (
 
 ### 仅限 Toolkit
 
-#### 移除 `createSlice.extraReducers` 和 `createReducer` 的对象语法
+#### 移除 `createSlice.extraReducers` 和 `createReducer` 的对象语法 {#object-syntax-for-createsliceextrareducers-and-createreducer-removed}
 
 RTK 的 `createReducer` API 最初设计接受一个 action type 字符串到 case reducer 的查找表对象，如 `{ "ADD_TODO": (state, action) => {} }`。之后增加了“builder 回调”形式，可以更灵活地添加“matchers”及默认处理函数，`createSlice.extraReducers` 也同步支持了这一形式。
 
@@ -215,7 +215,7 @@ createSlice({
 
 为了简化升级，我们发布了一组 codemods，可以自动将弃用的“对象”语法转换为等价的“builder”语法。
 
-The codemods package is available on NPM as [`@reduxjs/rtk-codemods`](https://www.npmjs.com/package/@reduxjs/rtk-codemods). More details are available [here](/toolkit/api/codemods).
+Codemod 包可通过 NPM 安装，名称为 [`@reduxjs/rtk-codemods`](https://www.npmjs.com/package/@reduxjs/rtk-codemods)。更多详情请参阅[此处](/toolkit/api/codemods)。
 
 运行方法：
 
@@ -229,7 +229,7 @@ npx @reduxjs/rtk-codemods createSliceBuilder ./packages/my-app/**/*.ts
 
 该 codemod 应该有效，我们非常欢迎更多真实项目反馈！
 
-#### `configureStore.middleware` 必须是回调函数
+#### `configureStore.middleware` 必须是回调函数 {#configurestoremiddleware-must-be-a-callback}
 
 从头开始，`configureStore` 的 `middleware` 可接受直接数组。但直接提供数组阻止了 `configureStore` 调用 `getDefaultMiddleware()`，意味着 `middleware: [myMiddleware]` 不包含 thunk 中间件和开发模式检查。
 
@@ -293,11 +293,11 @@ const store = configureStore({
 
 `getType` 导出也被移除，该函数用于从 `createAction` 创建的 action creator 抽取类型字符串。请改用静态属性 `actionCreator.type`。
 
-#### RTK Query behavior changes
+#### RTK Query 行为变化 {#rtk-query-behavior-changes}
 
 有多条用户反馈指出，在使用 `dispatch(endpoint.initiate(arg, {subscription: false}))` 时 RTK Query 存在问题，也有报告多个懒查询（lazy queries）在触发后 Promise 解决时机异常。这二者的根因都是 RTKQ 在这些情况下没跟踪缓存条目（这是故意的）。我们重写了逻辑，使其始终追踪缓存条目（并按需移除），解决了行为问题。
 
-We also have had issues raised about trying to run multiple mutations in a row and how tag invalidation behaves. RTKQ now has internal logic to delay tag invalidation briefly, to allow multiple invalidations to get handled together. This is controlled by a new `invalidationBehavior: 'immediately' | 'delayed'` flag on `createApi`. The new default behavior is `'delayed'`. Set it to `'immediately'` to revert to the behavior in RTK 1.9.
+我们也收到了一些反馈，涉及连续运行多个 mutation 时标签失效的行为。RTK Query 现在会短暂延迟标签失效，以便将多次失效操作合并处理。此行为由 `createApi` 新增的 `invalidationBehavior: 'immediately' | 'delayed'` 标志控制。新默认值是 `'delayed'`；设为 `'immediately'` 即可恢复 RTK 1.9 中的行为。
 
 RTK 1.9 改写了 RTK Query 内部，绝大多数订阅状态保存在 RTKQ 中间件内。状态仍同步到 Redux store，主要供 Redux DevTools “RTK Query” 面板使用。结合缓存条目变化，我们优化了同步频率以提升性能。
 
@@ -419,7 +419,7 @@ const addNumbersStable = createSelector(
 )
 ```
 
-This is done the first time the selector is called, unless configured otherwise. More details are available in the [Reselect docs on dev-mode checks](/reselect/api/development-only-checks).
+除非另行配置，否则此检查会在 selector 首次调用时执行。详情请参阅 [Reselect 文档中的开发模式检查](/reselect/api/development-only-checks)。
 
 注意 RTK 导出 `createSelector`，但不会导出配置全局检查的方法；如需使用，请直接依赖 `reselect` 并自行导入。
 
@@ -441,9 +441,9 @@ React-Redux v7 和 v8 在支持 hooks 的所有 React 版本（16.8+、17、18�
 
 <div class="typescript-only">
 
-#### Custom context typing
+#### 自定义 Context 的类型 {#custom-context-typing}
 
-React Redux supports creating `hooks` (and `connect`) with a [custom context](/react-redux/api/hooks#custom-context), but typing this has been fairly non-standard. The pre-v9 types required `Context<ReactReduxContextValue>`, but the context default value was usually initialised with `null` (as the hooks use this to make sure they actually have a provided context). This, in "best" cases, would result in something like the below:
+React Redux 支持使用[自定义 Context](/react-redux/api/hooks#custom-context)创建 `hooks`（以及 `connect`），但其类型标注方式一直不太标准。v9 之前的类型要求使用 `Context<ReactReduxContextValue>`，但 Context 的默认值通常初始化为 `null`（hooks 会借此确认确实提供了 Context）。即便采用“最好”的处理方式，代码也会像下面这样：
 
 ```ts title="Pre-v9 custom context"
 import { createContext } from 'react'
@@ -463,9 +463,9 @@ export const useDispatch = createDispatchHook(context).withTypes<AppDispatch>()
 export const useSelector = createSelectorHook(context).withTypes<RootState>()
 ```
 
-In v9, the types now match the runtime behavior. The context is typed to hold `ReactReduxContextValue | null`, and the hooks know that if they receive `null` they'll throw an error so it doesn't affect the return type.
+在 v9 中，类型定义现在与运行时行为一致。Context 的类型为 `ReactReduxContextValue | null`；hooks 知道收到 `null` 时会抛出错误，因此返回类型不会受到影响。
 
-The above example now becomes:
+上面的示例现在可以写成：
 
 ```ts title="v9+ custom context"
 import { createContext } from 'react'
@@ -505,7 +505,7 @@ export const useSelector = createSelectorHook(context).withTypes<RootState>()
 
 Redux 核心一直含 `combineReducers`，接受许多“切片 reducer”对象，生成调用它们的 reducer。RTK 的 `createSlice` 生成切片 reducer 及对应 action creator，我们一般习惯导出命名 action creator 与默认默认导出切片 reducer。我们未官方支持懒加载 reducer，但曾在文档有示例教程。
 
-This release includes a new [`combineSlices`](/toolkit/api/combineSlices) API that is designed to enable lazy-loading of reducers at runtime. It accepts individual slices or an object full of slices as arguments, and automatically calls `combineReducers` using the `sliceObject.name` field as the key for each state field. The generated reducer function has an additional `.inject()` method attached that can be used to dynamically inject additional slices at runtime. It also includes a `.withLazyLoadedSlices()` method that can be used to generate TS types for reducers that will be added later. See [#2776](https://github.com/reduxjs/redux-toolkit/issues/2776) for the original discussion around this idea.
+本次发布新增了 [`combineSlices`](/toolkit/api/combineSlices) API，用于在运行时延迟加载 reducer。它可以接收单个 slice 或由多个 slice 组成的对象作为参数，并自动调用 `combineReducers`，使用每个 `sliceObject.name` 字段作为状态字段名。生成的 reducer 函数附带 `.inject()` 方法，可在运行时动态注入其他 slice；它还包含 `.withLazyLoadedSlices()` 方法，可为稍后添加的 reducer 生成 TypeScript 类型。该想法的原始讨论见 [#2776](https://github.com/reduxjs/redux-toolkit/issues/2776)。
 
 注意，该功能暂未内置到 `configureStore`，你需手动调用：
 
@@ -577,7 +577,7 @@ expect(combinedReducer(undefined, dummyAction()).number).toBe(
 
 ### `createSlice` 新增 `selectors` 字段
 
-The existing `createSlice` API now has support for defining [`selectors`](/toolkit/api/createSlice#selectors) directly as part of the slice. By default, these will be generated with the assumption that the slice is mounted in the root state using `slice.name` as the field, such as `name: "todos"` -> `rootState.todos`. Additionally, there's now a `slice.selectSlice` method that does that default root state lookup.
+现有的 `createSlice` API 现在支持在 slice 中直接定义 [`selectors`](/toolkit/api/createSlice#selectors)。默认情况下，生成的 selector 会假设 slice 使用 `slice.name` 作为根状态字段，例如 `name: "todos"` 对应 `rootState.todos`。此外还新增了 `slice.selectSlice` 方法，用于执行这一默认的根状态查找。
 
 也可调用 `sliceObject.getSelectors(selectSliceState)`，基于其他路径生成选择器，类似 `entityAdapter.getSelectors()`。
 
@@ -613,7 +613,7 @@ expect(selectSlice(customState)).toBe(slice.getInitialState())
 expect(selectMultiple(customState, 2)).toBe(slice.getInitialState() * 2)
 ```
 
-### `createSlice.reducers` 回调语法及 thunk 支持
+### `createSlice.reducers` 回调语法及 thunk 支持 {#createslicereducers-callback-syntax-and-thunk-support}
 
 长期以来，用户反馈希望能在 `createSlice` 内直接声明 thunk。以往你不得不分开写 thunk，指定其 action 前缀字符串，通过 `createSlice.extraReducers` 处理它产生的动作：
 
@@ -717,7 +717,7 @@ const todosSlice = createAppSlice({
 export const { addTodo, deleteTodo, fetchTodo } = todosSlice.actions
 ```
 
-#### Codemod
+#### 代码转换工具
 
 **Using the new callback syntax is entirely optional (the object syntax is still standard)**, but an existing slice would need to be converted before it can take advantage of the new capabilities this syntax provides. To make this easier, a [codemod](/toolkit/api/codemods) is provided.
 
@@ -729,7 +729,7 @@ npx @reduxjs/rtk-codemods createSliceReducerBuilder ./src/features/todos/slice.t
 
 Redux store 的 middleware 管道在创建时固定，无法后续增删。生态系统部分库尝试支持动态添加和移除中间件，用于代码拆分场景。
 
-This is a relatively niche use case, but we've built [our own version of a "dynamic middleware" middleware](/toolkit/api/createDynamicMiddleware). Add it to the Redux store at setup time, and it lets you add middleware later at runtime. It also comes with a [React hook integration that will automatically add a middleware to the store and return the updated dispatch method.](/toolkit/api/createDynamicMiddleware#react-integration).
+这是一个较少见的用例，但我们已经实现了自己的[“动态 middleware” middleware](/toolkit/api/createDynamicMiddleware)。在配置 Redux store 时添加它，就可以在运行时继续添加 middleware。它还提供了 [React hook 集成](/toolkit/api/createDynamicMiddleware#react-integration)，可自动将 middleware 添加到 store 并返回更新后的 dispatch 方法。
 
 ```ts
 import { createDynamicMiddleware, configureStore } from '@reduxjs/toolkit'
@@ -748,7 +748,7 @@ const store = configureStore({
 dynamicMiddleware.addMiddleware(someOtherMiddleware)
 ```
 
-### `configureStore` 默认添加 `autoBatchEnhancer`
+### `configureStore` 默认添加 `autoBatchEnhancer` {#configurestore-adds-autobatchenhancer-by-default}
 
 [1.9.0 版中，我们新增了 `autoBatchEnhancer`](https://github.com/reduxjs/redux-toolkit/releases/tag/v1.9.0)，它会延迟通知订阅者，批处理连续的“低优先级”动作。UI 更新通常是性能瓶颈，此增强可提升性能。RTK Query 默认标记自身绝大部分内部动作为“低优先级”，但需要该增强器才能生效。
 
@@ -756,7 +756,7 @@ dynamicMiddleware.addMiddleware(someOtherMiddleware)
 
 ### `entityAdapter.getSelectors` 接受 `createSelector` 函数
 
-[`entityAdapter.getSelectors()`](/toolkit/api/createEntityAdapter#selector-functions) now accepts an options object as its second argument. This allows you to pass in your own preferred `createSelector` method, which will be used to memoize the generated selectors. This could be useful if you want to use one of Reselect's new alternate memoizers, or some other memoization library with an equivalent signature.
+[`entityAdapter.getSelectors()`](/toolkit/api/createEntityAdapter#selector-functions) 现在接受一个选项对象作为第二个参数。你可以传入自己偏好的 `createSelector` 方法，用它记忆化生成的 selector。如果想使用 Reselect 新增的其他记忆化函数，或签名相同的其他记忆化库，这会很有用。
 
 ### Immer 10.0
 
@@ -772,9 +772,9 @@ RTK 现在依赖最终版 Immer 10.0。
 
 ### Next.js 设置指南
 
-We now have a docs page that covers [how to set up Redux properly with Next.js](https://redux.js.org/usage/nextjs). We've seen a lot of questions around using Redux, Next, and the App Router together, and this guide should help provide advice. The [Next.js `with-redux` example](https://github.com/vercel/next.js/tree/canary/examples/with-redux) has been updated to match that guide.
+我们现在有一个文档页面，介绍[如何在 Next.js 中正确配置 Redux](https://redux.js.org/usage/nextjs)。我们收到许多关于同时使用 Redux、Next.js 和 App Router 的问题，希望本指南能提供帮助。[Next.js `with-redux` 示例](https://github.com/vercel/next.js/tree/canary/examples/with-redux)也已更新，与该指南保持一致。
 
-## 覆盖依赖
+## 覆盖依赖 {#overriding-dependencies}
 
 包更新 peerDependencies 以支持 Redux 核心 5.0 需时间间隔，**此期间类似 [Middleware 类型变更](#middleware-type-changed---middleware-action-and-next-are-typed-as-unknown) 会导致兼容性问题**。
 
@@ -842,14 +842,14 @@ createReducer(initialState, {
 })
 ```
 
-While this was convenient (and other libraries in the Redux ecosystem such as `redux-saga` and `redux-observable` have supported this to various capacities), it didn't play well with TypeScript and was generally a bit too "magic".
+虽然这种方式很方便（Redux 生态中的 `redux-saga` 和 `redux-observable` 等库也在不同程度上支持它），但它与 TypeScript 配合不佳，而且整体上有些过于“魔法”。
 
 ```ts
 const test = todoAdded.toString()
 //    ^? 类型为 string，不是具体 action type
 ```
 
-Over time, the action creator also gained a static `type` property and `match` method which were more explicit and worked better with TypeScript.
+后来，action creator 还增加了静态 `type` 属性和 `match` 方法，它们更加明确，也更适合与 TypeScript 配合。
 
 ```ts
 const test = todoAdded.type
@@ -900,7 +900,7 @@ yield takeEvery(todoAdded.type, saga)
 
 ### 自定义切片 reducer 创建器
 
-With the addition of the [callback syntax for createSlice](#createslicereducers-callback-syntax-and-thunk-support), the [suggestion](https://github.com/reduxjs/redux-toolkit/issues/3837) was made to enable custom slice reducer creators. These creators would be able to:
+随着 [createSlice 回调语法](#createslicereducers-callback-syntax-and-thunk-support)的加入，有人[建议](https://github.com/reduxjs/redux-toolkit/issues/3837)支持自定义 slice reducer 创建器。此类创建器可以：
 
 - Modify reducer behavior by adding case or matcher reducers
 - Attach actions (or any other useful functions) to `slice.actions`
@@ -954,7 +954,7 @@ const createSlice = buildCreateSlice({
 })
 ```
 
-We're not sure how many people/libraries would actually make use of this though, so any feedback over on the [GitHub issue](https://github.com/reduxjs/redux-toolkit/issues/3837) is welcome!
+不过我们还不确定有多少用户或库会实际使用这项功能，欢迎在 [GitHub issue](https://github.com/reduxjs/redux-toolkit/issues/3837) 中提供反馈！
 
 ### `createSlice.selector` 选择器工厂
 
@@ -999,7 +999,7 @@ function AuthorTodos({ author }: { author: string }) {
 
 `createSlice.selectors` 无法动态创建实例，因为需在 `createSlice` 创建时声明选择器。
 
-In 2.0.0 we have no set solution for this - a few APIs have been floated ([PR 1](https://github.com/reduxjs/redux-toolkit/pull/3671), [PR 2](https://github.com/reduxjs/redux-toolkit/pull/3836)) but nothing was decided upon. If this is something you'd like to see supported, consider providing feedback in the [GitHub discussion](https://github.com/reduxjs/redux-toolkit/discussions/3387)!
+在 2.0.0 中，我们还没有确定的解决方案。虽然已经提出了几个 API 方案（[PR 1](https://github.com/reduxjs/redux-toolkit/pull/3671)、[PR 2](https://github.com/reduxjs/redux-toolkit/pull/3836)），但尚未做出决定。如果你希望支持此功能，欢迎在 [GitHub 讨论区](https://github.com/reduxjs/redux-toolkit/discussions/3387)提供反馈！
 
 ### 3.0 - RTK Query
 

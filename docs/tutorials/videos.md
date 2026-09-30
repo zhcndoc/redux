@@ -18,7 +18,7 @@ Redux 维护者 Mark Erikson 出现在“Learn with Jason”节目中，讲解�
 
 <LiteYouTubeEmbed
     id="9zySeP5vH9c"
-    title="学习现代 Redux - Redux Toolkit，React-Redux Hooks 和 RTK Query"
+    title="学习现代 Redux：Redux Toolkit、React-Redux Hooks 和 RTK Query"
 />
 
 ## RTK Query 基础：查询端点、数据流和 TypeScript
@@ -30,7 +30,7 @@ RTK Query 创造者 Lenz Weber-Tronic 的 RTK Query 基础视频课程。
 <div style={{position:"relative",paddingTop:"56.25%"}}>
   <iframe 
     src="https://app.egghead.io/lessons/redux-course-introduction-and-application-walk-through-for-rtk-query-basics/embed?af=7pnhj6" 
-    title="Egghead 上的 RTK Query 视频课程：针对 RTK Query 基础的课程介绍和应用讲解"
+    title="Egghead 上的 RTK Query 视频课程：RTK Query 基础课程介绍和应用演示"
     frameborder="0" 
     allowfullscreen
     style={{position:"absolute",top:0,left:0,width:"100%",height:"100%"}}

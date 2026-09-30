@@ -24,7 +24,7 @@ export default function ErrorCodesPage({
       {error && (
         <React.Fragment>
           <p>
-            <strong>The full text of the error you just encountered is:</strong>
+            <strong>你刚刚遇到的错误完整信息如下：</strong>
           </p>
           <code className={styles.errorDetails}>{error}</code>
         </React.Fragment>
@@ -32,8 +32,8 @@ export default function ErrorCodesPage({
       <table>
         <thead>
           <tr>
-            <th>Code</th>
-            <th>Message</th>
+            <th>代码</th>
+            <th>错误信息</th>
           </tr>
         </thead>
         <tbody>

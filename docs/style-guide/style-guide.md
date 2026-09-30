@@ -22,7 +22,7 @@ Redux 核心库和大部分 Redux 文档都是非强制性的。Redux 有许多�
 
 基于此，**我们整理了这份建议清单，帮助你避免错误、纠结和反面模式**。我们也理解不同团队有不同的偏好，不同项目有不同的需求，所以没有哪份风格指南能适用于所有情况。**我们鼓励你遵循这些建议，但请花时间评估自身情况，决定是否适合你的需求**。
 
-Finally, we'd like to thank the Vue documentation authors for writing the [Vue Style Guide page](https://v2.vuejs.org/v2/style-guide/), which was the inspiration for this page.
+最后，感谢 Vue 文档作者编写了 [Vue 风格指南页面](https://v2.vuejs.org/v2/style-guide/)，本页的写作受到了它的启发。
 
 ## 规则分类
 
@@ -48,11 +48,11 @@ Finally, we'd like to thank the Vue documentation authors for writing the [Vue S
 
 修改 state 是 Redux 应用中最常见的 bug 源，包括组件无法正确重新渲染，也会破坏 Redux DevTools 中的时间旅行调试。**应始终避免实际修改 state 值**，无论是在 reducers 内部还是在其他所有应用代码中。
 
-Redux Toolkit's `configureStore` includes [an immutability check middleware](/toolkit/api/immutabilityMiddleware) that catches mutations during development, and `createSlice` uses [Immer](https://immerjs.github.io/immer/) so that state updates can't accidentally mutate the real data.
+Redux Toolkit 的 `configureStore` 内置了[不可变性检查中间件](/toolkit/api/immutabilityMiddleware)，可在开发时捕获修改操作；`createSlice` 使用 [Immer](https://immerjs.github.io/immer/)，确保状态更新不会意外修改真实数据。
 
 > **注意**：修改_复制_的现有值是允许的——这是编写不可变更新逻辑的正常部分。如果你使用 Immer 进行不可变更新，编写类似“修改”的逻辑是可以接受的，因为实际数据本身未被修改——Immer 会安全追踪更改，并在内部生成不可变更新的值。
 
-### Reducers 不能有副作用
+### Reducers 不能有副作用 {#reducers-must-not-have-side-effects}
 
 Reducer 函数应_仅_依赖其 `state` 与 `action` 参数，并仅基于这两个参数计算并返回新的 state 值。**不得执行任何异步逻辑（AJAX 调用、定时器、Promise）、生成随机值（`Date.now()`、`Math.random()`）、修改 reducer 外部变量，或执行其他影响 reducer 作用域外部事物的代码**。
 
@@ -66,7 +66,7 @@ Reducer 函数应_仅_依赖其 `state` 与 `action` 参数，并仅基于这两
 
 </DetailedExplanation>
 
-### 不要在 State 或 Actions 中放置不可序列化的值
+### 不要在 State 或 Actions 中放置不可序列化的值 {#do-not-put-non-serializable-values-in-state-or-actions}
 
 **避免将不可序列化的值（如 Promise、Symbol、Map/Set、函数或类实例）放入 Redux 存储的 state 或派发的 actions 中**。这保证了 Redux DevTools 等调试工具能按预期工作，也保证 UI 能按预期更新。
 
@@ -84,19 +84,19 @@ Reducer 函数应_仅_依赖其 `state` 与 `action` 参数，并仅基于这两
 
 ## 优先级 B 规则：强烈推荐
 
-### 使用 Redux Toolkit 编写 Redux 逻辑
+### 使用 Redux Toolkit 编写 Redux 逻辑 {#use-redux-toolkit-for-writing-redux-logic}
 
-**[Redux Toolkit](/toolkit/introduction/getting-started) is our recommended toolset for using Redux**. It has functions that build in our suggested best practices, including setting up the store to catch mutations and enable the Redux DevTools Extension, simplifying immutable update logic with Immer, and more.
+**[Redux Toolkit](/toolkit/introduction/getting-started) 是我们推荐的 Redux 工具集**。它内置了我们建议的最佳实践，包括配置 store 以检测状态修改并启用 Redux DevTools 扩展、使用 Immer 简化不可变更新逻辑等。
 
 你不必一定使用 RTK，也可使用其他方法，但**使用 RTK 能简化你的逻辑，确保应用默认配置良好**。
 
-### 使用 Immer 编写不可变更新
+### 使用 Immer 编写不可变更新 {#use-immer-for-writing-immutable-updates}
 
-Writing immutable update logic by hand is frequently difficult and prone to errors. [Immer](https://immerjs.github.io/immer/) allows you to write simpler immutable updates using "mutative" logic, and even freezes your state in development to catch mutations elsewhere in the app. **We recommend using Immer for writing immutable update logic, preferably as part of [Redux Toolkit](/toolkit/introduction/getting-started)**.
+手动编写不可变更新逻辑通常很困难，也容易出错。[Immer](https://immerjs.github.io/immer/) 允许你用更简单的“修改式”逻辑编写不可变更新，甚至会在开发环境冻结状态，以捕获应用其他位置的修改。**我们建议使用 Immer 编写不可变更新，最好将它作为 [Redux Toolkit](/toolkit/introduction/getting-started) 的一部分使用**。
 
 <a id="structure-files-as-feature-folders-or-ducks"></a>
 
-### 使用“功能文件夹+单文件逻辑”结构组织文件
+### 使用“功能文件夹+单文件逻辑”结构组织文件 {#structure-files-as-feature-folders-with-single-file-logic}
 
 Redux 本身不关心你如何组织应用文件夹和文件。但将某个功能的逻辑聚集在一起通常更易维护。
 
@@ -125,7 +125,7 @@ Redux 本身不关心你如何组织应用文件夹和文件。但将某个功�
 
 </DetailedExplanation>
 
-### 尽可能将逻辑放入 Reducers
+### 尽可能将逻辑放入 Reducers {#put-as-much-logic-as-possible-in-reducers}
 
 尽可能**把计算新 state 的大部分逻辑放到相应 reducer 中，而不是在准备和派发 action 的代码里（比如点击处理函数）**。这有助于确保更多实际业务逻辑易于测试，支持更有效的时间旅行调试，避免导致修改和错误的常见失误。
 
@@ -192,7 +192,7 @@ const todosSlice = createSlice({
 
 </DetailedExplanation>
 
-### Reducers 应该拥有 State 形状
+### Reducers 应该拥有 State 形状 {#reducers-should-own-the-state-shape}
 
 Redux 根状态由单根 reducer 计算。为维护性考虑，该 reducer 通常拆成按 key/value 切分的“slice”，**每个“slice reducer”负责提供该状态片段的初始值并计算更新**。
 
@@ -294,7 +294,7 @@ const rootReducer = combineReducers({
 
 例如，一个博客应用可能需要跟踪谁登录了、作者和帖子信息、以及当前激活的屏幕信息。合理的状态结构可能是 `{auth, posts, users, ui}`。糟糕的结构如 `{loginScreen, usersList, postsList}`。
 
-### 把 Reducers 看作状态机
+### 把 Reducers 看作状态机 {#treat-reducers-as-state-machines}
 
 许多 Redux reducer 是“无条件”的，只看派发的 action，计算新状态，而不基于当前状态的上下文。这样容易出错，因为某些动作在特定状态下逻辑上“无效”，例如“请求成功”动作只当状态是“加载中”时才有新状态，或“更新某项”动作只在有“正在编辑”的项目时才应派发。
 
@@ -369,7 +369,7 @@ const userSlice = createSlice({
 })
 ```
 
-Now, since you're defining behavior per state instead of per action, you also prevent impossible transitions. For instance, a `fetchUserStarted` action should have no effect when `status === 'loading'`, and you can enforce that, instead of accidentally introducing edge-cases.
+由于现在是针对每种状态定义行为，而不是针对每个 action 定义行为，因此也能避免不可能的状态转换。例如，当 `status === 'loading'` 时，`fetchUserStarted` action 不应产生效果；通过这种方式可以明确保证这一点，避免意外引入边缘情况。
 
 </DetailedExplanation>
 
@@ -379,7 +379,7 @@ Now, since you're defining behavior per state instead of per action, you also pr
 
 **建议以[“标准化”形式](../usage/structuring-reducers/NormalizingStateShape.md)存储数据**。这方便根据 ID 查找条目并单独更新，更有利于性能优化。
 
-### 保持状态最小化并派生附加值
+### 保持状态最小化并派生附加值 {#keep-state-minimal-and-derive-additional-values}
 
 尽可能**让 Redux store 中保存的实际数据保持最小，只在需要时从状态“派生”附加值**。如计算过滤列表或求和。举例，todo 应用在状态中存储原始 todo 数组，过滤后的 todo 列表则在状态外计算。是否所有 todo 完成、剩余数量等也应在状态外计算。
 
@@ -389,9 +389,9 @@ Now, since you're defining behavior per state instead of per action, you also pr
 - 计算附加值的逻辑和同步保持较少
 - 原始状态始终可得且不会被替换
 
-Deriving data is often done in "selector" functions, which can encapsulate the logic for doing the derived data calculations. In order to improve performance, these selectors can be _memoized_ to cache previous results, using [Reselect](https://reselect.js.org) (re-exported from Redux Toolkit as `createSelector`).
+派生数据通常通过“selector”函数完成，它可以封装派生计算逻辑。为了提升性能，可以使用 [Reselect](https://reselect.js.org)（Redux Toolkit 以 `createSelector` 的形式重新导出）对 selector 进行_记忆化_，缓存之前的结果。
 
-### 将 Actions 视为事件而非设置器（Setters）
+### 将 Actions 视为事件而非设置器（Setters） {#model-actions-as-events-not-setters}
 
 Redux 本身不关心 `action.type` 内容，只要被定义即可。action 值可用现在时（"users/update"）、过去时（"users/updated"）、事件描述（"upload/progress"）、或当做设置器（"users/setUserName"）等。你自己决定动作在应用中的含义及建模方式。
 
@@ -441,13 +441,13 @@ Redux 本身不关心 `action.type` 内容，只要被定义即可。action 值�
 
 如 [将动作建模为“事件”](#model-actions-as-events-not-setters) 所述，Redux 不关心 `type` 内容，但对开发者而言非常重要。**应使用有意义、信息丰富且描述清晰的类型字段**。理想情况下，浏览 dispatched 的动作类型列表时，无需查看动作具体内容即可理解应用发生了什么。避免使用诸如 `"SET_DATA"`、`"UPDATE_STORE"` 这类过于笼统的名称。
 
-### 允许多个 Reducers 响应同一 Action
+### 允许多个 Reducers 响应同一 Action {#allow-many-reducers-to-respond-to-the-same-action}
 
 Redux reducer 逻辑预期拆成很多小 reducer，各自独立更新状态树的对应部分，最终合并成根 reducer。当某动作派发时，可由所有、部分或无 reducer 处理。
 
 你应当**允许多个 reducer 分别响应相同动作**。实际经验表明，大多数动作通常只被单一 reducer 处理，这无问题。但把动作视作“事件”，允许多个 reducer 响应，有助代码库规模扩张，减少派发多个动作才能完成一项业务的次数。
 
-### 避免连续派发大量动作
+### 避免连续派发大量动作 {#avoid-dispatching-many-actions-sequentially}
 
 **避免为完成较大“事务”而连续派发许多动作**。此做法虽合法，但通常导致多次较昂贵的 UI 更新，且某些中间状态可能被别处逻辑视为无效。优先派发单条“事件”类动作以完成所有状态更新，或考虑使用动作合批插件以单次 UI 更新派发多个动作。
 
@@ -458,11 +458,11 @@ React 事件处理器中的更新会批量渲染，但事件处理器外触发�
 
 此外，多次派发的动作组成的“事务”在中间路径将产生不完整状态。例如同时派发 `"UPDATE_A"`、`"UPDATE_B"`、`"UPDATE_C"`，若某代码期望三者同时更新，则前两次派发后状态不完整。
 
-If multiple dispatches are truly necessary, consider batching the updates in some way. React 18 and later already batch renders for multiple dispatches in the same tick, so the remaining options are debouncing the store notification callbacks, or grouping many actions into a larger single dispatch that only results in one subscriber notification. See [the FAQ entry on "reducing store update events"](../faq/Performance.md#how-can-i-reduce-the-number-of-store-update-events) for additional examples and links to related addons.
+如果确实需要多次 dispatch，可以考虑以某种方式批处理更新。React 18 及更高版本已经会将同一事件周期中的多次 dispatch 合并为一次渲染，因此剩下的选择是对 store 通知回调进行防抖，或将多个 action 组合为一次 dispatch，从而只通知订阅者一次。更多示例及相关扩展链接请参阅[如何减少 store 更新事件](../faq/Performance.md#how-can-i-reduce-the-number-of-store-update-events)常见问题。
 
 </DetailedExplanation>
 
-### 评估每个状态片段应该存放位置
+### 评估每个状态片段应该存放位置 {#evaluate-where-each-piece-of-state-should-live}
 
 [Redux 三大原则](../understanding/thinking-in-redux/ThreePrinciples.md)说“整个应用的状态存储在单一树中”，该说法已被过度解读。这并不意味着所有值都必须存在 Redux store，而是**应有一个单一位置存储所有你认为的全局、应用范围内的状态**。局部值一般应放在最近的 UI 组件中。
 
@@ -470,13 +470,13 @@ If multiple dispatches are truly necessary, consider batching the updates in som
 
 ### 使用 React-Redux Hooks API
 
-**Prefer using [the React-Redux hooks API (`useSelector` and `useDispatch`)](/react-redux/api/hooks) as the default way to interact with a Redux store from your React components**. While the classic `connect` API still works fine and will continue to be supported, the hooks API is generally easier to use in several ways. The hooks have less indirection, less code to write, and are simpler to use with TypeScript than `connect` is.
+**优先使用 [React-Redux hooks API（`useSelector` 和 `useDispatch`）](/react-redux/api/hooks)，作为 React 组件与 Redux store 交互的默认方式**。经典的 `connect` API 仍可正常工作，也会继续受支持，但 hooks API 通常更易使用：间接层更少、需要编写的代码更少，并且比 `connect` 更容易与 TypeScript 配合。
 
 hooks API 在性能和数据流上与 `connect` 有不同权衡，但我们现推荐其作为默认选择。
 
 <DetailedExplanation>
 
-The [classic `connect` API](/react-redux/api/connect) is a [Higher Order Component](https://legacy.reactjs.org/docs/higher-order-components.html). It generates a new wrapper component that subscribes to the store, renders your own component, and passes down data from the store and action creators as props.
+经典的 [`connect` API](/react-redux/api/connect) 是一个[高阶组件](https://legacy.reactjs.org/docs/higher-order-components.html)。它会生成新的包装组件，订阅 store、渲染你的组件，并将 store 数据和 action creator 作为 props 传入。
 
 这是有意设计的间接层，便于写无特定 Redux 依赖的“展示组件”。
 
@@ -491,7 +491,7 @@ Hooks 改变了大部分 React 开发者的写法。虽然“容器/展示组件
 - [关于 React Hooks、Redux 及关注点分离的思考](https://blog.isquaredsoftware.com/2019/07/blogged-answers-thoughts-on-hooks/)
 - [ReactBoston 2019: Hooks、HOCs 和权衡](https://blog.isquaredsoftware.com/2019/09/presentation-hooks-hocs-tradeoffs/)
 
-Also see the [React-Redux hooks API docs](/react-redux/api/hooks) for info on how to correctly optimize components and handle rare edge cases.
+有关如何正确优化组件及处理少见边缘情况，也请参阅 [React-Redux hooks API 文档](/react-redux/api/hooks)。
 
 </DetailedExplanation>
 
@@ -499,15 +499,15 @@ Also see the [React-Redux hooks API docs](/react-redux/api/hooks) for info on ho
 
 建议让更多 UI 组件订阅 Redux store，按更细粒度读取数据。这通常提升 UI 性能，因为状态变化时需重新渲染的组件变少。
 
-For example, rather than having a `<UserList>` component read the entire array of users, have `<UserList>` select a list of all user IDs, render list items as `<UserListItem userId={userId}>`, and have `<UserListItem>` call `useSelector` to extract its own user entry from the store.
+例如，不要让 `<UserList>` 组件读取整个用户数组，而应让它选择所有用户 ID 列表并将条目渲染为 `<UserListItem userId={userId}>`；然后由 `<UserListItem>` 调用 `useSelector`，从 store 中提取自己的用户条目。
 
-This applies for both the `useSelector()` hook and the legacy `connect()` API.
+这既适用于 `useSelector()` hook，也适用于旧版 `connect()` API。
 
 ### 使用 `connect` 时，`mapDispatch` 用对象简写形式
 
-This rule only applies if you are still using the legacy `connect` API. Components written with hooks call `useDispatch` directly.
+此规则仅适用于仍在使用旧版 `connect` API 的情况。使用 hooks 编写的组件应直接调用 `useDispatch`。
 
-The `mapDispatch` argument to `connect` can be defined as either a function that receives `dispatch` as an argument, or an object containing action creators. **We recommend always using [the "object shorthand" form of `mapDispatch`](/react-redux/using-react-redux/connect-mapdispatch#defining-mapdispatchtoprops-as-an-object)**, as it simplifies the code considerably. There is almost never a real need to write `mapDispatch` as a function.
+`connect` 的 `mapDispatch` 参数可以是接收 `dispatch` 的函数，也可以是包含 action creator 的对象。**我们建议始终使用 [`mapDispatch` 的“对象简写”形式](/react-redux/using-react-redux/connect-mapdispatch#defining-mapdispatchtoprops-as-an-object)**，因为它能大幅简化代码。几乎没有必要把 `mapDispatch` 写成函数。
 
 ### 在函数组件中多次调用 `useSelector`
 
@@ -515,9 +515,9 @@ The `mapDispatch` argument to `connect` can be defined as either a function that
 
 不过请找到合适的粒度平衡。若单组件确实需要一整个状态切片，写一个返回整个切片的 `useSelector` 比为每个字段写多个选择器更好。
 
-### 使用静态类型
+### 使用静态类型 {#use-static-typing}
 
-**Use a static type system like TypeScript rather than plain JavaScript**. The type system will catch many common mistakes, improve the documentation of your code, and ultimately lead to better long-term maintainability. While Redux and React-Redux were originally designed with plain JS in mind, both work well with TS. Redux Toolkit is specifically written in TS and is designed to provide good type safety with a minimal amount of additional type declarations.
+**建议使用 TypeScript 等静态类型系统，而不是纯 JavaScript**。类型系统可以捕获许多常见错误、改善代码的文档性，并最终提高长期可维护性。虽然 Redux 和 React-Redux 最初是为纯 JS 设计的，但都能很好地配合 TS 使用。Redux Toolkit 本身使用 TS 编写，设计目标是在只需少量额外类型声明的情况下提供良好的类型安全。
 
 ### 使用 Redux DevTools 扩展调试
 
@@ -570,7 +570,7 @@ Immutable.js 自 Redux 诞生以来偶尔用于 Redux 应用，原因多为：
 
 ## 优先级 C 规则：推荐
 
-### 将 Action 类型写作 `domain/eventName`
+### 将 Action 类型写作 `domain/eventName` {#write-action-types-as-domaineventname}
 
 Redux 原始文档示例一般使用“全大写下划线”格式定义 action 类型，如 `"ADD_TODO"`、`"INCREMENT"`，符合大多数编程语言常量写法惯例，但大写字符串阅读起来不便。
 
@@ -592,7 +592,7 @@ Redux 生态许多库采用 FSA 格式，Redux Toolkit 生成的 action creators
 
 > **注意**：FSA 规定错误动作 `error: true` 并用与正常动作同一类型。实际上多数学者习惯为成功和错误分别写不同类型，二者都可。
 
-### 使用 Action 创建函数
+### 使用 Action 创建函数 {#use-action-creators}
 
 “Action 创建函数” 源自最初 Flux 架构，Redux 中非强制。组件或其他代码可直接调用 `dispatch({type: "some/action"})`，内联写动作对象。
 
@@ -606,7 +606,7 @@ Redux 生态许多库采用 FSA 格式，Redux Toolkit 生成的 action creators
 
 因此，**推荐默认使用 [RTK Query](../tutorials/essentials/part-7-rtk-query-basics.md) 作为 Redux 应用的数据获取和缓存方法**。RTK Query 设计用于正确管理服务器数据请求逻辑、缓存、请求去重、组件更新等。几乎所有情况建议不要手写数据获取逻辑。
 
-### 对其他异步逻辑，使用 Thunks 和 Listeners
+### 对其他异步逻辑，使用 Thunks 和 Listeners {#use-thunks-and-listeners-for-other-async-logic}
 
 Redux 设计上是可扩展的，middleware API 用于让不同形式的异步逻辑接入 Redux。用户不用强制学习 RxJS 等不适合需求的库。
 
@@ -614,7 +614,7 @@ Redux 设计上是可扩展的，middleware API 用于让不同形式的异步�
 
 **推荐使用 [Redux thunk middleware](../usage/writing-logic-thunks.mdx) 编写命令式逻辑**，包括需要访问 `dispatch` 或 `getState` 的复杂同步逻辑与适中复杂的异步逻辑，如将逻辑从组件中剥离。
 
-**We recommend using [the RTK "listener" middleware"](/toolkit/api/createListenerMiddleware) for "reactive" logic that needs to respond to dispatched actions or state changes**, such as longer-running async workflows and "background thread"-type behavior.
+**对于需要响应已派发 action 或状态变化的“响应式”逻辑，我们建议使用 [RTK 的 listener middleware](/toolkit/api/createListenerMiddleware)**，例如持续时间较长的异步工作流和“后台线程”式行为。
 
 多数情况下不推荐使用复杂的 Redux-Saga 和 Redux-Observable 库，尤其是用于异步数据获取。仅当其它工具无能为力时才考虑。
 
@@ -634,11 +634,11 @@ Redux 设计上是可扩展的，middleware API 用于让不同形式的异步�
 
 但无需对每个状态字段都写选择器。根据访问和更新频率及选择器带来的实际益处平衡粒度。
 
-### 选择器命名以 `selectThing` 为前缀
+### 选择器命名以 `selectThing` 为前缀 {#name-selector-functions-as-selectthing}
 
 **建议给选择器函数名添加 `select` 前缀，并描述所选取的内容**。示例有 `selectTodos`、`selectVisibleTodos`、`selectTodoById`。
 
-### 避免将表单状态放入 Redux
+### 避免将表单状态放入 Redux {#avoid-putting-form-state-in-redux}
 
 **大多数表单状态不应存入 Redux**。多数情况下，表单数据非真正全局，不缓存且不被多个组件共享。此外，连接表单与 Redux 通常导致每个改动事件都需派发动作，造成性能开销且无实质好处。（你大概不需要倒着一路时间旅行，去到 `name: "Mark"` 的上一刻 `name: "Mar"`。）
 

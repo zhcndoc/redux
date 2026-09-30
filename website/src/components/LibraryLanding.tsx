@@ -47,7 +47,7 @@ export default function LibraryLanding({
               )}
               to={getStartedUrl}
             >
-              Get Started
+              开始使用
             </Link>
           </div>
         </div>

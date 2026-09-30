@@ -7,7 +7,7 @@ title: 术语表
 
 This is a glossary of the core terms in Redux, along with their type signatures. The types are documented using TypeScript-style type signatures.
 
-## 状态（State）
+## 状态（State） {#state}
 
 ```js
 type State = any
@@ -17,7 +17,7 @@ _State_ (also called the _state tree_) is a broad term, but in the Redux API it 
 
 按照惯例，顶层状态是一个对象或类似 Map 这样的键值集合，但从技术上讲，它可以是任何类型。不过，你应该尽力保持状态可序列化。不要把不能轻易转成 JSON 的东西放进去。
 
-## Action（动作）
+## Action（动作） {#action}
 
 ```js
 type Action = Object
@@ -29,9 +29,9 @@ type Action = Object
 
 Other than `type`, the structure of an action object is really up to you. If you're interested, check out [Flux Standard Action](https://github.com/redux-utilities/flux-standard-action) for recommendations on how actions should be constructed.
 
-参见下文的 [异步动作](#异步动作)。
+参见下文的[异步动作](#async-action)。
 
-## Reducer（纯函数）
+## Reducer（纯函数） {#reducer}
 
 ```js
 type Reducer<S, A> = (state: S, action: A) => S
@@ -47,22 +47,22 @@ Reducer 是 Redux 中最重要的概念。
 
 _不要把 API 调用放进 reducer。_
 
-## 派发函数（Dispatching Function）
+## 派发函数（Dispatching Function） {#派发函数}
 
 ```js
 type BaseDispatch = (a: Action) => Action
 type Dispatch = (a: Action | AsyncAction) => any
 ```
 
-_派发函数_（或简称 _dispatch 函数_）是一个接受动作或[异步动作](#异步动作)的函数；它可能会也可能不会向 store 派发一个或多个动作。
+_派发函数_（或简称 _dispatch 函数_）是一个接受动作或[异步动作](#async-action)的函数；它可能会也可能不会向 store 派发一个或多个动作。
 
 We must distinguish between dispatching functions in general and the base [`dispatch`](../../api/Store.md#dispatchaction) function provided by the store instance without any middleware.
 
 基础的 dispatch 函数_总是_同步地将动作连同 store 返回的之前的状态一并发送到 reducer 来计算新的状态。它期望动作是纯对象，能被 reducer 消费。
 
-[中间件](#中间件)包装基础 dispatch 函数，使得 dispatch 函数能够处理[异步动作](#异步动作)和普通动作。中间件可以在传给下一个中间件之前，对动作或异步动作进行转换、延迟、忽略或其他处理。详情见下文。
+[中间件](#middleware)包装基础 dispatch 函数，使得 dispatch 函数能够处理[异步动作](#async-action)和普通动作。中间件可以在传给下一个中间件之前，对动作或异步动作进行转换、延迟、忽略或其他处理。详情见下文。
 
-## Action 创建者（Action Creator）
+## Action 创建者（Action Creator） {#action-creator}
 
 ```js
 type ActionCreator<A, P extends any[] = any[]> = (...args: P) => Action | AsyncAction
@@ -72,9 +72,9 @@ _动作创建者_ 简单说就是一个创建动作的函数。不要混淆这�
 
 Calling an action creator only produces an action, but does not dispatch it. You need to call the store's [`dispatch`](../../api/Store.md#dispatchaction) function to actually cause the mutation. Sometimes we say _bound action creators_ to mean functions that call an action creator and immediately dispatch its result to a specific store instance.
 
-如果动作创建者需要读取当前状态、执行 API 调用或产生副作用（比如路由跳转），它应该返回一个[异步动作](#异步动作)，而不是普通动作。
+如果动作创建者需要读取当前状态、执行 API 调用或产生副作用（比如路由跳转），它应该返回一个[异步动作](#async-action)，而不是普通动作。
 
-## 异步动作（Async Action）
+## 异步动作（Async Action） {#async-action}
 
 ```js
 type AsyncAction = any
@@ -82,20 +82,20 @@ type AsyncAction = any
 
 An _async action_ is a value that is sent to a dispatching function, but is not yet ready for consumption by the reducer. It will be transformed by [middleware](#middleware) into an action (or a series of actions) before being sent to the base [`dispatch()`](../../api/Store.md#dispatchaction) function. Async actions may have different types, depending on the middleware you use. They are often asynchronous primitives, like a Promise or a thunk, which are not passed to the reducer immediately, but trigger action dispatches once an operation has completed.
 
-## 中间件（Middleware）
+## 中间件（Middleware） {#middleware}
 
 ```js
 type MiddlewareAPI = { dispatch: Dispatch, getState: () => State }
 type Middleware = (api: MiddlewareAPI) => (next: Dispatch) => Dispatch
 ```
 
-中间件是高阶函数，组合一个[派发函数](#派发函数)来返回一个新的派发函数。它通常将[异步动作](#异步动作)转换成动作。
+中间件是高阶函数，组合一个[派发函数](#派发函数)来返回一个新的派发函数。它通常将[异步动作](#async-action)转换成动作。
 
 中间件可通过函数组合来组合。它对于记录动作日志、执行副作用（如路由）或将异步 API 调用转换为一系列同步动作非常有用。
 
 详细介绍请参阅 [`applyMiddleware(...middlewares)`](../../api/applyMiddleware.md)。
 
-## Store（状态存储）
+## Store（状态存储） {#store}
 
 ```js
 type Store = {
@@ -124,7 +124,7 @@ type StoreCreator = (reducer: Reducer, preloadedState: ?State) => Store
 
 A store creator is a function that creates a Redux store. Like with dispatching function, we must distinguish the base store creator, [`createStore(reducer, preloadedState)`](../../api/createStore.md) exported from the Redux package, from store creators that are returned from the store enhancers.
 
-## Store 增强器（Store enhancer）
+## Store 增强器（Store enhancer） {#store-enhancer}
 
 ```js
 type StoreEnhancer = (next: StoreCreator) => StoreCreator

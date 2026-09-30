@@ -8,36 +8,36 @@ description: '介绍 > 生态系统：链接到流行的、推荐的、有趣的
 
 Redux 是一个小巧的库，但它的契约和 API 精心设计，催生了一个工具和扩展的生态系统，社区创建了各种有用的插件、库和工具。你不需要使用任何这些插件来使用 Redux，但它们可以帮助你更容易地实现功能和解决应用中的问题。
 
-Most of what the community built as separate addons in the early years of Redux is now part of [Redux Toolkit](/toolkit): store setup, immutable updates, action creators, normalized entity management, data fetching and caching, and reactive side effects. Check whether RTK already covers your use case before reaching for a third-party library.
+Redux 早期社区单独构建的大多数扩展，如今都已成为 [Redux Toolkit](/toolkit) 的一部分：store 配置、不可变更新、action creator、归一化实体管理、数据获取与缓存，以及响应式副作用。考虑第三方库之前，先确认 RTK 是否已能满足你的用例。
 
-This page lists the addons that the Redux maintainers recommend today, plus a few widely used community libraries that are still maintained. For a much larger (and much older) catalog, see the [Redux Ecosystem Links](https://github.com/markerikson/redux-ecosystem-links) list, but be aware that most of the libraries there have not been updated since 2020.
+本页列出了 Redux 维护者当前推荐的扩展，以及少数仍在维护、使用广泛的社区库。更完整（也更旧）的目录请参阅 [Redux 生态系统链接](https://github.com/markerikson/redux-ecosystem-links)，但要注意其中大多数库自 2020 年以来就没有更新。
 
 ## 目录
 
 - [Redux Toolkit](#redux-toolkit)
-- [DevTools and Debugging](#devtools-and-debugging)
-- [Side Effects](#side-effects)
-- [Persistence and Routing](#persistence-and-routing)
-- [Testing and Utilities](#testing-and-utilities)
+- [DevTools 与调试](#devtools-and-debugging)
+- [副作用](#side-effects)
+- [持久化与路由](#persistence-and-routing)
+- [测试与工具](#testing-and-utilities)
 
 ## Redux Toolkit
 
 **[reduxjs/redux-toolkit](https://github.com/reduxjs/redux-toolkit)** <br />
-The official, opinionated, batteries-included toolset for Redux development. It is the standard way to write Redux logic. Redux Toolkit includes:
+Redux 开发的官方工具集，内置最佳实践和所需功能，是编写 Redux 逻辑的标准方式。Redux Toolkit 包含：
 
-- [`configureStore`](/toolkit/api/configureStore): sets up the store with the thunk middleware, DevTools integration, and development-mode checks for accidental mutations and non-serializable values
-- [`createSlice`](/toolkit/api/createSlice): generates action creators and action types from a set of reducer functions, with [Immer](https://immerjs.github.io/immer/) built in for "mutating" immutable updates
-- [`createAsyncThunk`](/toolkit/api/createAsyncThunk): dispatches pending/fulfilled/rejected actions around an async function
-- [`createEntityAdapter`](/toolkit/api/createEntityAdapter): prebuilt reducers and selectors for normalized `{ ids, entities }` state
-- [`createListenerMiddleware`](/toolkit/api/createListenerMiddleware): runs effects in response to dispatched actions or state changes
-- [RTK Query](/toolkit/rtk-query/overview): data fetching and caching, generated from an API definition
-- [`combineSlices`](/toolkit/api/combineSlices) and [`createDynamicMiddleware`](/toolkit/api/createDynamicMiddleware): lazy-loaded reducers and middleware for code splitting
+- [`configureStore`](/toolkit/api/configureStore)：配置 store、添加 thunk middleware 和 DevTools 集成，并在开发模式下检查意外修改及不可序列化的值。
+- [`createSlice`](/toolkit/api/createSlice)：根据 reducer 函数生成 action creator 和 action 类型，并内置 [Immer](https://immerjs.github.io/immer/) 以便使用“修改式”语法进行不可变更新。
+- [`createAsyncThunk`](/toolkit/api/createAsyncThunk)：围绕异步函数派发 pending、fulfilled 和 rejected action。
+- [`createEntityAdapter`](/toolkit/api/createEntityAdapter)：为 `{ ids, entities }` 归一化状态提供预构建的 reducer 和 selector。
+- [`createListenerMiddleware`](/toolkit/api/createListenerMiddleware)：响应已派发的 action 或状态变化运行副作用。
+- [RTK Query](/toolkit/rtk-query/overview)：根据 API 定义生成数据获取和缓存逻辑。
+- [`combineSlices`](/toolkit/api/combineSlices) 和 [`createDynamicMiddleware`](/toolkit/api/createDynamicMiddleware)：支持代码拆分的 reducer 与 middleware 延迟加载。
 
 **[reduxjs/react-redux](https://github.com/reduxjs/react-redux)** <br />
-The official React bindings for Redux, maintained by the Redux team. Provides the `useSelector` and `useDispatch` hooks and the `<Provider>` component.
+由 Redux 团队维护的官方 React 绑定库，提供 `useSelector`、`useDispatch` hooks 和 `<Provider>` 组件。
 
 **[reduxjs/reselect](https://github.com/reduxjs/reselect)** <br />
-Creates composable memoized selector functions for efficiently deriving data from the store state. Re-exported from Redux Toolkit.
+用于创建可组合的记忆化 selector 函数，以便高效地从 store 状态派生数据。Redux Toolkit 也重新导出了该库。
 
 ```ts
 const selectTax = createSelector(
@@ -47,7 +47,7 @@ const selectTax = createSelector(
 ```
 
 **[dai-shi/proxy-memoize](https://github.com/dai-shi/proxy-memoize)** <br />
-An alternative selector library. Instead of declaring input selectors, it tracks which parts of the state a selector actually reads, using Proxies, and only recomputes when those parts change.
+另一个 selector 库。它使用 Proxy 跟踪 selector 实际读取的状态部分，而不是声明输入 selector；只有这些状态部分发生变化时才会重新计算。
 
 ```ts
 const selectTax = memoize(
@@ -56,7 +56,7 @@ const selectTax = memoize(
 ```
 
 **[immerjs/immer](https://github.com/immerjs/immer)** <br />
-Immutable updates with normal mutative code, using Proxies. Used internally by `createSlice` and `createReducer`, and also useful on its own.
+通过 Proxy 使用普通的修改式代码执行不可变更新。`createSlice` 和 `createReducer` 内部使用了 Immer，它也可以单独使用。
 
 ```ts
 const nextState = produce(baseState, draftState => {
@@ -65,31 +65,31 @@ const nextState = produce(baseState, draftState => {
 })
 ```
 
-## DevTools and Debugging
+## DevTools 与调试 {#devtools-and-debugging}
 
 **[Redux DevTools Extension](https://github.com/reduxjs/redux-devtools/tree/main/extension)** <br />
-Browser extension for [Chrome](https://chromewebstore.google.com/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd), [Firefox](https://addons.mozilla.org/en-US/firefox/addon/reduxdevtools/), and [Edge](https://microsoftedge.microsoft.com/addons/detail/redux-devtools/nnkgneoiohoecpdiaponcejilbhhikei) that shows dispatched actions, state diffs, and lets you time-travel through state history. `configureStore` enables the connection automatically in development.
+适用于 [Chrome](https://chromewebstore.google.com/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd)、[Firefox](https://addons.mozilla.org/en-US/firefox/addon/reduxdevtools/) 和 [Edge](https://microsoftedge.microsoft.com/addons/detail/redux-devtools/nnkgneoiohoecpdiaponcejilbhhikei) 的浏览器扩展，可展示已派发的 action 和状态差异，并支持在状态历史中进行时间旅行。`configureStore` 会在开发环境自动启用与扩展的连接。
 
 **[reduxjs/redux-devtools](https://github.com/reduxjs/redux-devtools)** <br />
-The monorepo for the extension and the `@redux-devtools/*` packages, including the standalone Remote DevTools app and the in-page monitor components used to build custom debugging UIs.
+该 monorepo 包含浏览器扩展和 `@redux-devtools/*` 包，包括独立的 Remote DevTools 应用，以及可用于构建自定义调试界面的页面内监视组件。
 
 **[matt-oakes/redux-devtools-expo-dev-plugin](https://github.com/matt-oakes/redux-devtools-expo-dev-plugin)** <br />
-Expo dev tools plugin that embeds the Redux DevTools UI for React Native apps built with Expo.
+Expo 开发工具插件，可在使用 Expo 构建的 React Native 应用中嵌入 Redux DevTools 界面。
 
 **[infinitered/reactotron](https://github.com/infinitered/reactotron)** <br />
-A cross-platform desktop app for inspecting React and React Native apps, including app state, API requests, perf, errors, sagas, and action dispatching.
+跨平台桌面应用，用于检查 React 和 React Native 应用，包括应用状态、API 请求、性能、错误、saga 和 action 派发。
 
 **[EskiMojo14/use-reducer-devtools](https://github.com/EskiMojo14/use-reducer-devtools)** <br />
-A `useReducer` wrapper that connects component-local reducer state to the Redux DevTools extension, including time-travel debugging.
+一个 `useReducer` 包装器，可将组件本地 reducer 状态连接到 Redux DevTools 扩展，并支持时间旅行调试。
 
-## Side Effects
+## 副作用 {#side-effects}
 
-Redux Toolkit's `configureStore` adds the thunk middleware by default, and RTK also includes `createAsyncThunk`, `createListenerMiddleware`, and RTK Query. Those cover most apps. See [Side Effects Approaches](../usage/side-effects-approaches.mdx) for a comparison, and the [Style Guide](../style-guide/style-guide.md#use-thunks-and-listeners-for-other-async-logic) for our recommendations on when to use each.
+Redux Toolkit 的 `configureStore` 默认添加 thunk middleware，RTK 还包含 `createAsyncThunk`、`createListenerMiddleware` 和 RTK Query。这些工具能满足大多数应用的需求。不同方案的比较请参阅[副作用处理方案](../usage/side-effects-approaches.mdx)，关于何时使用各工具的建议请参阅[风格指南](../style-guide/style-guide.md#use-thunks-and-listeners-for-other-async-logic)。
 
 **[reduxjs/redux-thunk](https://github.com/reduxjs/redux-thunk)** <br />
-Dispatch functions, which are called and given `dispatch` and `getState` as parameters. Included in Redux Toolkit and enabled by `configureStore`; you only need to install it separately if you are using the core `createStore` API.
+派发函数时会调用 thunk，并将 `dispatch` 和 `getState` 作为参数传入。Redux Toolkit 已包含 thunk，`configureStore` 会默认启用；只有使用核心 `createStore` API 时，才需要单独安装。
 
-**Best for**: the default choice for async requests and any logic that needs access to `dispatch` or `getState`. See [Writing Logic with Thunks](../usage/writing-logic-thunks.mdx).
+**适用场景**：异步请求，以及任何需要访问 `dispatch` 或 `getState` 的逻辑的默认选择。请参阅[使用 thunk 编写逻辑](../usage/writing-logic-thunks.mdx)。
 
 ```ts
 export const fetchTodos = createAsyncThunk('todos/fetchTodos', async () => {
@@ -107,9 +107,9 @@ export const addTodoIfAllowed =
 ```
 
 **[createListenerMiddleware (Redux Toolkit)](/toolkit/api/createListenerMiddleware)** <br />
-A lightweight alternative to sagas and observables. Listeners run an effect after a matching action is dispatched, and the effect can wait for further actions or state changes, cancel itself, and start child tasks.
+轻量级的 saga 和 observable 替代方案。匹配的 action 派发后，listener 会运行 effect；effect 可以等待后续 action 或状态变化、取消自身以及启动子任务。
 
-**Best for**: "when X happens, do Y" logic, analytics, and reacting to state changes.
+**适用场景**：“发生 X 时执行 Y”类逻辑、分析统计以及响应状态变化。
 
 ```ts
 listenerMiddleware.startListening({
@@ -122,9 +122,9 @@ listenerMiddleware.startListening({
 ```
 
 **[redux-saga/redux-saga](https://github.com/redux-saga/redux-saga)** <br />
-Handle async logic using synchronous-looking generator functions. Sagas return descriptions of effects, which are executed by the saga middleware, and act like "background threads" for JS applications.
+使用看起来接近同步的 generator 函数处理异步逻辑。Saga 会返回 effect 描述，由 saga middleware 执行，并在 JavaScript 应用中充当“后台线程”。
 
-**Best for**: complex async workflows with cancellation, debouncing, or coordination between multiple concurrent tasks.
+**适用场景**：需要取消、防抖或协调多个并发任务的复杂异步工作流。
 
 ```js
 function* fetchData(action) {
@@ -141,9 +141,9 @@ function* fetchData(action) {
 ```
 
 **[redux-observable/redux-observable](https://github.com/redux-observable/redux-observable)** <br />
-Handle async logic using RxJS observable chains called "epics". Compose and cancel async actions to create side effects and more.
+使用称为“epic”的 RxJS observable 链处理异步逻辑。可以组合和取消异步 action，以实现副作用等功能。
 
-**Best for**: teams already using RxJS who want the same operators for Redux logic.
+**适用场景**：已经使用 RxJS、希望在 Redux 逻辑中沿用相同操作符的团队。
 
 ```js
 const loginRequestEpic = action$ =>
@@ -158,13 +158,13 @@ const loginRequestEpic = action$ =>
   )
 ```
 
-## Persistence and Routing
+## 持久化与路由 {#persistence-and-routing}
 
 **[zewish/redux-remember](https://github.com/zewish/redux-remember)** <br />
-Saves selected parts of the store to `localStorage`, `AsyncStorage`, or any storage driver you provide, and rehydrates them on startup. Actively maintained and written with `configureStore` in mind.
+将 store 的指定部分保存到 `localStorage`、`AsyncStorage` 或你提供的存储驱动中，并在启动时重新载入。该库仍在积极维护，设计时考虑了 `configureStore` 的用法。
 
 **[rt2zz/redux-persist](https://github.com/rt2zz/redux-persist)** <br />
-Persist and rehydrate a Redux store, with many extensible options. This is the most widely used persistence library, but it is **not maintained**: the last release was v6.0.0 in 2019, and open issues and pull requests are not being handled. It still works with current Redux versions. If you are starting a new project, prefer `redux-remember` or write your own small persistence layer with a listener middleware and `preloadedState`.
+持久化并重新载入 Redux store，提供多种可扩展选项。这是使用最广泛的持久化库，但**目前无人维护**：最近一次发布是 2019 年的 v6.0.0，未处理仍然开放的 issue 和 pull request。它仍能与当前 Redux 版本一起使用。如果是新项目，建议优先选择 `redux-remember`，或使用 listener middleware 和 `preloadedState` 编写简单的持久化层。
 
 ```ts
 const persistConfig = { key: 'root', version: 1, storage }
@@ -181,23 +181,23 @@ export const store = configureStore({
 export const persistor = persistStore(store)
 ```
 
-For routing, we recommend keeping router state in your router rather than copying it into the Redux store. The FAQ's [rules of thumb for what belongs in the store](../faq/OrganizingState.md#do-i-have-to-put-all-my-state-into-redux-should-i-ever-use-reacts-usestate-or-usereducer) apply here as well. `connected-react-router`, the library that used to be listed here, does not support React Router v6 and is no longer maintained. If you still need to sync history into the store, [salvoravida/redux-first-history](https://github.com/salvoravida/redux-first-history) is an actively maintained option.
+路由状态建议保留在路由器中，而不是复制到 Redux store。常见问题中关于[哪些状态适合放入 store](../faq/OrganizingState.md#do-i-have-to-put-all-my-state-into-redux-should-i-ever-use-reacts-usestate-or-usereducer)的经验法则也适用于此。曾列于此处的 `connected-react-router` 不支持 React Router v6，且已停止维护。如果仍需将 history 同步到 store，[salvoravida/redux-first-history](https://github.com/salvoravida/redux-first-history) 是一个仍在维护的选项。
 
-## Testing and Utilities
+## 测试与工具 {#testing-and-utilities}
 
-For testing Redux apps, we recommend rendering real components with a real store instead of mocking the store or testing reducers and action creators in isolation. See [Writing Tests](../usage/WritingTests.mdx) for the full approach and example setup.
+测试 Redux 应用时，建议使用真实 store 渲染真实组件，而不是模拟 store，或孤立地测试 reducer 和 action creator。完整方法和示例配置请参阅[编写测试](../usage/WritingTests.mdx)。
 
 **[testing-library/react-testing-library](https://github.com/testing-library/react-testing-library)** <br />
-Renders components and queries the DOM the way a user would. The [Writing Tests](../usage/WritingTests.mdx) page shows a `renderWithProviders` helper that wraps it with a Redux `<Provider>`.
+以用户的方式渲染组件并查询 DOM。[编写测试](../usage/WritingTests.mdx)页面展示了 `renderWithProviders` helper，它会用 Redux `<Provider>` 包装组件。
 
 **[mswjs/msw](https://github.com/mswjs/msw)** <br />
-Mock Service Worker: intercepts network requests at the network level, so thunks and RTK Query endpoints can be tested against realistic responses without changing application code.
+Mock Service Worker：在网络层拦截请求，因此可以针对真实的响应测试 thunk 和 RTK Query endpoint，而无需修改应用代码。
 
 **[jfairbank/redux-saga-test-plan](https://github.com/jfairbank/redux-saga-test-plan)** <br />
-Integration and unit testing for sagas, if you use redux-saga.
+如果使用 redux-saga，可用此库对 saga 进行集成和单元测试。
 
 **[EskiMojo14/history-adapter](https://github.com/EskiMojo14/history-adapter)** <br />
-Undo/redo for Immer-based state, by Redux maintainer Ben Durrant. The `history-adapter/redux` entry point provides `undo`, `redo`, and `undoableReducer` helpers that plug straight into `createSlice`.
+由 Redux 维护者 Ben Durrant 编写，为基于 Immer 的状态提供撤销/重做功能。`history-adapter/redux` 入口提供 `undo`、`redo` 和 `undoableReducer` helper，可直接与 `createSlice` 配合使用。
 
 ```ts
 const counterAdapter = createHistoryAdapter<CounterState>({ limit: 10 })
@@ -216,16 +216,16 @@ const counterSlice = createSlice({
 ```
 
 **[omnidan/redux-undo](https://github.com/omnidan/redux-undo)** <br />
-Higher-order reducer that adds undo/redo and action history to any reducer. The repository was archived in January 2026 and is no longer maintained, but the package still works and is what the [Implementing Undo History](../usage/ImplementingUndoHistory.md) page uses.
+可为任意 reducer 添加撤销/重做和 action 历史的高阶 reducer。仓库已于 2026 年 1 月归档，不再维护，但软件包仍可使用；[实现撤销历史](../usage/ImplementingUndoHistory.md)页面也采用了它。
 
 **[paularmstrong/normalizr](https://github.com/paularmstrong/normalizr)** <br />
-Normalizes nested API responses into flat `{ entities, result }` structures based on a schema definition. No longer maintained (the repository is archived), but it still works and is useful when a server returns deeply nested data that you want to store in `createEntityAdapter` slices. See [Normalizing State Shape](../usage/structuring-reducers/NormalizingStateShape.md).
+根据 schema 定义，将嵌套的 API 响应归一化为扁平的 `{ entities, result }` 结构。该库已停止维护（仓库已归档），但仍可使用；当服务器返回深度嵌套的数据，而你希望将其存入使用 `createEntityAdapter` 的 slice 时，它仍然有用。请参阅[标准化 State 结构](../usage/structuring-reducers/NormalizingStateShape.md)。
 
 **[EskiMojo14/use-rtk-slice](https://github.com/EskiMojo14/use-rtk-slice)** <br />
-A `useReducer`-style hook for managing local component state with a slice created by `createSlice`, for cases where the logic benefits from Redux-style reducers but the state does not belong in the store.
+一个类似 `useReducer` 的 hook，可使用 `createSlice` 创建的 slice 管理组件本地状态，适用于逻辑适合采用 Redux 风格 reducer、但状态不应放入 store 的场景。
 
 **[redux-utilities/reduce-reducers](https://github.com/redux-utilities/reduce-reducers)** <br />
-Provides sequential composition of reducers at the same level, for cases where several reducers need to run in order against the same state. See [Beyond `combineReducers`](../usage/structuring-reducers/BeyondCombineReducers.md).
+提供同一层级 reducer 的顺序组合，适用于多个 reducer 需要依次处理相同状态的场景。请参阅[超越 `combineReducers`](../usage/structuring-reducers/BeyondCombineReducers.md)。
 
 ```js
 const combinedReducer = combineReducers({ users, posts, comments })

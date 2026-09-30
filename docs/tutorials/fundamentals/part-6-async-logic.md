@@ -37,7 +37,7 @@ import FundamentalsWarning from "../../components/_FundamentalsWarning.mdx";
 
 :::tip
 
-Redux Toolkit includes the [**RTK Query data fetching and caching API**](/toolkit/rtk-query/overview). RTK Query is a purpose built data fetching and caching solution for Redux apps, and **can eliminate the need to write _any_ thunks or reducers to manage data fetching**. We specifically teach RTK Query as the default approach for data fetching, and RTK Query is built on the same patterns shown in this page.
+Redux Toolkit 包含 [**RTK Query 数据获取与缓存 API**](/toolkit/rtk-query/overview)。RTK Query 是专为 Redux 应用设计的数据获取和缓存解决方案，**可以免去编写 thunk 或 reducer 来管理数据获取的需要**。我们将 RTK Query 作为数据获取的默认方案来教授，而 RTK Query 正是基于本页介绍的模式构建的。
 
 在 [Redux 精要，第 7 部分：RTK Query 基础](../essentials/part-7-rtk-query-basics.md) 中学习如何使用 RTK Query 进行数据获取。
 
@@ -45,9 +45,9 @@ Redux Toolkit includes the [**RTK Query data fetching and caching API**](/toolki
 
 ### 示例 REST API 与客户端
 
-To keep the example project isolated but realistic, the initial project setup already included a fake in-memory REST API for our data (configured using the [Mock Service Worker](https://mswjs.io/) library). The API uses `/fakeApi` as the base URL for the endpoints, and supports the typical `GET/POST/PUT/DELETE` HTTP methods for `/fakeApi/todos`. It's defined in `src/api/server.js`.
+为了让示例项目既独立又贴近实际，初始项目已经为数据配置了一个内存中的模拟 REST API（使用 [Mock Service Worker](https://mswjs.io/) 库）。API 使用 `/fakeApi` 作为 endpoint 的基础 URL，并为 `/fakeApi/todos` 提供常见的 `GET/POST/PUT/DELETE` HTTP 方法。定义位于 `src/api/server.js`。
 
-The fake API intercepts `fetch` calls directly in the page, so these requests won't show up in the browser DevTools Network tab. You can use the Redux DevTools to see the actions that are dispatched as the data is loaded.
+模拟 API 会直接在页面中拦截 `fetch` 调用，因此这些请求不会显示在浏览器 DevTools 的 Network 标签页中。你可以使用 Redux DevTools 查看数据加载过程中派发的 action。
 
 项目还包含一个小型 HTTP API 客户端对象，暴露了类似于流行 HTTP 库（如 `axios`）的 `client.get()` 和 `client.post()` 方法，定义在 `src/api/client.js`。
 
@@ -194,7 +194,7 @@ store.dispatch(fetchSomeData)
 
 :::
 
-### 配置 Store
+### 配置 Store {#configuring-the-store}
 
 Redux thunk 中间件的包名为 `redux-thunk`，需要先安装：
 
@@ -249,7 +249,7 @@ export async function fetchTodos(dispatch, getState) {
 - In the `<TodoList>` component, in a `useEffect` hook
 - In the `main.jsx` file directly, right after we import the store
 
-For now, let's try putting this directly in `main.jsx`:
+现在先尝试将这段逻辑直接放进 `main.jsx`：
 
 ```js title="src/main.jsx"
 import React from 'react'
@@ -329,7 +329,7 @@ export async function fetchTodos(dispatch, getState) {
 }
 ```
 
-### 保存 Todo 项目
+### 保存 Todo 项目 {#saving-todo-items}
 
 创建新待办时，我们也要同步更新服务器。与其直接立即派发 `'todos/todoAdded'` 动作，不如调用 API 把新待办数据发给服务器，服务器返回新保存的待办项，再派发动作。
 

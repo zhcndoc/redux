@@ -102,7 +102,7 @@ Redux 是一个小型独立的 JS 库，但常与其他几个包一起使用：
 
 #### React-Redux
 
-Redux can integrate with any UI framework, and is most frequently used with React. [**React-Redux**](/react-redux) is our official package that lets your React components interact with a Redux store by reading pieces of state and dispatching actions to update the store.
+Redux 可以与任何 UI 框架集成，最常与 React 一起使用。[**React-Redux**](/react-redux) 是我们的官方包，它让 React 组件能够从 Redux store 读取状态片段并派发 action 来更新 store。
 
 #### Redux DevTools 扩展
 

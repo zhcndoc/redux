@@ -14,7 +14,7 @@ import HandWrittenReducersNote from "../../components/_HandWrittenReducersNote.m
 
 <HandWrittenReducersNote />
 
-## Core Concepts
+## 核心概念 {#core-concepts}
 
 Redux 应用中最常见的状态结构是一个包含各领域特定数据“切片”的普通 Javascript 对象，每个顶级键对应一个切片。类似地，为该状态结构编写 reducer 逻辑的最常用方法是编写多个“切片 reducer”函数，这些函数都具有相同的 `(state, action)` 签名，并负责管理该特定状态切片的所有更新。多个切片 reducer 可以响应同一动作，独立地根据需要更新各自的切片，最终将更新后的切片组合成新的状态对象。
 
@@ -29,7 +29,7 @@ Redux 应用中最常见的状态结构是一个包含各领域特定数据“�
 
 ## 定义状态结构
 
-There are two ways to define the initial shape and contents of your store's state. First, `configureStore` accepts a `preloadedState` option. This is primarily intended for initializing the store with state that was previously persisted elsewhere, such as the browser's localStorage. The other way is for the root reducer to return the initial state value when the state argument is `undefined`. These two approaches are described in more detail in [Initializing State](./InitializingState.md), but there are some additional concerns to be aware of when using `combineReducers`.
+定义 store 状态的初始形状和内容有两种方法。首先，`configureStore` 接受 `preloadedState` 选项，主要用于使用先前保存在其他位置的状态（例如浏览器 `localStorage`）初始化 store。另一种方法是让根 reducer 在收到 `undefined` 状态参数时返回初始状态值。这两种方法在[初始化状态](./InitializingState.md)一节中有更详细的介绍，不过使用 `combineReducers` 时还有一些额外事项需要注意。
 
 `combineReducers` takes an object full of slice reducer functions, and creates a function that outputs a corresponding state object with the same keys. This means that if no preloaded state is provided when creating the store, the naming of the keys in the input slice reducer object will define the naming of the keys in the output state object. The correlation between these names is not always apparent, especially when using features such as default module exports and object literal shorthands.
 
@@ -89,6 +89,6 @@ console.log(reducerInitializedStore.getState())
 // {defaultState : 0, firstState : 1, secondState : 2}
 ```
 
-This state shape better reflects the data involved, because we took care to set up the keys we passed to `combineReducers`.
+这种状态形状能更好地反映实际数据，因为我们仔细设置了传给 `combineReducers` 的键名。
 
 `configureStore` does this step for you when its `reducer` option is an object of slice reducers: it calls `combineReducers` on that object, so the keys you write there become the top-level state keys. Redux Toolkit also has [`combineSlices`](/toolkit/api/combineSlices), which builds the root reducer from slice objects and supports adding reducers lazily.

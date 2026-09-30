@@ -50,7 +50,7 @@ export default function LibraryDropdownNavbarItem({
       <DropdownNavbarItem
         {...props}
         className="navbar__library-dropdown"
-        html={`<span class="navbar__library-prefix">Library:</span> <span class="navbar__library-name">${current.label}</span>`}
+        html={`<span class="navbar__library-prefix">文档库：</span> <span class="navbar__library-name">${current.label}</span>`}
         items={items}
       />
       {/* Infima hides every navbar__item below 997px, so the closed mobile bar

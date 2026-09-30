@@ -15,15 +15,15 @@ description: 'API > bindActionCreators：包装 action creators 以便 dispatch 
 
 :::info
 
-Normally you should just call [`dispatch`](Store.md#dispatchaction) directly. If you use Redux with React, [React-Redux's `useDispatch` hook](/react-redux/api/hooks#usedispatch) gives you the `dispatch` function inside components.
+通常直接调用 [`dispatch`](Store.md#dispatchaction) 即可。在 React 中使用 Redux 时，[React-Redux 的 `useDispatch` hook](/react-redux/api/hooks#usedispatch) 会在组件中提供 `dispatch` 函数。
 
-The only use case for `bindActionCreators` is when you want to pass some action creators down to a component that isn't aware of Redux, and you don't want to pass `dispatch` or the Redux store to it. It was originally intended for use with the legacy React-Redux `connect` method, and is rarely needed today.
+只有在需要把 action creator 传给不了解 Redux 的组件、又不想将 `dispatch` 或 Redux store 传给它时，才需要使用 `bindActionCreators`。它最初是为旧版 React-Redux 的 `connect` 方法设计的，如今很少需要使用。
 
 :::
 
-For convenience, you can also pass an action creator as the first argument, and get a dispatch wrapped function in return.
+为了方便，你也可以将单个 action creator 作为第一个参数传入，并获得一个由 `dispatch` 包装的函数。
 
-## Parameters
+## 参数
 
 1. `actionCreators`（_函数_ 或 _对象_）：一个 [action creator](../understanding/thinking-in-redux/Glossary.md#action-creator) ，或者一个值为 action creator 的对象。
 

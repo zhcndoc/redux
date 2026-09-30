@@ -3,41 +3,34 @@ import LibraryLanding from '@site/src/components/LibraryLanding'
 
 const features = [
   {
-    title: 'Predictable',
+    title: '符合预期',
     content: (
       <p>
-        Like Redux, Reselect gives users a consistent mental model for
-        memoizing functions. Extract input values, recalculate when any input
-        changes.
+        与 Redux 一样，Reselect 为函数记忆化提供了一致的思维模型：提取输入值，并在任一输入变化时重新计算。
       </p>
     )
   },
   {
-    title: 'Optimized',
+    title: '性能优化',
     content: (
       <p>
-        Reselect minimizes the number of times expensive computations are
-        performed, reuses existing result references if nothing has changed,
-        and improves performance.
+        Reselect 会尽量减少开销较大的计算次数；如果输入没有变化，就复用已有的结果引用，从而提升性能。
       </p>
     )
   },
   {
-    title: 'Customizable',
+    title: '灵活定制',
     content: (
       <p>
-        Reselect comes with fast defaults, but provides flexible customization
-        options. Swap memoization methods, change equality checks, and
-        customize for your needs.
+        Reselect 默认配置快速高效，同时提供灵活的定制选项。你可以更换记忆化方法、调整相等性检查，并根据需要进行配置。
       </p>
     )
   },
   {
-    title: 'Type-Safe',
+    title: '类型安全',
     content: (
       <p>
-        Reselect is designed for great TypeScript support. Generated selectors
-        infer all types from input selectors.
+        Reselect 对 TypeScript 提供完善支持。生成的 selector 会从输入 selector 推断所有类型。
       </p>
     )
   }
@@ -47,8 +40,8 @@ export default function ReselectHome(): React.ReactNode {
   return (
     <LibraryLanding
       name="Reselect"
-      tagline="A memoized selector library for Redux"
-      description="A memoized selector library for Redux"
+      tagline="Redux 的记忆化选择器库"
+      description="Redux 的记忆化选择器库"
       getStartedPath="reselect/introduction/getting-started"
       features={features}
     />

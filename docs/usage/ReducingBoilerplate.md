@@ -5,9 +5,9 @@ title: 减少样板代码
 
 # 减少样板代码
 
-Redux is in part [inspired by Flux](../understanding/history-and-design/PriorArt.md), and the most common complaint about Flux is how it makes you write a lot of boilerplate. In this recipe, we will consider which parts of Redux are actual design decisions, which parts are conventions you can drop, and how [Redux Toolkit](/toolkit) generates the repetitive parts for you.
+Redux 部分理念[受到 Flux 启发](../understanding/history-and-design/PriorArt.md)，而对 Flux 最常见的抱怨是它要求编写大量样板代码。本篇将讨论 Redux 的哪些部分是真正的设计选择、哪些只是可以舍弃的惯例，以及 [Redux Toolkit](/toolkit) 如何替你生成重复性代码。
 
-## Actions（动作）
+## Actions（动作） {#actions}
 
 Actions 是描述应用内发生了什么的普通对象，是描述修改数据意图的唯一方式。重要的是，**Actions 作为你必须 dispatch 的对象，并不是样板代码，而是 Redux 的 [根本设计选择之一](../understanding/thinking-in-redux/ThreePrinciples.md)**。
 
@@ -21,7 +21,7 @@ Actions 看起来像这样：
 { type: 'articles/articleLoaded', payload: { ... } }
 ```
 
-It is a common convention that actions have a constant type that helps reducers identify them. We recommend that you use strings and not [Symbols](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Symbol) for action types, because strings are serializable, and by using Symbols you make recording and replaying harder than it needs to be.
+一种常见惯例是为 action 定义常量类型，帮助 reducer 识别它们。我们建议 action 类型使用字符串，而不是 [Symbol](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Symbol)，因为字符串可以序列化；使用 Symbol 会给记录和回放带来不必要的困难。
 
 在 Flux 中，传统上认为你会把每个动作类型定义为字符串常量：
 
@@ -31,14 +31,14 @@ const REMOVE_TODO = 'REMOVE_TODO'
 const LOAD_ARTICLE = 'LOAD_ARTICLE'
 ```
 
-Why is this beneficial? For larger projects, there are some benefits to having action types defined in one place:
+这样做有什么好处？对于较大型项目，将 action 类型集中定义有以下优点：
 
 - 有助于保持命名一致，因为所有动作类型都汇聚在一个地方。
 - 有时你想在开发新功能前先看看已有的所有动作，也许你需要的动作已经被团队某人添加了，但你不知道。
 - 在 Pull Request 中新增、删除和修改的动作类型列表，帮助团队成员了解新功能的范围和实现。
 - 万一导入动作常量时出现拼写错误，会变成 `undefined`。Redux 在 dispatch 该动作时会立即报错，你可以更早发现错误。
 
-Those benefits come from having a single definition per action, not from the constants themselves. With Redux Toolkit's [`createSlice`](/toolkit/api/createSlice), the definition is the case reducer, and the type string is generated from the slice name and the reducer name:
+这些好处来自每个 action 只有一个定义，而不是来自常量本身。使用 Redux Toolkit 的 [`createSlice`](/toolkit/api/createSlice) 时，case reducer 就是该定义，类型字符串则根据 slice 名称和 reducer 名称生成：
 
 ```ts
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
@@ -61,11 +61,11 @@ export const { todoAdded, todoRemoved } = todosSlice.actions
 todoAdded.type // 'todos/todoAdded'
 ```
 
-You never write the string, but it still exists and is still visible in the DevTools and in the action objects.
+你无需手动编写这个字符串，但它仍然存在，并且仍会显示在 DevTools 和 action 对象中。
 
 ## Action Creators（动作创建函数）
 
-It is another common convention that, instead of creating action objects inline in the places where you dispatch the actions, you would create functions generating them:
+另一个常见惯例是，不在派发 action 的位置内联创建 action 对象，而是创建生成它们的函数：
 
 ```ts
 export function addTodo(text: string) {
@@ -81,7 +81,7 @@ dispatch(addTodo('使用 Redux'))
 
 动作创建函数常被批评为样板代码。其实，你不必非写它们不可！**如果觉得更适合你的项目，可以直接用对象字面量。**不过写动作创建函数有一些优点，你应该了解。
 
-Let's say a designer comes back to us after reviewing our prototype, and tells us that we need to allow three todos maximum. We can enforce this by rewriting our action creator as a [thunk](./writing-logic-thunks.mdx) and adding an early exit:
+假设设计师审阅原型后提出，待办事项最多只能有三个。我们可以将 action creator 改写为一个 [thunk](./writing-logic-thunks.mdx)，并提前退出以实现这一限制：
 
 ```ts
 import { todoAdded } from './todosSlice'
@@ -102,7 +102,7 @@ export function addTodo(text: string): AppThunk {
 
 ### 生成动作创建函数
 
-Writing an action creator for every action type by hand is repetitive: each one is a function that takes some arguments and puts them in an object with a `type` field. `createSlice` generates one action creator per case reducer, as shown above, and that covers most actions in an app. For an action that is not tied to one slice, [`createAction`](/toolkit/api/createAction) generates a single action creator from a type string:
+为每种 action 类型手动编写 action creator 很重复：每个函数都接收一些参数，并将它们放入带 `type` 字段的对象中。如上所示，`createSlice` 会为每个 case reducer 生成一个 action creator，这已覆盖应用中的大多数 action。对于不属于任何 slice 的 action，可以使用 [`createAction`](/toolkit/api/createAction) 根据类型字符串生成单个 action creator：
 
 ```ts
 import { createAction } from '@reduxjs/toolkit'
@@ -116,13 +116,13 @@ todoEdited({ id: 1, text: 'Use Redux Toolkit' })
 // { type: 'todos/todoEdited', payload: { id: 1, text: 'Use Redux Toolkit' } }
 ```
 
-Both follow the [Flux Standard Action](https://github.com/redux-utilities/flux-standard-action) convention: the data goes in a `payload` field, with an optional `meta` field for extra information.
+两种方式都遵循 [Flux Standard Action](https://github.com/redux-utilities/flux-standard-action) 约定：数据放在 `payload` 字段中，可选的 `meta` 字段用于存放额外信息。
 
 ## 异步动作创建函数
 
 [中间件](../understanding/thinking-in-redux/Glossary.md#middleware) 允许你注入自定义逻辑，用来解释每个被 dispatch 的动作对象。异步动作是中间件最常见的应用。
 
-Without any middleware, [`dispatch`](../api/Store.md#dispatchaction) only accepts a plain object, so we would have to perform AJAX calls inside our components and dispatch a "request" action before the call and a "success" or "failure" action after it. That quickly gets repetitive, because different components request data from the same API endpoints, and we want to reuse some of this logic (like skipping the request when there is cached data) from many components.
+没有 middleware 时，[`dispatch`](../api/Store.md#dispatchaction) 只接受普通对象，因此我们只能在组件中执行 AJAX 请求，并在请求前派发“request” action、请求后派发“success”或“failure” action。这很快会变得重复：不同组件可能请求同一个 API endpoint，而且我们希望在多个组件中复用部分逻辑（例如数据已缓存时跳过请求）。
 
 **Middleware lets us write more expressive, potentially async action creators.** The thunk middleware, which `configureStore` includes by default, lets you dispatch a function that receives `dispatch` and `getState`, so a single action creator can dispatch many times:
 
@@ -147,7 +147,7 @@ export function loadPosts(userId: number): AppThunk {
 }
 ```
 
-The request / success / failure pattern itself is boilerplate, and Redux Toolkit's [`createAsyncThunk`](/toolkit/api/createAsyncThunk) generates it. You provide the type prefix and a function that returns a promise; it dispatches `pending`, `fulfilled`, and `rejected` actions around that promise, and gives you the action creators to handle in a slice:
+request / success / failure 模式本身就是样板代码，Redux Toolkit 的 [`createAsyncThunk`](/toolkit/api/createAsyncThunk) 可以替你生成这些内容。你提供类型前缀和一个返回 Promise 的函数；它会围绕该 Promise 派发 `pending`、`fulfilled` 和 `rejected` action，并提供可在 slice 中处理它们的 action creator：
 
 ```ts
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
@@ -196,7 +196,7 @@ const postsSlice = createSlice({
 })
 ```
 
-For data that comes from a server and is cached in the store, [RTK Query](/toolkit/rtk-query/overview) goes one step further and generates the thunks, the reducers, the cache, and the React hooks from a description of the endpoints, so none of this is written per endpoint. See [Side Effects Approaches](./side-effects-approaches.mdx) for how to choose between these.
+对于从服务器获取并缓存在 store 中的数据，[RTK Query](/toolkit/rtk-query/overview) 更进一步：它根据 endpoint 描述生成 thunk、reducer、缓存和 React hooks，因此无需为每个 endpoint 手动编写这些内容。如何在不同方案间选择，请参阅[副作用处理方式](./side-effects-approaches.mdx)。
 
 ## Reducers（状态处理函数）
 
@@ -241,9 +241,9 @@ export function todos(state = [], action) {
 
 开关语句 *不是* 真正的样板代码。Flux 真正的样板是概念上的：需要触发更新事件，需要注册 Store 到 Dispatcher，需要 Store 是对象（以及通用应用中带来的复杂问题）。
 
-### Generating Reducers
+### 生成 Reducer
 
-If you don't like `switch`, a reducer can be expressed as an object mapping from action types to handler functions, and a small helper turns that object into a reducer:
+如果不喜欢 `switch`，也可以用一个对象将 action 类型映射到处理函数，再通过一个小型辅助函数将该对象转换为 reducer：
 
 ```js
 function createReducer(initialState, handlers) {
@@ -264,6 +264,6 @@ export const todos = createReducer([], {
 })
 ```
 
-That is what `createSlice` does internally: the `reducers` object is a lookup table from action type to case reducer. It also wraps each case reducer in [Immer](https://immerjs.github.io/immer/), so the handler can write `state.push(text)` instead of copying the array, and generates the action creators described earlier. The Redux reducer API is still `(state, action) => newState`; `createSlice` is one way to produce such a function.
+这正是 `createSlice` 内部所做的事：`reducers` 对象是从 action 类型到 case reducer 的查找表。它还会用 [Immer](https://immerjs.github.io/immer/) 包装每个 case reducer，因此处理函数可以写 `state.push(text)`，而不必复制数组；此外，它还会生成前面介绍的 action creator。Redux reducer API 仍然是 `(state, action) => newState`；`createSlice` 是生成这类函数的一种方式。
 
-For a step-by-step comparison of hand-written reducers and the same logic in `createSlice`, see [Refactoring Reducers](./structuring-reducers/RefactoringReducersExample.md). For moving an existing hand-written codebase to these patterns, see [Migrating to Modern Redux](./migrating-to-modern-redux.mdx).
+手写 reducer 与 `createSlice` 中相同逻辑的逐步对比，请参阅[重构 Reducer](./structuring-reducers/RefactoringReducersExample.md)。将现有手写代码迁移到这些模式，请参阅[迁移到现代 Redux](./migrating-to-modern-redux.mdx)。

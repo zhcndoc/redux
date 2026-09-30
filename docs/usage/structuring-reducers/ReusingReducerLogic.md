@@ -7,11 +7,11 @@ description: '结构化 Reducers > 重用 Reducer 逻辑：创建可重用 reduc
 <!-- prettier-ignore -->
 import HandWrittenReducersNote from "../../components/_HandWrittenReducersNote.mdx";
 
-# Reusing Reducer Logic
+# 重用 Reducer 逻辑
 
 <HandWrittenReducersNote />
 
-As an application grows, common patterns in reducer logic will start to emerge. You may find several parts of your reducer logic doing the same kinds of work for different types of data, and want to reduce duplication by reusing the same common logic for each data type. Or, you may want to have multiple "instances" of a certain type of data being handled in the store. However, the global structure of a Redux store comes with some trade-offs: it makes it easy to track the overall state of an application, but can also make it harder to "target" actions that need to update a specific piece of state, particularly if you are using `combineReducers`.
+随着应用发展，reducer 逻辑中会逐渐出现常见模式。你可能发现 reducer 的多个部分在处理不同类型数据时做着相同的工作，希望复用相同逻辑来减少重复；也可能希望 store 同时处理某种数据类型的多个“实例”。不过，Redux store 的全局结构也有取舍：它便于跟踪应用整体状态，但可能让“定位”到需要更新某个特定状态片段的 action 更困难，尤其是在使用 `combineReducers` 时。
 
 举个例子，假设我们想在应用程序中跟踪多个计数器，命名为 A、B 和 C。我们定义了初始的 `counter` reducer，并使用 `combineReducers` 来设置状态：
 
@@ -36,7 +36,7 @@ const rootReducer = combineReducers({
 
 不幸的是，这种设置存在一个问题。因为 `combineReducers` 会用相同的 action 调用每个切片 reducer，分发 `{type : 'INCREMENT'}` 实际上会导致**所有三个**计数器的值都增加，而不是仅一个。我们需要某种方式来包装 `counter` 逻辑，以确保只有我们关心的计数器被更新。
 
-## 使用高阶 Reducer 自定义行为
+## 使用高阶 Reducer 自定义行为 {#customizing-behavior-with-higher-order-reducers}
 
 正如在 [拆分 Reducer 逻辑](SplittingReducerLogic.md) 中定义的，高阶 reducer 是一个函数，它接受一个 reducer 函数作为参数，和/或返回一个新的 reducer 函数。它也可以被看作是一个“reducer 工厂”。`combineReducers` 就是高阶 reducer 的一个例子。我们可以使用这种模式来创建自己 reducer 函数的专用版本，每个版本只响应特定的动作。
 
@@ -154,13 +154,13 @@ const rootReducer = combineReducers({
 })
 ```
 
-These basic patterns allow you to do things like having multiple instances of a store-connected component within the UI, or reuse common logic for generic capabilities such as pagination or sorting.
+这些基本模式可用于在 UI 中创建多个连接到 store 的组件实例，也可复用分页、排序等通用功能的逻辑。
 
-In addition to generating reducers this way, you might also want to generate action creators using the same approach, and could generate them both at the same time with helper functions.
+除了用这种方式生成 reducer，你可能也想用相同思路生成 action creator；也可以通过辅助函数同时生成两者。
 
-## Reusing Logic with a `createSlice` Factory
+## 使用 `createSlice` 工厂复用逻辑 {#reusing-logic-with-a-createslice-factory}
 
-With Redux Toolkit, the "generate prefixed action types" approach falls out of `createSlice` for free. Every action type a slice generates is prefixed with the slice's `name`, so a function that calls `createSlice` with a different name each time produces reducers that only respond to their own actions, along with matching action creators:
+使用 Redux Toolkit 时，`createSlice` 会自动实现“生成带前缀的 action 类型”这一方式。每个 slice 生成的 action 类型都以 slice 的 `name` 为前缀，因此每次以不同名称调用 `createSlice` 的函数，会生成只响应自身 action 的 reducer，并同时生成相应的 action creator：
 
 ```ts
 import { configureStore, createSlice } from '@reduxjs/toolkit'
@@ -194,7 +194,7 @@ console.log(store.getState())
 // { counterA: 0, counterB: 1, counterC: 0 }
 ```
 
-This is the `createCounterWithNamedType` pattern from above, with the action types and action creators generated for you. If you need several slices to share reducer logic but keep separate action types, define the case reducer functions once and pass them into each `createSlice` call.
+这与上文的 `createCounterWithNamedType` 模式相同，只是 action 类型和 action creator 会自动生成。如果多个 slice 需要共享 reducer 逻辑，但保留各自独立的 action 类型，可以只定义一次 case reducer 函数，再分别传给每次 `createSlice` 调用。
 
 ## 集合 / 条目 Reducer 模式
 

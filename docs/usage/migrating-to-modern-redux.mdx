@@ -827,7 +827,7 @@ export type AppDispatch = Dispatch<RootAction>
 
 **Redux Toolkit 设计时充分考虑简化 TS 使用，推荐尽量 _自动推断_ 类型！**
 
-Per [our standard TypeScript setup and usage guidelines](../tutorials/quick-start.md), start with setting up the store file to infer `AppDispatch` and `RootState` types directly from the store itself. That will correctly include any modifications to `dispatch` that were added by middleware, such as the ability to dispatch thunks, and update the `RootState` type any time you modify a slice's state definition or add more slices.
+按照[标准 TypeScript 配置和使用指南](../tutorials/quick-start.md)，首先应设置 store 文件，直接从 store 推断 `AppDispatch` 和 `RootState` 类型。这样可以正确包含 middleware 对 `dispatch` 所做的修改（例如支持派发 thunk），并在修改 slice 状态定义或添加 slice 时自动更新 `RootState` 类型。
 
 ```ts no-transpile title="app/store.ts"
 import { configureStore } from '@reduxjs/toolkit'
@@ -887,7 +887,7 @@ const todosSlice = createSlice({
 })
 ```
 
-## 使用 React-Redux 现代化 React 组件
+## 使用 React-Redux 现代化 React 组件 {#modernizing-react-components-with-react-redux}
 
 迁移 React-Redux 的一般步骤是：
 
@@ -1093,7 +1093,7 @@ export default connector(TodoListItem)
 
 **React-Redux hooks API 在 TypeScript 下用起来简单得多！** 它们是独立函数，带入参数，返回结果，无需关注 HOC 包装层、类型推断、泛型等复杂用法。只需提供 `RootState` 和 `AppDispatch` 类型即可。
 
-Per [our standard TypeScript setup and usage guidelines](../tutorials/quick-start.md), we specifically teach setting up "pre-typed" aliases for the hooks, so that those have the correct types baked in, and only use those pre-typed hooks in the app.
+按照[标准 TypeScript 配置和使用指南](../tutorials/quick-start.md)，我们特别建议为 hooks 创建“预设类型”别名，将正确类型预先配置好，并在应用中只使用这些预设类型的 hooks。
 
 先定义 hooks：
 

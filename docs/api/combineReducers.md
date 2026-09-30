@@ -14,13 +14,13 @@ import CoreApiNote from "../components/_CoreApiNote.mdx";
 
 ## 概述
 
-The `combineReducers` helper function turns an object whose values are different "slice reducer" functions into a single combined reducer function you can pass to the store.
+`combineReducers` 辅助函数会将一个对象转换为单个组合 reducer 函数；该对象的值是不同的“切片 reducer”函数，生成的函数可传给 store。
 
 生成的组合 reducer 会在每次派发动作时调用所有切片 reducer，并将它们的结果收集到一个单一的状态对象中。这使得将 reducer 逻辑拆分为独立的函数成为可能，每个函数独立管理自己状态的切片。
 
 <CoreApiNote />
 
-You should rarely need to call `combineReducers` yourself. `configureStore` calls it for you if you pass in an object of slice reducers:
+通常很少需要直接调用 `combineReducers`。如果向 `configureStore` 传入切片 reducer 对象，它会替你调用该函数：
 
 ```ts
 const store = configureStore({
@@ -31,7 +31,7 @@ const store = configureStore({
 })
 ```
 
-You can still call `combineReducers()` directly if you need to construct the root reducer manually first, and Redux Toolkit's [`combineSlices`](/toolkit/api/combineSlices) does the same job with support for lazy-loaded slices.
+如果需要先手动构造根 reducer，仍可直接调用 `combineReducers()`。Redux Toolkit 的 [`combineSlices`](/toolkit/api/combineSlices) 也能完成相同工作，并支持延迟加载切片。
 
 ### 状态切片
 
@@ -83,7 +83,7 @@ combineReducers({
 
 - 如果传入的 `state` 是 `undefined`，它必须返回该 reducer 的初始状态。根据前面的规则，初始状态也不得为 `undefined`。你可以使用可选参数语法指定初始状态，也可以显式检查第一个参数是否为 `undefined`。
 
-While `combineReducers` attempts to check that your reducers conform to some of these rules, you should remember them, and do your best to follow them. `combineReducers` will check your reducers by passing `undefined` to them; this is done even if you specify initial state with `configureStore({ reducer, preloadedState })`. Therefore, you **must** ensure your reducers work properly when receiving `undefined` as state, even if you never intend for them to actually receive `undefined` in your own code.
+虽然 `combineReducers` 会尝试检查 reducer 是否符合其中部分规则，你仍应牢记并尽量遵守这些规则。它会将 `undefined` 传给 reducer 进行检查；即使通过 `configureStore({ reducer, preloadedState })` 指定了初始状态，也会执行此检查。因此，**必须确保 reducer 在接收到 `undefined` 状态时能正常工作**，即使你自己的代码不会主动传入 `undefined`。
 
 ## 示例
 

@@ -248,7 +248,7 @@ export default postsSlice.reducer
 
 ### 创建编辑帖子表单
 
-Our new `<EditPostForm>` component will look similar to both the `<AddPostForm>` and `<SinglePostPage>`, but the logic needs to be a bit different. We need to retrieve the right `post` object from the store based on the `postId` in the URL, then use that to initialize the input fields in the component so the user can make changes. We'll save the changed title and content values back to the store when the user submits the form. We'll also use React Router's `useNavigate` hook to switch over to the single post page and show that post after they save the changes.
+新的 `<EditPostForm>` 组件看起来会与 `<AddPostForm>` 和 `<SinglePostPage>` 类似，但逻辑需要略有不同。我们要根据 URL 中的 `postId` 从 store 取出对应的 `post` 对象，再用它初始化组件的输入字段，供用户修改。用户提交表单时，我们会将修改后的标题和内容保存回 store。我们还会使用 React Router 的 `useNavigate` hook 跳转到单篇帖子页面，并在保存修改后显示该帖子。
 
 ```tsx title="features/posts/EditPostForm.tsx"
 import React from 'react'
@@ -368,7 +368,7 @@ export const SinglePostPage = () => {
         // highlight-end
 ```
 
-### 准备动作负载
+### 准备动作负载 {#preparing-action-payloads}
 
 我们刚才看到，`createSlice` 生成的动作创建函数通常期望一个参数作为 `action.payload`。这简化了常见用法，但有时我们需要准备动作对象的内容。比如 `postAdded` 动作，我们需要生成唯一 ID，还要确保 payload 是形如 `{id, title, content}` 的对象。
 
@@ -441,7 +441,7 @@ const handleSubmit = (e: React.SubmitEvent<AddPostFormElements>) => {
 }
 ```
 
-## 用选择器读取数据
+## 用选择器读取数据 {#reading-data-with-selectors}
 
 现在有几个不同组件通过 ID 查找帖子，都重复写了 `state.posts.find()` 代码。这是重复代码，应该尝试去重；而且脆弱——后续章节我们会改变 posts 切片状态结构，届时要去找所有引用 `state.posts` 的代码逐个更新。TypeScript 通过编译错误能帮忙捕捉不匹配的代码，但如果不想每次数据结构改动都重复修改组件，且减少重复代码，这会更好。
 
@@ -1415,7 +1415,7 @@ dispatch(clearUserData())
 
 之前讲过，动作是$app 中发生事件$的描述，而非命令状态怎样设置。这就是例子。其实我们不需要 `clearUserData` 额外动作，因为事件只发生了一件：“用户登出”。只需每个切片都能响应该动作，更新自身状态。
 
-### 使用 `extraReducers` 监听其他动作
+### 使用 `extraReducers` 监听其他动作 {#using-extrareducers-to-handle-other-actions}
 
 `createSlice` 接受 `extraReducers` 选项，允许一个切片监听应用其他地方定义的动作。任何派发该动作时，该切片也能更新状态。也就是说，**多个切片 reducer 可以响应同一动作，各自更新自身状态**。
 

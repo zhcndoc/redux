@@ -34,11 +34,11 @@ import FundamentalsWarning from "../../components/_FundamentalsWarning.mdx";
 
 需要注意的是，**这些模式都不是使用 Redux 的 _必须_ 条件！** 但每种模式都有其深刻的理由，而且你几乎在每个 Redux 代码库中都会看到它们的一些或全部用法。
 
-In this section, we'll rework our existing todo app code to use some of these patterns, and talk about why they're commonly used in Redux apps. Then, in [**Part 8**](./part-8-modern-redux.md), we'll talk about "modern Redux", including **how to use our official [Redux Toolkit](/toolkit) package to simplify all the Redux logic we've written "by hand"** in our app, and why **we recommend using Redux Toolkit as the standard approach for writing Redux apps**.
+本节会重构现有待办应用代码以使用其中一些模式，并讨论它们为何在 Redux 应用中广泛使用。接下来在[**第 8 部分**](./part-8-modern-redux.md)中，我们会介绍“现代 Redux”，包括**如何使用官方的 [Redux Toolkit](/toolkit) 包来简化应用中所有手写 Redux 逻辑**，以及为什么**我们推荐将 Redux Toolkit 作为编写 Redux 应用的标准方式**。
 
 <FundamentalsWarning />
 
-## Action 创建函数
+## Action 创建函数 {#action-creators}
 
 在我们的应用中，我们一直直接在代码中编写 action 对象，并直接分发：
 
@@ -205,7 +205,7 @@ export function fetchTodos() {
 }
 ```
 
-And that means we have to change the place it's dispatched in `main.jsx` to call the outer thunk action creator function, and pass the returned inner thunk function to `dispatch`:
+这意味着我们需要修改 `main.jsx` 中派发该函数的位置：先调用外层 thunk action creator，再将返回的内层 thunk 函数传给 `dispatch`：
 
 ```js title="src/main.jsx"
 import store from './store'
@@ -284,7 +284,7 @@ const selectTodoIds = state => state.todos.map(todo => todo.id)
 npm install reselect
 ```
 
-Then, we can import and call `createSelector`. Our original `selectTodoIds` function was defined over in `TodoList.jsx`, but it's more common for selector functions to be written in the relevant slice file. So, let's add this to the todos slice:
+然后导入并调用 `createSelector`。原先的 `selectTodoIds` 函数定义在 `TodoList.jsx` 中，但通常 selector 函数更适合放在相关的 slice 文件里。我们将它添加到 todos slice：
 
 ```js title="src/features/todos/todosSlice.js"
 // highlight-next-line
@@ -448,7 +448,7 @@ export const selectTodoById = (state, todoId) => {
 
 :::
 
-## 异步请求状态
+## 异步请求状态 {#async-request-status}
 
 我们用异步 thunk 去等待并获取服务器返回的最初 todos 列表。因为是模拟服务器，响应几乎是立刻返回。在真实应用中，API 调用可能耗时较长。此时，通常会在等待响应期间显示加载动画。
 
@@ -518,7 +518,7 @@ export const selectTodos = state => state.todos.entities
 - reducer 中需要额外步骤复制新增的嵌套结构，保证不可变更新：state 对象 -> entities 数组 -> todo 对象
 - 因为 UI 只通过选择器访问 todos 状态，**只需更新 `selectTodos` 选择器即可**，其余 UI 代码无需变更，仍能正常工作
 
-### 加载状态枚举值
+### 加载状态枚举值 {#loading-state-enum-values}
 
 你也许注意到了，加载状态字段用字符串枚举：
 
@@ -593,7 +593,7 @@ export const fetchTodos = () => async dispatch => {
 }
 ```
 
-However, before we try to show this in the UI, we need to modify the fake server API to add an artificial delay to our API calls. Open up `src/api/server.js`, and change the `ARTIFICIAL_DELAY_MS` value near the top of the file from `0` to `2000`:
+不过，在 UI 中展示加载状态之前，我们需要修改模拟服务器 API，为 API 调用添加人为延迟。打开 `src/api/server.js`，将文件顶部附近的 `ARTIFICIAL_DELAY_MS` 值从 `0` 改为 `2000`：
 
 ```js title="src/api/server.js"
 // Add an extra delay to all endpoints, so loading spinners show up.
@@ -604,7 +604,7 @@ const ARTIFICIAL_DELAY_MS = 2000
 // omit other code
 ```
 
-With that change, the fake server will add a 2-second delay to every API call our app makes, which gives us enough time to actually see a loading spinner being displayed.
+进行此更改后，模拟服务器会为应用发出的每个 API 调用增加 2 秒延迟，这样我们就有足够时间看到加载指示器。
 
 接着，在 `<TodoList>` 组件中读取加载状态，基于该状态显示加载指示动画：
 
@@ -985,7 +985,7 @@ export default Header
 
 ## 下一步？
 
-Writing all this code "by hand" can be time-consuming and difficult. **That's why we recommend that you use our official [Redux Toolkit](/toolkit) package to write your Redux logic instead**.
+手动编写所有这些代码既耗时又困难。**因此，我们建议改用官方的 [Redux Toolkit](/toolkit) 包来编写 Redux 逻辑**。
 
 Redux Toolkit 提供的 API 能帮你**用更少代码写出典型 Redux 逻辑**，也有助于**避免状态被误修改等常见错误**。
 

@@ -7,11 +7,11 @@ description: "介绍 > 核心概念：Redux 的关键思想、reducer 函数简�
 <!-- prettier-ignore -->
 import CoreApiNote from "../components/_CoreApiNote.mdx";
 
-# Core Concepts
+# 核心概念
 
 <CoreApiNote />
 
-Imagine your app’s state is described as a plain object. For example, the state of a todo app might look like this:
+假设你的应用状态由一个普通对象描述。例如，待办事项应用的状态可能如下所示：
 
 ```js
 {
@@ -78,6 +78,6 @@ function todoApp(state = {}, action) {
 }
 ```
 
-This is basically the whole idea of Redux. Note that we haven’t used any Redux APIs. It comes with a few utilities to facilitate this pattern, but the main idea is that you describe how your state is updated over time in response to action objects, and 90% of the code you write is just plain JavaScript, with no use of Redux itself, its APIs, or any magic.
+这基本上就是 Redux 的全部思想。注意，我们没有使用任何 Redux API。Redux 提供了一些工具来简化这一模式，但核心思想是描述状态如何随着时间推移响应 action 对象而更新。你编写的 90% 代码都只是普通 JavaScript，不依赖 Redux 本身、它的 API 或任何魔法。
 
-In practice, Redux Toolkit's [`createSlice`](/toolkit/api/createSlice) generates reducers like `todos` and `visibilityFilter` for you, along with the matching action creators, and [`configureStore`](/toolkit/api/configureStore) combines them into `todoApp`. The pattern underneath is exactly what you see above.
+实际使用时，Redux Toolkit 的 [`createSlice`](/toolkit/api/createSlice) 会替你生成 `todos` 和 `visibilityFilter` 这样的 reducer 及对应的 action creator，而 [`configureStore`](/toolkit/api/configureStore) 会将它们组合成 `todoApp`。其底层模式正如上例所示。

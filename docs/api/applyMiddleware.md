@@ -18,13 +18,13 @@ import CoreApiNote from "../components/_CoreApiNote.mdx";
 
 <CoreApiNote />
 
-You shouldn't have to call `applyMiddleware` directly. [`configureStore`](/toolkit/api/configureStore) applies it for you, adds a default set of middleware (including `redux-thunk`), and accepts a `middleware` callback for adding more.
+通常无需直接调用 `applyMiddleware`。 [`configureStore`](/toolkit/api/configureStore) 会替你应用它，并添加一组默认中间件（包括 `redux-thunk`）；你也可以通过 `middleware` 回调添加其他中间件。
 
 中间件最常见的用例是支持异步动作，而无需大量模板代码或依赖像 [Rx](https://github.com/Reactive-Extensions/RxJS) 这样的库。中间件通过允许你分发[异步动作](../understanding/thinking-in-redux/Glossary.md#async-action)（除了普通动作之外）来实现这一点。
 
 例如，[redux-thunk](https://github.com/reduxjs/redux-thunk) 允许 action 创建者通过分发函数来反转控制流。这些函数会接收 [`dispatch`](Store.md#dispatchaction) 作为参数，并且可以异步调用它。这类函数称为 _thunks_。另一个中间件示例是 [redux-promise](https://github.com/acdlite/redux-promise)。它允许你分发一个 [Promise](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise) 异步动作，并在 Promise 解析时分发一个普通动作。
 
-The original Redux [`createStore`](createStore.md) method does not understand what middleware are out of the box - it has to be configured with `applyMiddleware` to add that behavior.
+原始 Redux [`createStore`](createStore.md) 方法本身并不支持中间件；必须通过 `applyMiddleware` 配置，才能添加这项能力。
 
 ## 参数
 

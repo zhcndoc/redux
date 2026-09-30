@@ -96,7 +96,7 @@ Redux 核心是一个小巧独立的 JS 库。它通常与以下包一同使用�
 
 #### React-Redux
 
-Redux can integrate with any UI framework, and is most frequently used with React. [**React-Redux**](/react-redux) is our official package that lets your React components interact with a Redux store by reading pieces of state and dispatching actions to update the store.
+Redux 可以与任何 UI 框架集成，最常与 React 一起使用。[**React-Redux**](/react-redux) 是我们的官方包，它让 React 组件能够从 Redux store 读取状态片段并派发 action 来更新 store。
 
 #### Redux DevTools 扩展
 
@@ -152,7 +152,7 @@ function Counter() {
 
 这就是 Redux 的基本思想：在应用中有一个集中放置全局状态的地方，并在更新状态时遵循特定模式，使代码更具可预测性。
 
-### 不可变性（Immutability）
+### 不可变性（Immutability） {#immutability}
 
 “可变”（mutable）是“可改变”的意思。“不可变”（immutable）则表示永远无法被改变。
 
@@ -408,7 +408,7 @@ console.log(currentValue)
 // 2
 ```
 
-### Redux 应用数据流
+### Redux 应用数据流 {#redux-application-data-flow}
 
 前面讲过“单向数据流”，即状态驱动 UI 渲染、事件更新状态、UI 重新渲染的步骤。
 

@@ -8,9 +8,9 @@ description: '介绍 > 示例：Redux 交互示例应用'
 
 Redux 在其 [源码](https://github.com/reduxjs/redux/tree/master/examples) 中附带了一些示例。这些示例多数也可以在 [CodeSandbox](https://codesandbox.io) 上找到，这是一款在线编辑器，可以让你在线试玩示例。
 
-The examples fall into two groups. The [Redux Toolkit examples](#redux-toolkit-examples) show how we recommend writing Redux apps today. The [legacy examples](#legacy-examples) were written for older versions of Redux and React Redux. They still run, and they are still useful for seeing how the core Redux API fits together, but they use patterns we no longer recommend for new code.
+这些示例分为两组。[Redux Toolkit 示例](#redux-toolkit-examples)展示了我们当前推荐的 Redux 应用编写方式；[传统示例](#legacy-examples)则使用较旧版本的 Redux 和 React Redux 编写。它们仍可运行，也有助于理解 Redux 核心 API 如何配合使用，但其中的模式已不推荐用于新代码。
 
-## Redux Toolkit Examples
+## Redux Toolkit 示例 {#redux-toolkit-examples}
 
 ### Counter
 
@@ -28,13 +28,13 @@ npm start
 
 <iframe class="codesandbox"src="https://codesandbox.io/embed/github/reduxjs/redux/tree/master/examples/counter/?codemirror=1&runonclick=1"sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"></iframe>
 
-This is the most basic example of using Redux Toolkit together with React. It defines a counter slice with `createSlice`, sets up the store with `configureStore`, reads state with `useSelector`, dispatches with `useDispatch`, and includes an async thunk that simulates fetching a value from a server.
+这是 Redux Toolkit 与 React 配合使用的最基础示例。它使用 `createSlice` 定义计数器 slice、通过 `configureStore` 配置 store、使用 `useSelector` 读取状态、使用 `useDispatch` 派发 action，并包含一个模拟从服务器获取值的异步 thunk。
 
 该示例包含测试。
 
 ### Counter (TypeScript)
 
-Run the [Counter TS](https://github.com/reduxjs/redux/tree/master/examples/counter-ts) example:
+运行 [Counter TS](https://github.com/reduxjs/redux/tree/master/examples/counter-ts) 示例：
 
 ```sh
 git clone https://github.com/reduxjs/redux.git
@@ -44,33 +44,33 @@ npm install
 npm start
 ```
 
-Or check out the [sandbox](https://codesandbox.io/s/github/reduxjs/redux/tree/master/examples/counter-ts):
+或者查看 [sandbox](https://codesandbox.io/s/github/reduxjs/redux/tree/master/examples/counter-ts)：
 
 <iframe class="codesandbox"src="https://codesandbox.io/embed/github/reduxjs/redux/tree/master/examples/counter-ts/?codemirror=1&runonclick=1"sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"></iframe>
 
-This is the same Counter example written in TypeScript. It shows how to infer the `RootState` and `AppDispatch` types from the store and how to define pre-typed `useAppSelector` and `useAppDispatch` hooks, as described in [Usage with TypeScript](../usage/UsageWithTypescript.md).
+这是使用 TypeScript 编写的同一 Counter 示例。它展示了如何从 store 推断 `RootState` 和 `AppDispatch` 类型，以及如何定义预设类型的 `useAppSelector` 和 `useAppDispatch` hooks，详见 [TypeScript 使用指南](../usage/UsageWithTypescript.md)。
 
-This example includes tests.
+该示例包含测试。
 
-### Project Templates
+### 项目模板
 
-The [`reduxjs/redux-templates`](https://github.com/reduxjs/redux-templates) repo contains our official project templates for React + Redux Toolkit with TypeScript, including a Vite template and an Expo template. These are the recommended starting point for a new Redux app.
+[`reduxjs/redux-templates`](https://github.com/reduxjs/redux-templates) 仓库包含我们官方的 React + Redux Toolkit + TypeScript 项目模板，包括 Vite 模板和 Expo 模板。我们建议以这些模板作为新 Redux 应用的起点。
 
-### Redux Essentials Example App
+### Redux Essentials 示例应用
 
-The [Redux Essentials tutorial](../tutorials/essentials/part-1-overview-concepts.md) builds a small social media app with Redux Toolkit and RTK Query. The finished project is in the [`reduxjs/redux-essentials-example-app`](https://github.com/reduxjs/redux-essentials-example-app) repo, with a branch for each tutorial section.
+[Redux Essentials 教程](../tutorials/essentials/part-1-overview-concepts.md)使用 Redux Toolkit 和 RTK Query 构建了一个小型社交媒体应用。完整项目位于 [`reduxjs/redux-essentials-example-app`](https://github.com/reduxjs/redux-essentials-example-app) 仓库中，并为每个教程章节提供了对应分支。
 
-## Legacy Examples
+## 传统示例 {#legacy-examples}
 
 :::caution
 
-These examples were written for React 17, Redux 4, and React Redux 7. They use `createStore`, hand-written action types and action creators, switch-statement reducers, and `connect()` container components. Those patterns still work, but for new apps we recommend the Redux Toolkit examples above and the [Redux Essentials tutorial](../tutorials/essentials/part-1-overview-concepts.md).
+这些示例使用 React 17、Redux 4 和 React Redux 7 编写，采用 `createStore`、手写 action 类型和 action creator、基于 switch 的 reducer，以及 `connect()` 容器组件。这些模式仍然可用，但新应用建议使用上面的 Redux Toolkit 示例和 [Redux Essentials 教程](../tutorials/essentials/part-1-overview-concepts.md)。
 
 :::
 
 ### Counter Vanilla
 
-Run the [Counter Vanilla](https://github.com/reduxjs/redux/tree/master/examples/counter-vanilla) example:
+运行 [Counter Vanilla](https://github.com/reduxjs/redux/tree/master/examples/counter-vanilla) 示例：
 
 ```sh
 git clone https://github.com/reduxjs/redux.git
@@ -78,13 +78,13 @@ git clone https://github.com/reduxjs/redux.git
 cd redux/examples/counter-vanilla
 ```
 
-Then open `index.html` in your browser.
+然后在浏览器中打开 `index.html`。
 
-Or check out the [sandbox](https://codesandbox.io/s/github/reduxjs/redux/tree/master/examples/counter-vanilla):
+或者查看 [sandbox](https://codesandbox.io/s/github/reduxjs/redux/tree/master/examples/counter-vanilla)：
 
 <iframe class="codesandbox"src="https://codesandbox.io/embed/github/reduxjs/redux/tree/master/examples/counter-vanilla/?codemirror=1&runonclick=1"sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"></iframe>
 
-It does not require a build system or a view framework and exists to show the raw Redux API used with ES5.
+此示例不需要构建系统或视图库，用于展示在 ES5 中使用原始 Redux API 的方式。
 
 ### Todos
 
@@ -102,7 +102,7 @@ npm start
 
 <iframe class="codesandbox"src="https://codesandbox.io/embed/github/reduxjs/redux/tree/master/examples/todos/?codemirror=1&runonclick=1"sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"></iframe>
 
-This example shows how reducers can delegate handling actions to other reducers, and how [React Redux](https://github.com/reduxjs/react-redux)'s `connect()` generates container components from presentational components.
+此示例展示 reducer 如何将 action 的处理委托给其他 reducer，以及 [React Redux](https://github.com/reduxjs/react-redux) 的 `connect()` 如何从展示组件生成容器组件。
 
 该示例包含测试。
 
@@ -122,7 +122,7 @@ npm start
 
 <iframe class="codesandbox"src="https://codesandbox.io/embed/github/reduxjs/redux/tree/master/examples/shopping-cart/?codemirror=1&runonclick=1"sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"></iframe>
 
-This example shows important idiomatic Redux patterns that become important as your app grows. In particular, it shows how to store entities in a normalized way by their IDs, how to compose reducers on several levels, and how to define selectors alongside the reducers so the knowledge about the state shape is encapsulated. It also demonstrates logging with [Redux Logger](https://github.com/LogRocket/redux-logger) and conditional dispatching of actions with [Redux Thunk](https://github.com/reduxjs/redux-thunk) middleware.
+此示例展示了应用规模增长后会用到的重要 Redux 惯用模式。具体来说，它展示了如何按 ID 归一化存储实体、如何分层组合 reducer，以及如何将 selector 与 reducer 放在一起定义，以封装对状态形状的了解。示例还演示了如何使用 [Redux Logger](https://github.com/LogRocket/redux-logger) 记录日志，以及如何使用 [Redux Thunk](https://github.com/reduxjs/redux-thunk) middleware 有条件地派发 action。
 
 ### Tree View
 
@@ -142,4 +142,4 @@ npm start
 
 该示例演示了如何渲染深度嵌套的树视图，并将其状态以归一化形式表示，从而使 reducer 更新方便。优秀的渲染性能通过容器组件只细粒度地订阅它们所渲染的树节点实现。
 
-This example includes tests.
+该示例包含测试。

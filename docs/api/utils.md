@@ -17,7 +17,7 @@ Redux 核心导出了额外的实用工具函数以供重用。
 
 这也作为一个 TypeScript 类型谓词，能将 TS 类型缩小为 `Action<string>`。
 
-This is mainly useful inside middleware, where the incoming `action` value is typed as `unknown` because it might be a thunk function or some other non-object value:
+这在中间件中尤其有用：传入的 `action` 类型为 `unknown`，因为它可能是 thunk 函数或其他非对象值：
 
 ```ts
 import { isAction } from 'redux'

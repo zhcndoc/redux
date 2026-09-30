@@ -37,22 +37,22 @@ import FundamentalsWarning from "../../components/_FundamentalsWarning.mdx";
 
 本教程提供了一个预配置的起始项目，已经配置好了 React，包含一些默认样式，并且内置了一个假 REST API，允许我们在应用中实际编写 API 请求。你将以此为基础编写实际的应用代码。
 
-To get started, you can open and fork this StackBlitz project:
+开始前，可以打开并 fork 这个 StackBlitz 项目：
 
 <LiveExample
   repo="reduxjs/redux-fundamentals-example-app"
   ref="master"
   file="src/main.jsx"
-  title="Redux Fundamentals: starter project"
+  title="Redux 基础：起始项目"
 />
 
-You can also [clone the same project from this Github repo](https://github.com/reduxjs/redux-fundamentals-example-app). The project is configured to use [NPM](https://docs.npmjs.com/cli/v10) as the package manager, but you can use any package manager ([pnpm](https://pnpm.io/), [Yarn](https://yarnpkg.com/), or [Bun](https://bun.sh/docs/cli/install)) as you prefer. After installing packages, you can start the local dev server with the `npm run dev` command.
+你也可以从这个 [GitHub 仓库克隆同一项目](https://github.com/reduxjs/redux-fundamentals-example-app)。项目默认使用 [NPM](https://docs.npmjs.com/cli/v10) 作为包管理器，但也可以根据偏好使用其他包管理器（[pnpm](https://pnpm.io/)、[Yarn](https://yarnpkg.com/) 或 [Bun](https://bun.sh/docs/cli/install)）。安装依赖后，运行 `npm run dev` 即可启动本地开发服务器。
 
-If you'd like to see the final version of what we're going to build, you can check out [the **`tutorial-steps` branch**](https://github.com/reduxjs/redux-fundamentals-example-app/tree/tutorial-steps), or [open the final version on StackBlitz](https://stackblitz.com/github/reduxjs/redux-fundamentals-example-app/tree/checkpoint-10-finalCode).
+如果想查看教程最终构建出的版本，可以查看 [**`tutorial-steps` 分支**](https://github.com/reduxjs/redux-fundamentals-example-app/tree/tutorial-steps)，或在 [StackBlitz 上打开最终版本](https://stackblitz.com/github/reduxjs/redux-fundamentals-example-app/tree/checkpoint-10-finalCode)。
 
 #### 新建 Redux + React 项目
 
-Once you've finished this tutorial, you'll probably want to try working on your own projects. **We recommend using the [Redux+TS template for Vite](https://github.com/reduxjs/redux-templates/tree/master/packages/vite-template-redux) as the fastest way to create a new Redux + React project**. It comes with Redux Toolkit and React-Redux already configured, using [a modernized version of the "counter" app example you saw in Part 1](./part-1-overview.md). This lets you jump right into writing your actual application code without having to add the Redux packages and set up the store. You can create a new project from it with `tiged`:
+完成本教程后，你可能会想尝试开发自己的项目。**我们建议使用 [Vite 的 Redux + TypeScript 模板](https://github.com/reduxjs/redux-templates/tree/master/packages/vite-template-redux)，这是创建 Redux + React 新项目最快的方式**。模板已配置好 Redux Toolkit 和 React-Redux，并使用了[第 1 部分“计数器”示例的现代化版本](./part-1-overview.md)。这样你无需添加 Redux 包或设置 store，就能直接编写应用代码。运行 `tiged` 即可基于该模板创建新项目：
 
 ```sh
 npx tiged reduxjs/redux-templates/packages/vite-template-redux my-app
@@ -62,12 +62,12 @@ npx tiged reduxjs/redux-templates/packages/vite-template-redux my-app
 
 <DetailedExplanation title="详细说明：向 React 项目添加 Redux">
 
-The Redux template for Vite comes with Redux Toolkit and React-Redux already configured. If you're setting up a new project from scratch without that template, follow these steps:
+Vite 的 Redux 模板已经配置好 Redux Toolkit 和 React-Redux。如果不使用该模板而从头搭建新项目，请按以下步骤操作：
 
-- Add the `@reduxjs/toolkit` and `react-redux` packages
-- Create a Redux store using RTK's `configureStore` API, and pass in at least one reducer function
-- Import the Redux store into your application's entry point file (such as `src/main.jsx`)
-- Wrap your root React component with the `<Provider>` component from React-Redux, like:
+- 添加 `@reduxjs/toolkit` 和 `react-redux` 包。
+- 使用 RTK 的 `configureStore` API 创建 Redux store，并至少传入一个 reducer 函数。
+- 在应用入口文件（例如 `src/main.jsx`）中导入 Redux store。
+- 使用 React-Redux 的 `<Provider>` 组件包裹根 React 组件，例如：
 
 ```jsx
 root.render(
@@ -82,18 +82,18 @@ root.render(
 
 #### 初始项目结构概览
 
-This initial project is based on [the standard Vite](https://vite.dev/guide/) React project template, with some modifications.
+这个起始项目基于 [Vite 标准 React 项目模板](https://vite.dev/guide/)，并作了一些修改。
 
 让我们快速看一下项目包含的内容：
 
 - `/src`
-  - `main.jsx`: the entry point file for the application. It renders the main `<App>` component.
-  - `App.jsx`: the main application component.
-  - `index.css`: styles for the complete application
+  - `main.jsx`：应用入口文件，负责渲染主 `<App>` 组件。
+  - `App.jsx`：应用主组件。
+  - `index.css`：整个应用的样式。
   - `/api`
-    - `client.js`: a small `fetch` wrapper client that allows us to make HTTP GET and POST requests
-    - `server.js`: provides a fake REST API for our data, using [Mock Service Worker](https://mswjs.io/). Our app will fetch data from these fake endpoints later.
-  - `/exampleAddons`: contains some additional Redux addons that we'll use later in the tutorial to show how things work
+    - `client.js`：轻量的 `fetch` 封装客户端，可用于发起 HTTP GET 和 POST 请求。
+    - `server.js`：使用 [Mock Service Worker](https://mswjs.io/) 为数据提供模拟 REST API，应用稍后会从这些模拟端点获取数据。
+  - `/exampleAddons`：包含教程后续用于演示功能的 Redux 扩展。
 
 运行应用，你会看到一条欢迎消息，但应用其它部分仍然是空的。
 
@@ -103,7 +103,7 @@ This initial project is based on [the standard Vite](https://vite.dev/guide/) Re
 
 我们的示例应用是一个小型“待办事项”应用。你可能以前见过不少 todo 应用示例，因为它们能很好展示如何跟踪条目列表、处理用户输入以及数据变化时更新 UI——这些都是常见应用中经常发生的事情。
 
-### 确定需求
+### 确定需求 {#defining-requirements}
 
 首先确定应用的初始业务需求：
 
@@ -149,7 +149,7 @@ React 和 Redux 的核心原则之一是 **UI 应基于状态来定义**。所�
 
 从这些值来看，代办事项是“应用状态”（应用核心处理的数据），而筛选值是“UI 状态”（描述当前应用操作的状态）。区分这些类别，有助于理解状态的不同使用方式。
 
-### 设计状态结构
+### 设计状态结构 {#designing-the-state-structure}
 
 在 Redux 中，**应用状态始终使用普通 JavaScript 对象和数组存储**。这意味着你不能把其他类型放入 Redux 状态，比如类实例、内置 JS 类型（`Map` / `Set` / `Promise` / `Date`）、函数等非纯 JS 数据。
 
@@ -229,7 +229,7 @@ Redux store 对 `action.type` 字段具体值没有要求。但你的代码会�
 
 **Redux 应用实际上只有一个 reducer 函数：即后续传递给 `createStore` 的“根 reducer”函数**。该函数负责处理所有分发的动作，计算整棵状态树完整的新值。
 
-Let's start by creating a `reducer.js` file in the `src` folder, alongside `main.jsx` and `App.jsx`.
+首先，在 `src` 文件夹中创建 `reducer.js`，与 `main.jsx` 和 `App.jsx` 放在一起。
 
 每个 reducer 都需要初始状态，因此先创建几条假代办项准备使用。然后，写一个大致的 reducer 代码框架：
 
@@ -299,7 +299,7 @@ export default function appReducer(state = initialState, action) {
 
 这就是添加一个 todo 项要做的所有工作。为什么要这么麻烦呢？
 
-### Reducer 的规则
+### Reducer 的规则 {#rules-of-reducers}
 
 之前说过，**reducers 必须 _始终_ 遵守一些特殊规则**：
 
@@ -477,7 +477,7 @@ export default function appReducer(state = initialState, action) {
 
 因此，**通常会把 reducer 拆分成多个小函数**，方便理解和维护。
 
-## 拆分 Reducers
+## 拆分 Reducers {#splitting-reducers}
 
 拆分时，**Redux reducer 通常根据它所管理 Redux 状态的部分进行拆分**。我们的 Todo 应用状态主要包含两部分：`state.todos` 和 `state.filters`。因此我们可以把大的根 reducer 拆为两个小 reducer：`todosReducer` 和 `filtersReducer`。
 
@@ -578,7 +578,7 @@ export default function filtersReducer(state = initialState, action) {
 
 **请你根据[需求描述](#defining-requirements)，自己尝试实现其它动作的 reducer 逻辑。**
 
-If you get stuck, see [the live example at the end of this page](#what-youve-learned) for the complete implementation of these reducers.
+如果遇到困难，请查看[本页末尾的在线示例](#what-youve-learned)，其中包含这些 reducer 的完整实现。
 
 :::
 
@@ -637,7 +637,7 @@ export default rootReducer
 
 **切记，传给 `combineReducers` 的键名决定了你的根状态对象的字段名称！**
 
-## 你学到了什么
+## 你学到了什么 {#what-youve-learned}
 
 **状态、动作和 reducers 是 Redux 的构建基石**。每个 Redux 应用有状态值，创建动作描述事件，使用 reducer 函数根据之前的状态与动作计算新的状态值。
 

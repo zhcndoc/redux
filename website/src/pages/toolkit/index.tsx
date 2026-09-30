@@ -3,41 +3,40 @@ import LibraryLanding from '@site/src/components/LibraryLanding'
 
 const features = [
   {
-    title: 'Simple',
+    title: '简洁',
     content: (
       <p>
-        Includes utilities to simplify common use cases like{' '}
-        <strong>store setup, creating reducers, immutable update logic</strong>
-        , and more.
+        提供多种工具，简化常见任务，例如{' '}
+        <strong>配置 store、创建 reducer、编写不可变更新逻辑</strong>
+        等。
       </p>
     )
   },
   {
-    title: 'Opinionated',
+    title: '内置最佳实践',
     content: (
       <p>
-        Provides <strong>good defaults for store setup out of the box</strong>,
-        and includes{' '}
-        <strong>the most commonly used Redux addons built-in</strong>.
+        开箱即用，提供<strong>合理的 store 默认配置</strong>，并内置{' '}
+        <strong>最常用的 Redux 扩展</strong>。
       </p>
     )
   },
   {
-    title: 'Powerful',
+    title: '功能强大',
     content: (
       <p>
-        Takes inspiration from libraries like Immer and Autodux to let you{' '}
-        <strong>write "mutative" immutable update logic</strong>, and even{' '}
-        <strong>create entire "slices" of state automatically</strong>.
+        借鉴 Immer、Autodux 等库，让你可以{' '}
+        <strong>用类似“可变”的方式编写不可变更新逻辑</strong>，甚至{' '}
+        <strong>自动创建完整的状态切片</strong>。
       </p>
     )
   },
   {
-    title: 'Effective',
+    title: '高效开发',
     content: (
       <p>
-        Lets you focus on the core logic your app needs, so you can{' '}
-        <strong>do more work with less code</strong>.
+        让你专注于应用所需的核心逻辑，以便{' '}
+        <strong>用更少的代码完成更多工作</strong>。
       </p>
     )
   }
@@ -47,8 +46,8 @@ export default function ToolkitHome(): React.ReactNode {
   return (
     <LibraryLanding
       name="Redux Toolkit"
-      tagline="The official, opinionated, batteries-included toolset for efficient Redux development"
-      description="The official, opinionated, batteries-included toolset for efficient Redux development"
+      tagline="官方推荐、集成最佳实践的高效 Redux 开发工具集"
+      description="官方推荐、集成最佳实践的高效 Redux 开发工具集"
       getStartedPath="toolkit/introduction/getting-started"
       features={features}
     />

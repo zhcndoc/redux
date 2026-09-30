@@ -1,6 +1,6 @@
 {
   "app_dir": "/",
-  "build_command": "cd docs && yarn && cd ../website && yarn build && cp _redirects ./build",
-  "install_command": "cd website && yarn install",
+  "build_command": "cd website && pnpm fetch-docs --force && pnpm build && cp _redirects ./build",
+  "install_command": "cd docs && pnpm install --frozen-lockfile && cd ../website && pnpm install --frozen-lockfile",
   "output_dir": "website/build"
 }

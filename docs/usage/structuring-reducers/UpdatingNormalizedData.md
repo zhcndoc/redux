@@ -14,11 +14,11 @@ import HandWrittenReducersNote from "../../components/_HandWrittenReducersNote.m
 
 [Normalizing State Shape](./NormalizingStateShape.md) describes how to store relational data as lookup tables keyed by ID. That page covers how the data gets into that shape. This page covers what happens afterwards: how to update normalized data as the app runs. We'll use the example of adding a Comment to a Post, which has to touch both the Posts table and the Comments table.
 
-## Updating with `createSlice` and `createEntityAdapter`
+## 使用 `createSlice` 和 `createEntityAdapter` 更新
 
-Redux Toolkit's [`createEntityAdapter`](/toolkit/api/createEntityAdapter) generates a set of reducer functions for a normalized `{ ids, entities }` table: `addOne`, `updateOne`, `removeOne`, `upsertMany`, and so on. Combined with [`createSlice`](/toolkit/api/createSlice), which uses Immer so you can write "mutating" update logic, most of the code on this page disappears.
+Redux Toolkit 的 [`createEntityAdapter`](/toolkit/api/createEntityAdapter) 会为 `{ ids, entities }` 归一化表生成一组 reducer 函数，例如 `addOne`、`updateOne`、`removeOne` 和 `upsertMany`。结合使用基于 Immer、允许编写“修改式”更新逻辑的 [`createSlice`](/toolkit/api/createSlice)，本页中的大部分代码都可以省去。
 
-Adding a comment needs two things to happen: the Comment object goes into the comments table, and the Comment's ID gets appended to the parent Post's `comments` array. Each slice handles its own half of that work in response to the same action:
+添加评论需要完成两件事：将 Comment 对象放入 comments 表，并将该 Comment 的 ID 追加到所属 Post 的 `comments` 数组中。两个 slice 响应同一个 action，各自处理其中一部分：
 
 ```ts
 // features/comments/commentsSlice.ts
@@ -82,15 +82,15 @@ export const { postAdded } = postsSlice.actions
 export default postsSlice.reducer
 ```
 
-The comments slice owns the `commentAdded` action. Its `prepare` callback generates the ID, and `commentsAdapter.addOne` inserts the new object into `entities` and its ID into `ids`. The posts slice listens for that same action in `extraReducers` and appends the comment ID to the right post. Neither slice knows anything about the other's state shape.
+comments slice 负责 `commentAdded` action。它的 `prepare` 回调会生成 ID，而 `commentsAdapter.addOne` 会将新对象插入 `entities`，并将 ID 加入 `ids`。posts slice 则在 `extraReducers` 中监听同一个 action，并将评论 ID 追加到对应的帖子中。两个 slice 都不需要了解对方的状态结构。
 
-The rest of this page shows the same update written without Redux Toolkit, so you can see what these utilities are doing.
+本页其余部分会展示不使用 Redux Toolkit 时相同更新的写法，以便了解这些工具具体完成了什么。
 
-## Hand-Written Approaches
+## 手写方式 {#hand-written-approaches}
 
 ### Slice Reducer 组合方式
 
-Without `createEntityAdapter` and Immer, each slice reducer still needs to respond to the same action, and each update has to copy every level of nesting it touches. The action must carry everything the reducers need: the post ID, the new comment's ID, and the comment text. Here's how the pieces fit together with the `byId` / `allIds` shape used elsewhere in this section:
+不使用 `createEntityAdapter` 和 Immer 时，每个 slice reducer 仍需要响应同一个 action，而且每次更新都必须复制涉及的每一层嵌套数据。Action 必须携带 reducer 所需的全部信息：帖子 ID、新评论 ID 和评论文本。下面展示如何使用本节其他部分采用的 `byId` / `allIds` 结构将这些部分组合起来：
 
 ```js
 // actions.js
@@ -192,11 +192,11 @@ const commentsReducer = combineReducers({
 
 示例较长，因为它展示了所有不同 slice reducer 及其 case reducer 如何组合。注意其中的委派关系。`postsById` slice reducer 将该情况的处理委派给 `addComment`，后者将新的 Comment ID 插入到正确的 Post 项中。与此同时，`commentsById` 和 `allComments` slice reducer 分别有自己的 case reducer，适当更新 Comments 查找表和所有 Comment ID 列表。
 
-Compare this with the `createSlice` version above: `commentsAdapter.addOne` replaces `addCommentEntry` and `addCommentId` together, and Immer replaces the nested spreads in `addComment`.
+将它与上面的 `createSlice` 版本比较：`commentsAdapter.addOne` 同时替代了 `addCommentEntry` 和 `addCommentId`，而 Immer 则替代了 `addComment` 中的嵌套展开复制。
 
-### Simple Merging
+### 简单合并
 
-Another approach is to merge the contents of the action into the existing state. In this case, we can use deep recursive merge, not just a shallow copy, to allow for actions with partial items to update stored items. The Lodash `merge` function can handle this for us:
+另一种做法是将 action 内容合并到现有状态中。这里可以使用深度递归合并，而不只是浅拷贝，从而允许 action 仅携带部分条目并更新已存储的条目。Lodash 的 `merge` 函数可以完成这项工作：
 
 ```js
 import merge from 'lodash/merge'
@@ -213,8 +213,8 @@ function commentsById(state = {}, action) {
 }
 ```
 
-This requires the least amount of work on the reducer side, but does require that the action creator potentially do a fair amount of work to organize the data into the correct shape before the action is dispatched. It also doesn't handle trying to delete an item. `createEntityAdapter`'s `upsertMany` covers the same use case: it inserts new items and shallowly merges fields into existing ones.
+这种方式对 reducer 的要求最低，但 action creator 可能需要在派发 action 前花不少精力将数据整理成正确结构。此外，它不处理删除条目的情况。`createEntityAdapter` 的 `upsertMany` 可以满足同样的用例：插入新条目，并将字段浅合并到现有条目中。
 
-### Other Approaches
+### 其他方式
 
-Since reducers are just functions, the update logic can be split up other ways. One option is a task-oriented reducer that handles the whole `ADD_COMMENT` case at the root level and updates both tables itself, usually with a path-based update helper. This makes the single case easy to follow, but the reducer then has to know the entire state tree's shape. Another option is an ORM-style layer such as [Redux-ORM](https://github.com/redux-orm/redux-orm), which declares Model classes with relations and generates the tables and update logic for you. Redux-ORM has not had a release since 2020, so we don't recommend it for new code. For most apps, `createEntityAdapter` plus `extraReducers` covers the same ground with less machinery.
+由于 reducer 只是函数，更新逻辑也可以采用其他拆分方式。一种选择是在根层编写面向任务的 reducer，完整处理 `ADD_COMMENT` case 并自行更新两个表，通常会配合基于路径的更新辅助函数。这样单个 case 容易理解，但 reducer 必须了解整棵状态树的结构。另一种选择是使用 [Redux-ORM](https://github.com/redux-orm/redux-orm) 这样的 ORM 层，它通过定义带关联关系的 Model 类，为你生成表和更新逻辑。Redux-ORM 自 2020 年以来没有发布新版本，因此我们不建议在新代码中使用。对大多数应用来说，`createEntityAdapter` 加 `extraReducers` 就能以更少的复杂性完成同样的工作。

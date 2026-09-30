@@ -24,7 +24,7 @@ export default function SecondaryMenuWrapper(props: Props): ReactNode {
     <>
       {libraries.length > 0 && (
         <Link className="navbar-sidebar__library" to={currentUrl}>
-          <span className="navbar__library-prefix">Library:</span>{' '}
+          <span className="navbar__library-prefix">文档库：</span>{' '}
           <span className="navbar__library-name">{current.label}</span>
         </Link>
       )}

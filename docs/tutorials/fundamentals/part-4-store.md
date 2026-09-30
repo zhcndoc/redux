@@ -200,7 +200,7 @@ function createStore(reducer, preloadedState) {
 }
 ```
 
-This small version of a Redux store works well enough that you could use it to replace the actual Redux `createStore` function you've been using in your app so far. (Try it and see for yourself!) [The actual Redux store implementation is longer and a bit more complicated](https://github.com/reduxjs/redux/blob/v5.0.1/src/createStore.ts), but most of that is comments, warning messages, and handling some edge cases.
+这个精简版 Redux store 已经足以替代你目前在应用中使用的 Redux `createStore` 函数。（不妨亲自试试看！）[Redux store 的实际实现](https://github.com/reduxjs/redux/blob/v5.0.1/src/createStore.ts)更长，也稍微复杂一些，不过大部分内容是注释、警告信息以及对边缘情况的处理。
 
 核心逻辑看起来相当简洁：
 
@@ -333,7 +333,7 @@ const store = createStore(rootReducer, storeEnhancer)
 
 :::
 
-## 中间件（Middleware）
+## 中间件（Middleware） {#middleware}
 
 增强器很强大，因为它们能覆盖或替换 store 的任意方法：`dispatch`、`getState` 和 `subscribe`。
 
@@ -399,7 +399,7 @@ store.dispatch({ type: 'todos/todoAdded', payload: 'Learn about actions' })
 
 因为这些都是函数调用，所以调用栈会依次返回。因此 `print1` 是第一个运行的，也是最后完成的。
 
-### 编写自定义中间件
+### 编写自定义中间件 {#writing-custom-middleware}
 
 你也可以编写自己的中间件。虽然没必要一直写自定义中间件，但中间件是向 Redux 应用添加特定行为的绝佳方式。
 
@@ -512,7 +512,7 @@ const delayedMessageMiddleware = storeAPI => next => action => {
 
 此中间件监听“待办添加”动作，每次见到时设置 1 秒定时器，然后打印动作的有效载荷。
 
-### 中间件的实际应用
+### 中间件的实际应用 {#middleware-use-cases}
 
 中间件能对派发的动作做任何事：
 
@@ -540,9 +540,9 @@ Redux DevTools UI 作为浏览器扩展提供，下载地址为 Chrome：[https:
 
 安装扩展后，需要配置 store，添加 DevTools 增强器。官方文档（[Redux DevTools Extension docs](https://github.com/reduxjs/redux-devtools/tree/main/extension)）中配置方式略显复杂，但有个 NPM 包 `redux-devtools-extension` 能简化配置，它导出一个 `composeWithDevTools` 函数，替代 Redux 原来的 `compose`。
 
-The [Redux DevTools Extension docs](https://github.com/reduxjs/redux-devtools/tree/main/extension) have some instructions on how to set up the store, but the steps listed are a bit complicated. However, there's an NPM package called `@redux-devtools/extension` that takes care of the complicated part. That package exports a specialized `composeWithDevTools` function that we can use instead of the original Redux `compose` function.
+[Redux DevTools 扩展文档](https://github.com/reduxjs/redux-devtools/tree/main/extension)介绍了如何配置 store，但其中步骤有些复杂。NPM 上的 `@redux-devtools/extension` 包可以替你处理复杂部分。它导出了专用的 `composeWithDevTools` 函数，可用于替代 Redux 原有的 `compose` 函数。
 
-Here's how that looks:
+代码如下：
 
 ```js title="src/store.js"
 import { createStore, applyMiddleware } from 'redux'
@@ -560,7 +560,7 @@ const store = createStore(rootReducer, composedEnhancer)
 export default store
 ```
 
-Make sure that `main.jsx` is still dispatching an action after importing the store. Now, open up the Redux DevTools tab in the browser's DevTools window. You should see something that looks like this:
+确认 `main.jsx` 在导入 store 后仍会派发一个 action。然后打开浏览器 DevTools 窗口中的 Redux DevTools 标签页，应该会看到类似如下内容：
 
 ![Redux DevTools 扩展：动作标签](/img/tutorials/fundamentals/devtools-action-tab.png)
 

@@ -180,13 +180,13 @@ export const apiSlice = createApi({
 export const { useGetPostsQuery } = apiSlice
 ```
 
-RTK Query's functionality is based on a single method, called [**`createApi`**](/toolkit/rtk-query/api/createApi). All of the Redux Toolkit APIs we've seen so far are UI-agnostic, and could be used with _any_ UI layer. The RTK Query core logic is the same way. However, RTK Query also includes a React-specific version of `createApi`, and since we're using RTK and React together, we need to use that to take advantage of RTK's React integration. So, we import from `'@reduxjs/toolkit/query/react'` specifically.
+RTK Query 的功能基于一个名为 [**`createApi`**](/toolkit/rtk-query/api/createApi) 的方法。到目前为止看到的 Redux Toolkit API 都与 UI 无关，可以用于_任何_ UI 层；RTK Query 的核心逻辑也是如此。不过，RTK Query 还提供了 React 专用版本的 `createApi`。由于本教程将 RTK 与 React 配合使用，需要通过它利用 RTK 的 React 集成。因此，这里从 `'@reduxjs/toolkit/query/react'` 导入。
 
 :::tip
 
 **整个应用应且仅应调用一次 `createApi`。** 一个 API slice 应该包含所有针对同一基础 URL 的端点定义。例如 `/api/posts` 和 `/api/users` 从同一个服务器获取数据，应放在同一个 API slice。如有多个服务器，可以在每个端点使用完整 URL，或者另建独立的 API slice。
 
-Endpoints are normally defined directly inside the `createApi` call. If you're looking to split up your endpoints between multiple files, see [the "Injecting Endpoints" section in Part 8](./part-8-rtk-query-advanced.md#splitting-and-injecting-endpoints) section of the docs!
+通常直接在 `createApi` 调用中定义 endpoint。如果想将 endpoint 拆分到多个文件中，请参阅本教程第 8 部分的[“注入 Endpoint”](./part-8-rtk-query-advanced.md#splitting-and-injecting-endpoints)章节。
 
 :::
 
@@ -194,8 +194,8 @@ Endpoints are normally defined directly inside the `createApi` call. If you're l
 
 调用 `createApi` 时，有两个必填字段：
 
-- `baseQuery`: a function that knows how to fetch data from the server. RTK Query includes `fetchBaseQuery`, a small wrapper around the standard `fetch()` function that handles typical processing of HTTP requests and responses. When we create a `fetchBaseQuery` instance, we can pass in the base URL of all future requests, as well as override behavior such as modifying request headers. You can [create custom base queries](/toolkit/rtk-query/usage/customizing-queries#customizing-queries-with-basequery) to customize behavior like error handling and auth.
-- `endpoints`: a set of operations that we've defined for interacting with this server. Endpoints can be **_queries_**, which return data for caching, or **_mutations_**, which send an update to the server. The endpoints are defined using a callback function that accepts a `builder` parameter and returns an object containing endpoint definitions created with `builder.query()` and `builder.mutation()`.
+- `baseQuery`：负责从服务器获取数据的函数。RTK Query 包含 `fetchBaseQuery`，它是标准 `fetch()` 函数的轻量封装，可处理常见的 HTTP 请求和响应。创建 `fetchBaseQuery` 实例时，可以传入后续请求的基础 URL，并覆盖修改请求头等行为。你也可以[创建自定义 base query](/toolkit/rtk-query/usage/customizing-queries#customizing-queries-with-basequery)，定制错误处理和身份验证等行为。
+- `endpoints`：定义的一组服务器交互操作。Endpoint 可以是返回并缓存数据的 **_query_**，也可以是向服务器发送更新的 **_mutation_**。Endpoint 通过回调函数定义：它接收 `builder` 参数，并返回一个对象，其中包含由 `builder.query()` 和 `builder.mutation()` 创建的 endpoint 定义。
 
 `createApi` 也接受 `reducerPath`，定义生成的 reducer 在 state 中期望存储的顶层字段。与其他 slice 不一定和 state key 一致不同，RTK Query 期望你告诉它 reducer 会被挂载的 state 路径。若省略，默认为 `'api'`，即缓存的数据存在 `state.api`。
 
@@ -374,7 +374,7 @@ export const PostsList = () => {
 
 #### 加载状态字段区别
 
-Note that [`isLoading` and `isFetching` are different flags with different behavior](/toolkit/rtk-query/usage/queries#query-loading-state). You can decide which one to use based on when and how you need to show loading states in the UI. For example, you might want to check `isLoading` if you want to show a skeleton while loading a page for the first time, or you might choose to check `isFetching` to show a spinner or gray out existing results every time there's any request happening as the user selects different items.
+请注意，[`isLoading` 和 `isFetching` 是行为不同的两个标志](/toolkit/rtk-query/usage/queries#query-loading-state)。你可以根据 UI 显示加载状态的时机和方式决定使用哪一个。例如，首次加载页面时可以检查 `isLoading` 并显示骨架屏；用户选择不同条目时，只要有请求进行中，就可以检查 `isFetching` 并显示转圈图标或淡化现有结果。
 
 类似地，`data` 和 `currentData` 发生变化的时机不同。大多数情况下使用 `data`，而 `currentData` 帮助实现比如数据半透明代表重新加载中等细节效果。因为 `data` 直到请求结束才替换，`currentData` 不同参数会立即变空。
 
@@ -682,7 +682,7 @@ export const AddPostForm = () => {
 
 ## 刷新缓存数据
 
-When we click "Save Post", we can look at the Redux DevTools and confirm that the `addNewPost` mutation went through the `pending` and `fulfilled` states, so the HTTP `POST` request succeeded. (Remember that the fake API intercepts requests inside the page, so they won't show up in the browser's Network tab.) But, the new post isn't showing up in our `<PostsList>` if we go back there. The Redux store state hasn't changed, and we still have the same cached data in memory.
+点击“保存帖子”后，可以在 Redux DevTools 中确认 `addNewPost` mutation 经过了 `pending` 和 `fulfilled` 状态，这说明 HTTP `POST` 请求已成功。（请记住，模拟 API 会在页面内部拦截请求，因此浏览器的 Network 标签页中不会显示这些请求。）但是回到 `<PostsList>` 后，新帖子并未显示。Redux store 状态没有变化，内存中仍然是原来的缓存数据。
 
 需要告诉 RTK Query 刷新缓存帖子列表，才能看到最新添加的帖子。
 

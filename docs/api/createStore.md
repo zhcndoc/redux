@@ -14,7 +14,7 @@ description: 'API > createStore：创建核心 Redux 存储'
 
 :::danger
 
-**`createStore` is deprecated.** Use Redux Toolkit's [`configureStore`](/toolkit/api/configureStore) instead, which wraps `createStore` with a better default setup. `createStore` still works and will not be removed; see [Deprecation and `legacy_createStore`](#deprecation-and-alternate-legacy_createstore-export) below for details and [Migrating to Modern Redux](../usage/migrating-to-modern-redux.mdx) for how to update existing code.
+**`createStore` 已弃用。** 请改用 Redux Toolkit 的 [`configureStore`](/toolkit/api/configureStore)，它封装了 `createStore`，并提供更完善的默认配置。`createStore` 仍然可用，也不会被移除；详情请参阅下文[弃用与替代导出 `legacy_createStore`](#deprecation-and-alternate-legacy_createstore-export)，如何更新现有代码请参阅[迁移到现代 Redux](../usage/migrating-to-modern-redux.mdx)。
 
 :::
 
@@ -55,7 +55,7 @@ console.log(store.getState())
 // [ 'Use Redux', 'Read the docs' ]
 ```
 
-## 弃用及替代的 `legacy_createStore` 导出
+## 弃用及替代的 `legacy_createStore` 导出 {#deprecation-and-alternate-legacy_createstore-export}
 
 在 [Redux 4.2.0 中，我们将原始的 `createStore` 方法标注为 `@deprecated`](https://github.com/reduxjs/redux/releases/tag/v4.2.0)。严格来说，**这并不是一次破坏性变更，且并非 5.0 新增的内容，但这里为了完整性进行说明。**
 

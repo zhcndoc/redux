@@ -6,7 +6,7 @@ sidebar_label: 通用
 
 # Redux 常见问题：通用
 
-## 我什么时候应该学习 Redux？
+## 我什么时候应该学习 Redux？ {#when-should-i-learn-redux}
 
 对于 JavaScript 开发者来说，选择学什么可能是一个让人不知所措的问题。通过一次学习一件事，聚焦于工作中遇到的问题，可以缩小选择范围。Redux 是一种管理应用状态的模式。如果你在状态管理上没有遇到问题，可能会难以理解 Redux 的好处。有些 UI 库（比如 React）有它们自己的状态管理系统。如果你正在使用这些库中的一个，尤其是刚开始学习使用它们，我们建议你先学习内置系统的功能。这可能就是构建应用所需要的全部内容。如果你的应用变得非常复杂，以至于你对状态存储的位置或者状态如何变化感到困惑，那么就是学习 Redux 的好时机。
 
@@ -33,7 +33,7 @@ sidebar_label: 通用
 - [Twitter: This was my experience with Redux...](https://twitter.com/garetmckinley/status/901500556568645634)
 - [Dev.to: When is it time to use Redux?](https://dev.to/dan_abramov/comment/1n2k)
 
-## 我什么时候应该使用 Redux？
+## 我什么时候应该使用 Redux？ {#when-should-i-use-redux}
 
 **并非所有应用都需要 Redux。理解你正在构建的应用类型、你需要解决的问题类型，以及哪些工具最适合解决这些问题，都非常重要。**
 
@@ -98,11 +98,11 @@ Redux 帮助你处理共享状态管理，但像任何工具一样，它有权�
 - [Stack Overflow: Redux 与纯 React？](https://stackoverflow.com/questions/39260769/redux-vs-plain-react/39261546#39261546)
 - [Twitter: Redux 是一个平台，供开发者基于可复用的东西构建定制化状态管理](https://twitter.com/acemarke/status/793862722253447168)
 
-## Redux 只能和 React 一起使用吗？
+## Redux 只能和 React 一起使用吗？ {#can-redux-only-be-used-with-react}
 
 Redux 可以作为任何 UI 层的数据存储。最常用的就是和 React 及 React Native 一起使用，但也有 Angular、Angular 2、Vue、Mithril 等的绑定。Redux 仅仅提供了一个订阅机制，任何其他代码都可使用。也就是说，Redux 最有用的场景是配合声明式视图实现，一旦状态改变可以推断出界面更新，例如 React 或类似的库。
 
-## 使用 Redux 需要特定构建工具吗？
+## 使用 Redux 需要特定构建工具吗？ {#do-i-need-to-have-a-particular-build-tool-to-use-redux}
 
 Redux 使用现代 JS 语法（ES2020）编写，但代码相当简单。
 

@@ -300,7 +300,7 @@ export default function UserDisplay() {
 
 ### 设置可复用的测试渲染函数
 
-React Testing Library's `render` function accepts a tree of React elements and renders those components. Just like in a real app, any Redux-connected components will need [a React-Redux `<Provider>` component wrapped around them](../tutorials/quick-start.md#provide-the-redux-store-to-react), with a real Redux store set up and provided.
+React Testing Library 的 `render` 函数会接收并渲染一棵 React 元素树。和真实应用一样，任何连接到 Redux 的组件都需要由 React-Redux 的 [`<Provider>` 组件包裹](../tutorials/quick-start.md#provide-the-redux-store-to-react)，并为其配置和提供真实 Redux store。
 
 此外，**测试代码应为每个测试创建独立的 Redux store 实例，而不是复用相同实例并重置状态**，以避免值在测试间泄漏。
 
@@ -386,7 +386,7 @@ export function renderWithProviders(
 }
 ```
 
-### 使用组件编写集成测试
+### 使用组件编写集成测试 {#writing-integration-tests-with-components}
 
 实际测试文件应使用自定义 `render` 法渲染 Redux 连接组件。如果被测代码涉及网络请求，应配置 MSW 模拟相应请求并返回测试数据。
 
@@ -539,7 +539,7 @@ test('点击获取用户按钮后，能成功取回用户', async () => {
 })
 ```
 
-In this test, **we have completely avoided testing any Redux code directly, treating it as an implementation detail**. As a result, we are free to re-factor the _implementation_, while our tests will continue to pass and avoid false negatives (tests that fail despite the app still behaving how we want it to). We might change our state structure, convert our slice to use [RTK-Query](/toolkit/rtk-query/overview), or remove Redux entirely, and our tests will still pass. We have a strong degree of confidence that if we change some code and our tests report a failure, then our app really _is_ broken.
+在这个测试中，**我们完全没有直接测试任何 Redux 代码，而是将其视为实现细节**。因此，我们可以自由重构_实现_，测试仍会通过，也能避免误报（应用行为仍符合预期但测试却失败）。我们可以更改状态结构、将 slice 改为使用 [RTK Query](/toolkit/rtk-query/overview)，甚至完全移除 Redux，而测试仍能通过。这样，如果改动代码后测试报告失败，我们就更有把握确认应用确实_出了问题_。
 
 ### 准备初始测试状态
 
@@ -977,19 +977,19 @@ Selector 通常也是纯函数，同样适用 reducer 的测试方法：准备�
 
 ### Action Creator 和 Thunk
 
-In Redux, action creators are functions which return plain objects. Our recommendation is not to write action creators manually, but instead have them generated automatically by [`createSlice`](/toolkit/api/createSlice#return-value), or created via [`createAction`](/toolkit/api/createAction) from [`@reduxjs/toolkit`](/toolkit/introduction/getting-started). As such, **you should not feel the need to test action creators by themselves** (the Redux Toolkit maintainers have already done that for you!).
+在 Redux 中，action creator 是返回普通对象的函数。我们建议不要手写 action creator，而是通过 [`createSlice`](/toolkit/api/createSlice#return-value) 自动生成，或使用 [`@reduxjs/toolkit`](/toolkit/introduction/getting-started) 中的 [`createAction`](/toolkit/api/createAction) 创建。因此，**无需单独测试 action creator**（Redux Toolkit 维护者已经替你测试过了！）。
 
 action creator 返回值被视为应用的实现细节，使用集成测试风格时无需显式测试。
 
-Similarly for thunks using [Redux Thunk](https://github.com/reduxjs/redux-thunk), our recommendation is not to write them manually, but instead use [`createAsyncThunk`](/toolkit/api/createAsyncThunk) from [`@reduxjs/toolkit`](/toolkit/introduction/getting-started). The thunk handles dispatching the appropriate `pending`, `fulfilled` and `rejected` action types for you based on the lifecycle of the thunk.
+对于使用 [Redux Thunk](https://github.com/reduxjs/redux-thunk) 的 thunk 也是如此：我们建议不要手写，而是使用 [`@reduxjs/toolkit`](/toolkit/introduction/getting-started) 中的 [`createAsyncThunk`](/toolkit/api/createAsyncThunk)。Thunk 会根据其生命周期自动派发相应的 `pending`、`fulfilled` 和 `rejected` action。
 
 我们认为 thunk 行为是应用的实现细节，推荐通过测试组件（或整个应用）来覆盖，而非单独测试 thunk。
 
-Our recommendation is to mock async requests at the `fetch/xhr` level using [Mock Service Worker (`msw`)](https://mswjs.io/) or a similar tool. By mocking requests at this level, none of the thunk logic has to change in a test - the thunk still tries to make a "real" async request, it just gets intercepted. See the ["Integration Test" example](#writing-integration-tests-with-components) for an example of testing a component which internally includes the behavior of a thunk.
+我们建议使用 [Mock Service Worker (`msw`)](https://mswjs.io/) 等工具，在 `fetch/xhr` 层模拟异步请求。由于在这一层模拟，请求逻辑本身无需为测试而改变：thunk 仍会发起“真实”的异步请求，只是请求被拦截了。如何测试内部包含 thunk 行为的组件，请参阅[“集成测试”示例](#writing-integration-tests-with-components)。
 
 :::info
 
-If you prefer, or are otherwise required to write unit tests for your action creators or thunks, refer to the tests that Redux Toolkit uses for [`createAction`](https://github.com/reduxjs/redux-toolkit/blob/master/packages/toolkit/src/tests/createAction.test.ts) and [`createAsyncThunk`](https://github.com/reduxjs/redux-toolkit/blob/master/packages/toolkit/src/tests/createAsyncThunk.test.ts).
+如果你更愿意，或因其他原因必须为 action creator 或 thunk 编写单元测试，可以参考 Redux Toolkit 为 [`createAction`](https://github.com/reduxjs/redux-toolkit/blob/master/packages/toolkit/src/tests/createAction.test.ts) 和 [`createAsyncThunk`](https://github.com/reduxjs/redux-toolkit/blob/master/packages/toolkit/src/tests/createAsyncThunk.test.ts) 编写的测试。
 
 :::
 
@@ -1016,9 +1016,9 @@ export const thunkMiddleware: Middleware =
   }
 ```
 
-We need to create fake `getState`, `dispatch`, and `next` functions. We use `vi.fn()` to create stubs; with Jest, the equivalent is `jest.fn()`.
+需要创建模拟的 `getState`、`dispatch` 和 `next` 函数。这里使用 `vi.fn()` 创建桩函数；使用 Jest 时，对应的是 `jest.fn()`。
 
-The `invoke` function runs our middleware in the same way Redux does.
+`invoke` 函数会以 Redux 相同的方式运行 middleware。
 
 ```ts title="thunkMiddleware.test.ts"
 // file: thunkMiddleware.ts noEmit

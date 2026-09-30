@@ -6,7 +6,7 @@ sidebar_label: 状态组织
 
 ## Redux FAQ：状态组织
 
-### 我必须把所有状态都放到 Redux 里吗？我是否应该使用 React 的 `useState` 或 `useReducer`？
+### 我必须把所有状态都放到 Redux 里吗？我是否应该使用 React 的 `useState` 或 `useReducer`？ {#do-i-have-to-put-all-my-state-into-redux-should-i-ever-use-reacts-usestate-or-usereducer}
 
 对此没有“正确”的答案。有些用户喜欢将每一条数据都放入 Redux，以始终维护一个完全序列化且可控的应用状态。另一些人则倾向于将非关键性或 UI 状态（如“这个下拉菜单当前是否打开”）保存在组件的内部状态中。
 
@@ -32,7 +32,7 @@ sidebar_label: 状态组织
 - [Reddit：“什么时候应该把东西放到 Redux store？”](https://www.reddit.com/r/reactjs/comments/4w04to/when_using_redux_should_all_asynchronous_actions/d63u4o8)
 - [Stack Overflow：所有组件状态都应该放到 Redux store 吗？](https://stackoverflow.com/questions/35328056/react-redux-should-all-component-states-be-kept-in-redux-store)
 
-### 我能把函数、Promise 或其他不可序列化的项放进 store 状态吗？
+### 我能把函数、Promise 或其他不可序列化的项放进 store 状态吗？ {#can-i-put-functions-promises-or-other-non-serializable-items-in-my-store-state}
 
 强烈建议你只往 store 里放普通的可序列化对象、数组和基本类型。_技术上_可以往 store 中插入不可序列化的项，但这样做会破坏持久化和重载 store 内容的能力，还会影响时间旅行调试。
 
@@ -48,24 +48,24 @@ sidebar_label: 状态组织
 - [#1407：分享一个很棒的基类](https://github.com/reduxjs/redux/issues/1407)
 - [#1793：Redux 状态中的 React 元素](https://github.com/reduxjs/redux/issues/1793)
 
-### 我如何组织状态中的嵌套或重复数据？
+### 我如何组织状态中的嵌套或重复数据？ {#how-do-i-organize-nested-or-duplicate-data-in-my-state}
 
-Data with IDs, nesting, or relationships should generally be stored in a “normalized” fashion: each object should be stored once, keyed by ID, and other objects that reference it should only store the ID rather than a copy of the entire object. It may help to think of parts of your store as a database, with individual “tables” per item type.
+带 ID、嵌套结构或对象关系的数据通常应采用“归一化”方式存储：每个对象只保存一次，并以 ID 为键；引用该对象的其他对象只保存 ID，而不是复制整个对象。可以把 store 的一部分想象成数据库，每种条目各有一张“表”。
 
-For most applications, use Redux Toolkit's [`createEntityAdapter`](/toolkit/api/createEntityAdapter) to manage normalized collections in your slices. It uses an `{ ids, entities }` state structure and provides reducer functions to add, update, and remove items, along with selectors to read them.
+大多数应用可以使用 Redux Toolkit 的 [`createEntityAdapter`](/toolkit/api/createEntityAdapter) 在 slice 中管理归一化集合。它采用 `{ ids, entities }` 状态结构，并提供添加、更新和删除条目的 reducer 函数及读取条目的 selector。
 
-The adapter does not turn nested objects into separate entities or replace relationships with IDs. If your API returns nested data, transform it into the normalized shape before adding it to the store. See [Normalizing Nested Data](../usage/structuring-reducers/NormalizingStateShape.md#normalizing-nested-data) for more on this step and tools such as Normalizr.
+该 adapter 不会自动把嵌套对象转换为独立实体，也不会把对象关系替换成 ID。如果 API 返回的是嵌套数据，应先将其转换为归一化结构，再加入 store。有关这一过程及 Normalizr 等工具，请参阅[归一化嵌套数据](../usage/structuring-reducers/NormalizingStateShape.md#normalizing-nested-data)。
 
 #### 更多信息
 
 **文档**
 
-- [Redux Essentials: Normalizing Data](../tutorials/essentials/part-6-performance-normalization#normalizing-data)
-- [Redux Toolkit: `createEntityAdapter`](/toolkit/api/createEntityAdapter)
-- [Redux Fundamentals: Async Logic and Data Flow](../tutorials/fundamentals/part-6-async-logic.md)
-- [Redux Fundamentals: Standard Redux Patterns](../tutorials/fundamentals/part-7-standard-patterns.md)
-- [Using Redux: Structuring Reducers - Prerequisite Concepts](../usage/structuring-reducers/PrerequisiteConcepts.md#normalizing-data)
-- [Using Redux: Structuring Reducers - Normalizing State Shape](../usage/structuring-reducers/NormalizingStateShape.md)
+- [Redux Essentials：归一化数据](../tutorials/essentials/part-6-performance-normalization#normalizing-data)
+- [Redux Toolkit：`createEntityAdapter`](/toolkit/api/createEntityAdapter)
+- [Redux 基础：异步逻辑和数据流](../tutorials/fundamentals/part-6-async-logic.md)
+- [Redux 基础：标准 Redux 模式](../tutorials/fundamentals/part-7-standard-patterns.md)
+- [使用 Redux：结构化 Reducer - 先决概念](../usage/structuring-reducers/PrerequisiteConcepts.md#normalizing-data)
+- [使用 Redux：结构化 Reducer - 归一化状态形状](../usage/structuring-reducers/NormalizingStateShape.md)
 
 **相关文章**
 
@@ -82,7 +82,7 @@ The adapter does not turn nested objects into separate entities or replace relat
 - [Twitter：状态结构应规范化](https://twitter.com/dan_abramov/status/715507260244496384)
 - [Stack Overflow：Redux reducers 中如何处理树形实体？](https://stackoverflow.com/questions/32798193/how-to-handle-tree-shaped-entities-in-redux-reducers)
 
-### 我应该把表单状态或其他 UI 状态放入 store 吗？
+### 我应该把表单状态或其他 UI 状态放入 store 吗？ {#should-i-put-form-state-or-other-ui-state-in-my-store}
 
 [决定什么状态放 Redux 的经验法则](#do-i-have-to-put-all-my-state-into-redux-should-i-ever-use-reacts-usestate-or-usereducer) 同样适用于此问题。
 
@@ -90,9 +90,9 @@ The adapter does not turn nested objects into separate entities or replace relat
 
 基于此，在大多数情况下，其实不需要基于 Redux 的表单管理库。我们建议按以下顺序尝试：
 
-- Even if the data is coming from the Redux store, start by writing your form logic by hand with `useState`. It's likely this is all you'll need. (See [**Gosha Arinich's posts on working with forms in React**](https://goshacmd.com/on-forms-react/) for some excellent guidance on this.)
-- If you decide that writing forms "manually" is too difficult, try a React-based form library like [React Hook Form](https://react-hook-form.com/) or [TanStack Form](https://tanstack.com/form/latest). These keep the form state in the component and give you validation and submission handling. When the user submits, dispatch one action (or call an RTK Query mutation) with the final values.
-- Redux-based form libraries such as Redux-Form and React-Redux-Form are no longer actively maintained, and we don't recommend starting new projects with them. If you truly need form values in the store while the user is typing, write a small slice for that form and update it from the component's change handlers.
+- 即使数据来自 Redux store，也可以先用 `useState` 手动编写表单逻辑；很可能这就足够了。有关 React 表单的优秀指导，请参阅 [**Gosha Arinich 关于 React 表单的文章**](https://goshacmd.com/on-forms-react/)。
+- 如果觉得手动编写表单过于困难，可以试试 [React Hook Form](https://react-hook-form.com/) 或 [TanStack Form](https://tanstack.com/form/latest) 等 React 表单库。它们将表单状态保存在组件中，并提供验证和提交处理。用户提交时，再派发一个 action（或调用 RTK Query mutation）提交最终值。
+- Redux-Form 和 React-Redux-Form 等基于 Redux 的表单库已不再积极维护，我们不建议新项目使用。如果确实需要在用户输入时将表单值保存在 store 中，可以为表单编写一个小型 slice，并在组件的 change handler 中更新它。
 
 如果你决定把表单状态放到 Redux，需要考虑性能问题。每次文本输入的击键都派发 action 通常不值得，或许可以考虑[用缓冲击键的方式让更改保持本地，然后再派发](https://blog.isquaredsoftware.com/2017/01/practical-redux-part-7-forms-editing-reducers/)。一如既往，花些时间分析你应用的整体性能需求。
 
@@ -100,12 +100,12 @@ The adapter does not turn nested objects into separate entities or replace relat
 
 #### 更多信息
 
-**Documentation**
+**文档**
 
-- [Style Guide: Avoid Putting Form State In Redux](../style-guide/style-guide.md#avoid-putting-form-state-in-redux)
-- [Style Guide: Evaluate Where Each Piece of State Should Live](../style-guide/style-guide.md#evaluate-where-each-piece-of-state-should-live)
+- [风格指南：避免将表单状态放进 Redux](../style-guide/style-guide.md#avoid-putting-form-state-in-redux)
+- [风格指南：评估每项状态应该放在哪里](../style-guide/style-guide.md#evaluate-where-each-piece-of-state-should-live)
 
-**Articles**
+**相关文章**
 
 - [Gosha Arinich: Writings on Forms in React](https://goshacmd.com/on-forms-react/)
 - [Practical Redux, Part 6: Connected Lists and Forms](https://blog.isquaredsoftware.com/2017/01/practical-redux-part-6-connected-lists-forms-and-performance/) (2017, uses `connect`; the reasoning about where form state lives still applies)

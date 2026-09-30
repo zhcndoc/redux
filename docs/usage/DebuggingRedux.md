@@ -1,91 +1,91 @@
 ---
 id: debugging
-title: Debugging Redux
-description: 'Usage > Debugging: how to think about debugging, and how to apply that to a Redux app'
+title: 调试 Redux
+description: '使用 Redux > 调试：调试思路及其在 Redux 应用中的实践'
 ---
 
-# Debugging Redux
+# 调试 Redux
 
-Debugging is the process of figuring out why a program is not doing what it should, and fixing it. Developers spend a large fraction of their time doing this, and yet it is rarely taught directly. Most of us learn it the hard way, one bug at a time.
+调试是找出程序为何没有按预期工作并修复问题的过程。开发者有很大一部分时间都在做这件事，但它很少被系统地教授。大多数人都是通过一次次处理 bug 艰难地学会调试。
 
-This page covers two things: a general approach to debugging that applies to any software, and the specific tools and techniques for applying that approach to a Redux app. The [Troubleshooting](./Troubleshooting.md) page lists specific error messages and their fixes; this page is about how to find the problem when there isn't a helpful error message.
+本页介绍两方面内容：适用于各种软件的一般调试方法，以及将其应用到 Redux 应用时的具体工具和技巧。[故障排查](./Troubleshooting.md)页面列出了具体的错误消息及其修复方法；本页则介绍在没有明确错误消息时如何查找问题。
 
-## Debugging Principles
+## 调试原则
 
-Every problem has a cause. It is not always easy to find, especially with non-deterministic behavior, a hard-to-reproduce sequence of steps, or an environment you can't inspect directly, but it is there. A few principles make finding it much more likely.
+每个问题都有原因。原因不一定容易找到，尤其是遇到非确定性行为、难以复现的操作步骤，或无法直接检查的运行环境时，但它一定存在。遵循一些原则可以大幅提高找到原因的可能性。
 
-**Know what the system is supposed to do.** A bug is "the system not working as expected". You cannot tell what is wrong without a clear idea of what is right. For a Redux app, that means knowing what state should be in the store after a given user action, and what the UI should show for that state.
+**明确系统应该如何工作。** Bug 就是“系统没有按预期工作”。如果不清楚正确行为是什么，就无法判断哪里出了问题。对于 Redux 应用，这意味着要知道用户执行某个操作后 store 中应当是什么状态，以及 UI 应该如何呈现该状态。
 
-**Reproduce the problem.** A reliable reproduction confirms _where_ the problem happens, lets you inspect the actual behavior instead of guessing at it, and lets you verify that a fix actually fixed it. Try to narrow the reproduction down to the smallest set of steps that still triggers the bug.
+**复现问题。** 稳定复现可以确认问题_发生在哪里_，让你检查实际行为而不是猜测，并验证修复是否真正生效。尽量将复现步骤缩减到仍能触发 bug 的最少步骤。
 
-**Debug with a plan.** Treat it as an experiment: form a hypothesis about the cause, make a change that would test that hypothesis, and check the result. Change one thing at a time. If you change three things and the bug goes away, you don't know which one mattered, and you may have introduced a new problem.
+**有计划地调试。** 把调试当作实验：针对原因提出假设，做出能够验证该假设的改动，并检查结果。一次只改一件事。如果同时改了三处后 bug 消失，你就不知道是哪处改动起了作用，而且可能引入了新问题。
 
-**Read the code, including code you didn't write.** Understanding a bug often requires looking beneath the abstraction you're using, and that includes third-party libraries. Library code is just JavaScript on disk in `node_modules`. You can read it, set breakpoints in it, and even add temporary `console.log` calls to it (undo them afterwards).
+**阅读代码，包括你没有编写的代码。** 理解 bug 往往需要查看所用抽象的底层实现，这也包括第三方库。库代码只是 `node_modules` 中的 JavaScript 文件。你可以阅读它、在其中设置断点，甚至临时添加 `console.log` 调用（之后记得撤销）。
 
-**Use the right tool.** Print logging and a step debugger answer different questions. Logging is easy to add and shows how values change over time. A debugger lets you pause at one point and inspect everything in scope. Most real debugging sessions use both.
+**使用合适的工具。** 打印日志和单步调试器回答的是不同问题。添加日志很容易，可以观察值随时间如何变化；调试器可以暂停在某个位置并检查作用域内的所有内容。实际调试通常会同时使用两者。
 
-**Find the real error.** Stack traces and error messages often point at a symptom several steps removed from the cause. Keep asking "why did _that_ happen?" until you reach a step where the input was already wrong.
+**找到真正的错误。** 堆栈跟踪和错误消息通常指向距离根因好几步的表面症状。不断追问“_为什么_会发生这种情况？”，直到找到输入已经出错的步骤。
 
-**Know when to stop.** Building up a mental model of what's happening takes time and focus. It also wears you out. If you're stuck, take a break; the answer often shows up when you come back.
+**知道何时暂停。** 建立对实际运行过程的认知需要时间和专注，也会让人疲惫。如果陷入停滞，不妨休息一下；重新开始时往往就能找到答案。
 
-### Typical Debugging Steps
+### 常见调试步骤
 
-1. Understand the problem description. What did the user do, what did they expect, what actually happened?
-2. Reproduce the issue, and narrow the reproduction as far as you can.
-3. Determine why it's happening: form a hypothesis, test it, narrow down the possibilities.
-4. Trace back to the root cause rather than the first place the symptom appears.
-5. Decide on the fix. Fix the root cause if you can, and understand the constraints (how severe it is, what else depends on this code).
-6. Make the change, and add a test or a check so the same class of problem can't come back.
-7. Write down what you found. The next person to hit this (which may be you) will thank you.
+1. 理解问题描述。用户执行了什么操作、预期结果是什么、实际发生了什么？
+2. 复现问题，并尽可能缩减复现步骤。
+3. 判断问题为何发生：提出假设、验证假设并缩小可能原因的范围。
+4. 追溯根因，而不只是停留在最先出现症状的位置。
+5. 决定修复方法。尽可能修复根因，并理解相关约束（问题有多严重、还有哪些代码依赖此处）。
+6. 做出改动，并添加测试或检查，避免同类问题再次发生。
+7. 记录发现。下一个遇到此问题的人（也可能是你自己）会感谢你。
 
-## Applying This to Redux
+## 在 Redux 中实践
 
-Redux's data flow makes the general approach easier to apply, because it removes most of the places a bug can hide:
+Redux 的数据流让上述方法更容易实践，因为它消除了 bug 可能藏匿的大部分位置：
 
-- All state updates happen by dispatching an action
-- The store runs the root reducer with `(state, action)` and saves the result
-- The UI reads the latest state and re-renders if the values it selected changed
+- 所有状态更新都通过派发 action 发生。
+- Store 使用 `(state, action)` 运行根 reducer 并保存结果。
+- UI 读取最新状态，并在所选值发生变化时重新渲染。
 
-So when something is wrong on screen, there are only three questions to ask, in order:
+因此，当界面出现问题时，只需依次询问三个问题：
 
-1. **Was the action dispatched?** If not, the bug is in the code that should have dispatched it: an event handler that never ran, a thunk that bailed out early, an action creator that was called but not passed to `dispatch`.
-2. **What did the reducer do with it?** If the action was dispatched but the state didn't change the way it should have, the bug is in the reducer: the wrong case matched (or none did), the update logic is wrong, or the state was mutated in place so the store never saw a new value.
-3. **What did the component select?** If the state is right but the UI is wrong, the bug is in the selector or the rendering: the selector reads the wrong path, returns a new reference on every call so the component re-renders constantly, or the component's render logic is incorrect.
+1. **Action 是否已派发？** 如果没有，问题出在本应派发它的代码中：事件处理器没有运行、thunk 提前退出，或 action creator 虽然被调用却没有将结果传给 `dispatch`。
+2. **Reducer 如何处理了它？** 如果 action 已派发，但状态没有按预期变化，问题出在 reducer：匹配了错误的 case（或没有匹配任何 case）、更新逻辑有误，或状态被原地修改，导致 store 没有看到新值。
+3. **组件选择了什么？** 如果状态正确但 UI 错误，问题出在 selector 或渲染逻辑：selector 读取了错误路径、每次调用都返回新引用导致组件不断重新渲染，或组件渲染逻辑本身有误。
 
-Because every state change is an action, and actions are logged, the list of dispatched actions is a complete history of what the app did. This is what "predictable" means in practice: you can always trace a wrong value in the state back to the specific action that produced it, and from there to the code that dispatched it.
+由于每次状态变化都对应一个 action，而 action 会被记录，已派发 action 列表就构成了应用行为的完整历史。这就是“可预测”在实践中的含义：你总能从错误状态值追溯到产生它的具体 action，再找到派发该 action 的代码。
 
-The Redux Toolkit dev-mode checks catch several of these problems before you have to look for them. `configureStore` adds middleware in development that throws if a reducer mutates its state or if an action or state value isn't serializable, and React-Redux warns when a selector returns unstable references. Those errors and their fixes are listed on the [Troubleshooting](./Troubleshooting.md) page. If you're not using Redux Toolkit yet, switching to it removes a whole class of bugs by construction.
+Redux Toolkit 的开发模式检查可以在你手动排查前捕获其中一些问题。`configureStore` 会在开发环境添加 middleware，在 reducer 修改状态或 action、状态值不可序列化时抛出错误；selector 返回不稳定引用时，React-Redux 也会发出警告。相关错误及修复方法列在[故障排查](./Troubleshooting.md)页面中。如果尚未使用 Redux Toolkit，迁移到 RTK 可以从根本上消除一整类 bug。
 
 ## Redux DevTools
 
-The [Redux DevTools Extension](https://github.com/reduxjs/redux-devtools/tree/main/extension) answers the three questions above directly. Install it for [Chrome](https://chromewebstore.google.com/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd), [Firefox](https://addons.mozilla.org/en-US/firefox/addon/reduxdevtools/), or [Edge](https://microsoftedge.microsoft.com/addons/detail/redux-devtools/nnkgneoiohoecpdiaponcejilbhhikei). `configureStore` connects to it in development automatically, so there is nothing to set up: open the browser's developer tools and switch to the "Redux" panel.
+[Redux DevTools 扩展](https://github.com/reduxjs/redux-devtools/tree/main/extension)可以直接回答上述三个问题。可为 [Chrome](https://chromewebstore.google.com/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd)、[Firefox](https://addons.mozilla.org/en-US/firefox/addon/reduxdevtools/) 或 [Edge](https://microsoftedge.microsoft.com/addons/detail/redux-devtools/nnkgneoiohoecpdiaponcejilbhhikei) 安装扩展。`configureStore` 会在开发环境中自动连接，无需额外配置：打开浏览器开发者工具并切换到“Redux”面板即可。
 
-### Reading the Action History
+### 查看 Action 历史
 
-The left side of the panel lists every dispatched action in order, by type (`todos/todoAdded`). Selecting an action shows several tabs on the right:
+面板左侧按顺序列出每个已派发的 action 及其类型（`todos/todoAdded`）。选中某个 action 后，右侧会显示多个标签页：
 
-- **Action**: the full contents of the action object. Check this when a reducer received the right type but did the wrong thing; a `payload` that isn't what you assumed is a common cause.
-- **State**: the complete state tree after this action. Use this to confirm the actual state shape when a selector returns `undefined`, or when you're not sure a reducer was added to the store at all.
-- **Diff**: exactly which values changed as a result of this action. An empty diff for an action that should have changed something usually means the reducer returned the existing state, either because no case matched or because it mutated the state instead of returning a new value.
-- **Trace**: the stack trace of the code that dispatched this action, if tracing is enabled (see below). This is the fastest way to answer "who dispatched this?" when an action shows up that you didn't expect.
+- **Action（动作）**：action 对象的完整内容。如果 reducer 收到了正确类型但执行结果不对，可以在这里检查；常见原因是 `payload` 与预期不符。
+- **State（状态）**：执行此 action 后的完整状态树。当 selector 返回 `undefined`，或不确定 reducer 是否已添加到 store 时，可在这里确认实际状态结构。
+- **Diff（差异）**：此 action 导致的具体值变化。一个本应改变状态的 action 却显示空差异，通常表示 reducer 返回了原状态：要么没有匹配的 case，要么原地修改了状态而没有返回新值。
+- **Trace（跟踪）**：派发此 action 的代码堆栈跟踪（需启用跟踪，见下文）。当出现意料之外的 action 时，这是回答“是谁派发的？”最快的方法。
 
-The way to use the list is to read it top to bottom and find the first action after which the state is wrong. The bug is in that action's reducer, or in whatever dispatched it with the wrong contents. Everything after that point is downstream of the same mistake.
+查看列表时，应从上到下阅读，找到状态首次出错前的那个 action。Bug 出在该 action 对应的 reducer，或出在派发了错误内容的代码中。此后发生的一切都源自同一个问题。
 
-If an action you expected is _not_ in the list, it was never dispatched. Stop looking at the reducers and look at the code that should have called `dispatch`.
+如果预期的 action_不在_列表中，说明它从未被派发。不要再检查 reducer，而应检查本应调用 `dispatch` 的代码。
 
-### Time Travel
+### 时间旅行调试
 
-Because reducers are pure functions, the DevTools can recompute the state for any point in the history. Clicking **Jump** on an earlier action sets the store back to the state after that action, so you can see what the UI looked like at that point. **Skip** removes an action from the history and recomputes everything after it without that action, which is a quick way to test the hypothesis "this action is the one that broke things". The **Reset**, **Revert**, and **Commit** controls at the bottom let you clear the history or set a new starting point.
+由于 reducer 是纯函数，DevTools 可以重新计算历史记录中任意时刻的状态。点击较早 action 旁的 **Jump（跳转）**，store 就会恢复到该 action 执行后的状态，你可以查看当时 UI 的样子。**Skip（跳过）**会从历史中移除某个 action，并在不执行它的情况下重新计算之后的所有状态，可快速验证“是不是这个 action 导致了问题”。面板底部的 **Reset（重置）**、**Revert（还原）**和 **Commit（提交）**控件可清空历史或设置新的起点。
 
-Time travel only works correctly if your reducers are pure. If your app looks different after jumping back to an action than it did the first time, that is itself a bug worth chasing: some state is living outside the store, or a reducer has a side effect.
+只有 reducer 保持纯函数，时间旅行调试才能正常工作。如果跳回某个 action 后，应用的表现与当时不同，这本身就是值得追查的 bug：可能有状态保存在 store 之外，也可能 reducer 包含副作用。
 
-### Dispatching Actions Manually
+### 手动派发 Action
 
-The **Dispatcher** at the bottom of the panel lets you type an action object and dispatch it into the running app. This is useful for testing a reducer case without going through the UI, or for putting the app into a specific state to reproduce a problem.
+面板底部的 **Dispatcher（派发器）**允许你输入 action 对象并将其派发给运行中的应用。它适合在不操作 UI 的情况下测试 reducer case，或将应用置于特定状态以复现问题。
 
-### Enabling Traces and Other Options
+### 启用 Trace 和其他选项
 
-Trace capture is off by default because generating a stack trace for every dispatch is slow. Turn it on with the `devTools` option:
+默认关闭 Trace 捕获，因为为每次 dispatch 生成堆栈跟踪会降低速度。可以通过 `devTools` 选项启用：
 
 ```ts
 import { configureStore } from '@reduxjs/toolkit'
@@ -100,25 +100,25 @@ export const store = configureStore({
 })
 ```
 
-Other options worth knowing:
+其他值得了解的选项：
 
-- `maxAge`: how many actions to keep in the history (default 50). Raise it if the action you need has scrolled off; lower it if a busy app makes the DevTools sluggish.
-- `actionSanitizer` and `stateSanitizer`: functions that transform actions and state before sending them to the extension. Use these to strip out large payloads (image data, huge arrays) that make the panel slow, without changing the real state.
-- `actionsDenylist` / `actionsAllowlist`: filter which action types are recorded, by type name or regex.
+- `maxAge`：历史中保留的 action 数量（默认 50）。需要的 action 被滚出列表时可以调高；应用事件频繁、DevTools 变慢时可以调低。
+- `actionSanitizer` 和 `stateSanitizer`：将 action 和 state 发送给扩展前对其进行转换的函数。可用它们移除导致面板变慢的大型 payload（例如图像数据或超大数组），且不会改变真实状态。
+- `actionsDenylist` / `actionsAllowlist`：按 action 类型名称或正则表达式筛选要记录的类型。
 
-The full list is in the [extension's Arguments documentation](https://github.com/reduxjs/redux-devtools/blob/main/extension/docs/API/Arguments.md). Pass `devTools: false` to disable the connection entirely.
+完整选项列表请参阅[扩展的 Arguments 文档](https://github.com/reduxjs/redux-devtools/blob/main/extension/docs/API/Arguments.md)。传入 `devTools: false` 可完全关闭连接。
 
 ### RTK Query
 
-If you use RTK Query, the DevTools panel has an "RTK Query" tab that lists every query and mutation in the cache with its arguments, status, cached data, provided tags, and subscriber count. When a component shows stale data or a request fires more often than you expect, this tab shows what the cache actually contains and which components are subscribed to each entry.
+如果使用 RTK Query，DevTools 面板会有一个“RTK Query”标签页，列出缓存中的每个 query 和 mutation，以及其参数、状态、缓存数据、提供的标签和订阅者数量。当组件显示过期数据，或请求频率高于预期时，可以在此查看缓存的实际内容，以及哪些组件订阅了各条目。
 
-### Without a Browser Extension
+### 没有浏览器扩展时
 
-For React Native, Node, or any environment without the browser extension, the [`@redux-devtools/remote`](https://github.com/reduxjs/redux-devtools/tree/main/packages/redux-devtools-remote) package connects a store to a DevTools instance running elsewhere. Expo projects can use the [Redux DevTools Expo dev plugin](https://github.com/matt-oakes/redux-devtools-expo-dev-plugin) instead.
+对于 React Native、Node 或任何没有浏览器扩展的环境，可以使用 [`@redux-devtools/remote`](https://github.com/reduxjs/redux-devtools/tree/main/packages/redux-devtools-remote) 包，将 store 连接到其他位置运行的 DevTools 实例。Expo 项目也可以改用 [Redux DevTools Expo 开发插件](https://github.com/matt-oakes/redux-devtools-expo-dev-plugin)。
 
-## Logging
+## 记录日志
 
-The DevTools cover most cases, but sometimes a plain log in the console is the fastest option, especially when you want to see actions interleaved with other output from your app. A minimal logging middleware:
+DevTools 能满足大多数需求，但有时直接在控制台输出日志更快，尤其是想观察 action 如何与应用的其他输出交错出现时。下面是一个最精简的日志 middleware：
 
 ```ts
 import type { Middleware } from '@reduxjs/toolkit'
@@ -135,7 +135,7 @@ export const loggerMiddleware: Middleware = store => next => action => {
 }
 ```
 
-Add it in development only, using the `middleware` callback in `configureStore`:
+使用 `configureStore` 的 `middleware` 回调，仅在开发环境中添加它：
 
 ```ts
 export const store = configureStore({
@@ -150,12 +150,12 @@ export const store = configureStore({
 })
 ```
 
-[`redux-logger`](https://github.com/LogRocket/redux-logger) does the same thing with more formatting options and collapsible groups.
+[`redux-logger`](https://github.com/LogRocket/redux-logger) 也能完成同样的工作，并提供更多格式选项和可折叠分组。
 
-Two things to remember when reading logged objects in the browser console:
+在浏览器控制台查看日志对象时，需注意两点：
 
-- The console shows an expandable object's contents as they are _when you expand it_, not as they were when the log statement ran. If the state has been mutated since, the log lies. `console.log(JSON.stringify(value))` or `structuredClone(value)` freezes a snapshot.
-- Inside a `createSlice` or `createReducer` case reducer, `state` is an Immer draft (a `Proxy`). Logging it shows the proxy internals rather than the data. Use the `current` function that Redux Toolkit re-exports from Immer to get a plain snapshot:
+- 控制台会在你_展开对象时_显示它的内容，而不是日志语句执行时的内容。如果状态此后被修改，日志就会误导你。`console.log(JSON.stringify(value))` 或 `structuredClone(value)` 可以冻结一个快照。
+- 在 `createSlice` 或 `createReducer` 的 case reducer 中，`state` 是 Immer draft（一个 `Proxy`）。直接记录它会显示 proxy 的内部结构，而不是数据。使用 Redux Toolkit 从 Immer 重新导出的 `current` 函数获取普通快照：
 
 ```ts
 import { createSlice, current } from '@reduxjs/toolkit'
@@ -176,49 +176,49 @@ const todosSlice = createSlice({
 })
 ```
 
-## Using a Debugger
+## 使用调试器
 
-A step debugger lets you pause execution at a chosen line, inspect every variable in scope, and walk the call stack to see how you got there. The browser DevTools "Sources" panel and VS Code's JavaScript debugger both work with Redux apps; the concepts are the same in each:
+单步调试器可以让你在指定行暂停执行、检查作用域中的所有变量，并沿调用栈追踪执行路径。浏览器 DevTools 的“Sources”面板和 VS Code 的 JavaScript 调试器都适用于 Redux 应用，基本概念相同：
 
-- **Breakpoints** pause execution when a line is reached. Set one by clicking a line number, or by putting a `debugger` statement in the code.
-- **Conditional breakpoints** only pause when an expression is true. Right-click a breakpoint to add a condition like `action.type === 'todos/todoAdded'`, which is much faster than pausing on every dispatch.
-- **Logpoints** log a value when the line is reached without pausing. These are a way to add `console.log` calls without editing and reloading.
-- **Step over / step into / step out** move through the code one line at a time. The **call stack** panel shows the chain of functions that led to the current line; clicking a frame shows the variables that were in scope there.
+- **断点**：执行到某行时暂停。点击行号即可设置，也可以在代码中添加 `debugger` 语句。
+- **条件断点**：只有表达式为真时才暂停。右键点击断点并添加类似 `action.type === 'todos/todoAdded'` 的条件，比每次 dispatch 都暂停快得多。
+- **日志点**：执行到某行时记录值，但不会暂停。无需编辑代码并重新加载，就能临时添加 `console.log`。
+- **单步跳过 / 单步进入 / 单步跳出**：逐行执行代码。**调用堆栈**面板显示到达当前行的函数调用链；点击某个栈帧可查看当时作用域中的变量。
 
-For Redux specifically, the useful places to pause are:
+在 Redux 应用中，以下位置通常值得设置断点：
 
-- Inside a case reducer, to see the incoming state and action and step through the update logic
-- Inside a thunk, to see whether it reached the `dispatch` call and what it dispatched
-- Inside a `useSelector` callback, to see what state the component actually received
+- case reducer 内：查看传入的 state 和 action，并逐步检查更新逻辑。
+- thunk 内：确认代码是否执行到 `dispatch` 调用，以及实际派发了什么。
+- `useSelector` 回调内：检查组件实际收到的状态。
 
-When paused in a case reducer, remember that `state` is an Immer draft. The debugger's variable panel shows the proxy; evaluate `current(state)` in the console to see the data (you'll need to have imported `current` somewhere in that module, or expose it on `window` temporarily).
+在 case reducer 中暂停时，记住 `state` 是 Immer draft。调试器的变量面板会显示 proxy；在控制台执行 `current(state)` 即可查看数据（需要在该模块中导入 `current`，或临时将其挂到 `window` 上）。
 
-## Debugging React Rendering
+## 调试 React 渲染
 
-Redux gets the state right; React has to render it. When the store contains the correct value but the UI is wrong or updates too often, the problem is on the React side, and the [React DevTools](https://react.dev/learn/react-developer-tools) are the tool for it:
+Redux 状态正确后，还需要 React 将其渲染出来。如果 store 中的值正确，但 UI 显示错误或更新过于频繁，问题就出在 React 一侧，应使用 [React DevTools](https://react.dev/learn/react-developer-tools)：
 
-- The **Components** tab shows the component tree, and for a selected component, its props, hooks (including the values returned by `useSelector`), and the component that rendered it. Select a DOM element in the browser's Elements panel and switch to Components to jump straight to the component that produced it.
-- The **Profiler** tab records renders and shows which components re-rendered and why, including "Hooks changed", which for a `useSelector` component means the selected value changed.
+- **Components** 标签页显示组件树；选中组件后，可以查看它的 props、hooks（包括 `useSelector` 返回值）以及渲染它的组件。在浏览器 Elements 面板中选中 DOM 元素，再切换到 Components，即可直接跳转到生成该元素的组件。
+- **Profiler** 标签页会记录渲染，并显示哪些组件重新渲染及其原因。原因包括“Hooks changed”；对于使用 `useSelector` 的组件，这意味着选中值发生了变化。
 
-A `useSelector` callback that returns a new reference each time (a `filter` result, a fresh object literal) makes its component re-render after every dispatched action. React-Redux warns about this in development; the fix is to memoize the derivation with `createSelector`, as described in the [React Redux FAQ](../faq/ReactRedux.md#why-is-my-component-re-rendering-too-often). For the broader rules about when React components re-render, see [A (Mostly) Complete Guide to React Rendering Behavior](https://blog.isquaredsoftware.com/2020/05/blogged-answers-a-mostly-complete-guide-to-react-rendering-behavior/).
+每次都返回新引用的 `useSelector` 回调（例如返回 `filter` 结果或新对象字面量）会导致组件在每个 action 派发后重新渲染。React-Redux 会在开发环境警告此问题；解决方法是像 [React Redux 常见问题](../faq/ReactRedux.md#why-is-my-component-re-rendering-too-often)所述，使用 `createSelector` 对派生逻辑进行记忆化。关于 React 组件何时重新渲染的更多通用规则，请参阅[React 渲染行为（基本）完整指南](https://blog.isquaredsoftware.com/2020/05/blogged-answers-a-mostly-complete-guide-to-react-rendering-behavior/)。
 
-## Recording a Session with Replay
+## 使用 Replay 录制会话
 
-Some bugs only appear after a long, specific sequence of interactions, or on someone else's machine, and reproducing them by hand is the hardest part. [Replay](https://www.replay.io/) addresses that by recording the browser session once and letting you inspect the recording afterwards. A recording captures everything the JavaScript engine took as input, so it can be replayed exactly and paused at any point: you can add console logs to code that already ran, inspect variables at any moment, and step through reducer and selector calls without needing to reproduce the bug again. Recordings can be examined by hand in Replay's DevTools, or handed to a coding agent through [Replay MCP](https://docs.replay.io/basics/replay-mcp/overview), which gives the agent time-travel debugging tools over the recording. See [how to record your app](https://docs.replay.io/basics/getting-started/record-your-app) and the [debugging overview](https://docs.replay.io/basics/debugging/overview) to get started.
+有些 bug 只会在一连串特定操作之后出现，或只在别人的机器上出现；手动复现往往最困难。[Replay](https://www.replay.io/) 可以录制一次浏览器会话，供你之后检查录制内容。录制会捕获 JavaScript 引擎接收的所有输入，因此可以精确回放并在任意位置暂停：你可以为已经执行过的代码添加控制台日志、检查任意时刻的变量，并单步检查 reducer 和 selector 调用，而无需再次复现 bug。你可以在 Replay DevTools 中手动检查录制，也可以通过 [Replay MCP](https://docs.replay.io/basics/replay-mcp/overview) 将其交给编程代理，让代理使用录制中的时间旅行调试工具。请参阅[如何录制应用](https://docs.replay.io/basics/getting-started/record-your-app)和[调试概览](https://docs.replay.io/basics/debugging/overview)了解入门方法。
 
-## Further Information
+## 更多信息
 
-**Debugging in general**
+**通用调试**
 
-- Mark Erikson: [Debugging JavaScript: Tools and Techniques](https://blog.isquaredsoftware.com/presentations/2023-06-debugging-js/) (slides; this page is based on that talk)
-- Mark Erikson: [Debugging Tips and Stories](https://blog.isquaredsoftware.com/2019/01/blogged-answers-debugging-tips/)
-- Julia Evans: [Reasons why bugs might feel "impossible"](https://jvns.ca/blog/2021/06/08/reasons-why-bugs-might-feel-impossible/)
-- [20 Steps to Debug Anything](https://debug.guide/)
-- [Chrome DevTools: Debug JavaScript](https://developer.chrome.com/docs/devtools/javascript)
+- Mark Erikson：[调试 JavaScript：工具与技巧](https://blog.isquaredsoftware.com/presentations/2023-06-debugging-js/)（幻灯片；本页内容基于该演讲）
+- Mark Erikson：[调试技巧与案例](https://blog.isquaredsoftware.com/2019/01/blogged-answers-debugging-tips/)
+- Julia Evans：[为什么有些 bug 看起来“无法解决”](https://jvns.ca/blog/2021/06/08/reasons-why-bugs-might-feel-impossible/)
+- [调试任何问题的 20 个步骤](https://debug.guide/)
+- [Chrome DevTools：调试 JavaScript](https://developer.chrome.com/docs/devtools/javascript)
 
-**Redux and React tooling**
+**Redux 和 React 工具**
 
-- [Redux DevTools Extension documentation](https://github.com/reduxjs/redux-devtools/tree/main/extension/docs)
-- [Redux DevTools: Trace actions](https://github.com/reduxjs/redux-devtools/blob/main/extension/docs/Features/Trace.md)
+- [Redux DevTools 扩展文档](https://github.com/reduxjs/redux-devtools/tree/main/extension/docs)
+- [Redux DevTools：跟踪 Action](https://github.com/reduxjs/redux-devtools/blob/main/extension/docs/Features/Trace.md)
 - [React Developer Tools](https://react.dev/learn/react-developer-tools)
-- [Immer: `current`](https://immerjs.github.io/immer/current/)
+- [Immer：`current`](https://immerjs.github.io/immer/current/)

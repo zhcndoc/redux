@@ -25,7 +25,7 @@ import { LiveExample } from '@site/src/components/LiveExample'
 
 我们要看的示例项目是一个小型计数器应用，允许我们点击按钮对数字进行增加或减少。它或许并不十分复杂，但它展示了一个 React+Redux 应用中的所有重要组成部分。
 
-The project has been created using a smaller version of [the official Redux Toolkit template for Vite](https://github.com/reduxjs/redux-templates/tree/master/packages/vite-template-redux). Out of the box, it has already been configured with a standard Redux application structure, using [Redux Toolkit](/toolkit) to create the Redux store and logic, and [React-Redux](/react-redux) to connect together the Redux store and the React components.
+本项目基于[官方 Vite Redux Toolkit 模板](https://github.com/reduxjs/redux-templates/tree/master/packages/vite-template-redux)的精简版本创建。它已经配置好标准 Redux 应用结构，使用 [Redux Toolkit](/toolkit) 创建 Redux store 和逻辑，并使用 [React-Redux](/react-redux) 连接 Redux store 与 React 组件。
 
 这是该项目的在线演示。你可以通过点击右侧应用预览中的按钮进行操作，也可以浏览左侧的源文件。
 
@@ -170,7 +170,7 @@ Redux 允许通过各种插件（“middleware”和“enhancers”）定制 sto
 
 对于 TypeScript，我们还导出了一些可复用的类型，比如 `RootState` 和 `AppDispatch`。后面会看到它们的用法。
 
-## Redux 切片（Slices）
+## Redux 切片（Slices） {#redux-slices}
 
 **“切片”是针对应用中某个单一功能的 Redux reducer 逻辑和 actions 的集合**，通常定义在一个文件中。这个名字来源于将根 Redux 状态对象拆分成多个“切片”状态。
 
@@ -293,7 +293,7 @@ export default counterSlice.reducer
 
 我们可以每次手写这些代码，但这很繁琐。Redux 的重点其实在 reducer 函数，以及它们计算新状态的逻辑。
 
-Redux Toolkit has a function called [**`createSlice`**](/toolkit/api/createSlice), which takes care of the work of generating action type strings, action creator functions, and action objects. All you have to do is define a name for this slice, write an object that has some reducer functions in it, and it generates the corresponding action code automatically. The string from the `name` option is used as the first part of each action type, and the key name of each reducer function is used as the second part. So, the `"counter"` name + the `"increment"` reducer function generated an action type of `{type: "counter/increment"}`. (After all, why write this by hand if the computer can do it for us!)
+Redux Toolkit 提供了 [**`createSlice`**](/toolkit/api/createSlice) 函数，负责生成 action 类型字符串、action creator 函数和 action 对象。你只需为 slice 指定名称，并提供包含 reducer 函数的对象，它就会自动生成对应的 action 代码。`name` 选项的字符串会作为每个 action 类型的前半部分，而 reducer 函数的键名会作为后半部分。因此，`"counter"` 名称和 `"increment"` reducer 函数会生成 `{type: "counter/increment"}` 这样的 action 类型。（既然计算机可以替我们完成，何必手动编写呢？）
 
 除了 `name` 字段，`createSlice` 还需要我们传入初始状态，确保第一次调用 reducer 时有 `state` 值。这里我们传入一个对象，其 `value` 初始为 0，`status` 初始为 `'idle'`。
 
@@ -334,7 +334,7 @@ console.log(newState)
 
 这里“不可变更新”规则尤其重要，值得详谈。
 
-### Reducer 与不可变更新
+### Reducer 与不可变更新 {#reducers-and-immutable-updates}
 
 之前提过“变异”（修改已有对象/数组）和“不变性”（视值为不可变）概念。
 
@@ -453,7 +453,7 @@ export const counterSlice = createSlice({
 
 想了解不可变和不可变更新，请参见 [“不可变更新模式” 文档页](../../usage/structuring-reducers/ImmutableUpdatePatterns.md) 和 [React 和 Redux 中不可变性的完整指南](https://daveceddia.com/react-redux-immutability-guide/)。
 
-For details on using Immer for "mutating" immutable updates, see [the Immer docs](https://immerjs.github.io/immer/) and the ["Writing Reducers with Immer" docs page](/toolkit/usage/immer-reducers).
+有关如何使用 Immer 通过“修改式”语法执行不可变更新，请参阅 [Immer 文档](https://immerjs.github.io/immer/)和[“使用 Immer 编写 Reducer”文档](/toolkit/usage/immer-reducers)。
 
 :::
 
@@ -547,7 +547,7 @@ const fetchUserById = (userId: string): AppThunk => {
 }
 ```
 
-Redux Toolkit includes a [**`createAsyncThunk`**](/toolkit/api/createAsyncThunk) method that does all of the dispatching work for you. The next function in `counterSlice.ts` is an async thunk that makes a mock API request with a counter value. When we dispatch this thunk, it will dispatch a `pending` action before making the request, and either a `fulfilled` or `rejected` action after the async logic is done.
+Redux Toolkit 包含 [**`createAsyncThunk`**](/toolkit/api/createAsyncThunk) 方法，会替你处理所有 action 派发工作。`counterSlice.ts` 中接下来的函数是一个异步 thunk，它会使用计数器值发起模拟 API 请求。派发此 thunk 时，它会在请求开始前派发 `pending` action，并在异步逻辑完成后派发 `fulfilled` 或 `rejected` action。
 
 ```ts title="features/counter/counterSlice.ts"
 // Thunks 常用于异步逻辑，如请求数据。
@@ -719,7 +719,7 @@ export function Counter() {
 
 React 内置了 `useState`、`useEffect` 等几个 hook，其他库也可以基于 React 的 hook 自定义 [自定义 hook](https://reactjs.org/docs/hooks-custom.html)，封装复用逻辑。
 
-The [React-Redux library](/react-redux) has [a set of custom hooks that allow your React component to interact with a Redux store](/react-redux/api/hooks).
+[React-Redux 库](/react-redux)提供了[一组自定义 hooks，让 React 组件可以与 Redux store 交互](/react-redux/api/hooks)。
 
 #### 使用 `useSelector` 读取数据
 

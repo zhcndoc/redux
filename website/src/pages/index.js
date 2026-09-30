@@ -93,12 +93,12 @@ const otherLibraries = [
     link: '/toolkit'
   },
   {
-    content: 'Official React bindings for Redux',
+    content: 'Redux 官方 React 绑定库',
     title: 'React Redux',
     link: '/react-redux'
   },
   {
-    content: 'A memoized selector library for Redux',
+    content: 'Redux 的记忆化选择器库',
     title: 'Reselect',
     link: '/reselect'
   }
@@ -109,8 +109,8 @@ function Home() {
   const { siteConfig = {} } = context
   return (
     <Layout
-      title={`${siteConfig.title} - A JS library for predictable and maintainable global state management`}
-      description="A JS library for predictable and maintainable global state management"
+      title={`${siteConfig.title} - 可预测、易维护的全局状态管理 JavaScript 库`}
+      description="可预测、易维护的全局状态管理 JavaScript 库"
     >
       <header className={classnames('hero hero--primary', styles.heroBanner)}>
         <div className="container">

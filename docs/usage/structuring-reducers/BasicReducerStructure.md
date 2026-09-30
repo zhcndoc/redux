@@ -8,13 +8,13 @@ description: '构建 Reducers > 基本 Reducer 结构：Reducer 函数如何与 
 <!-- prettier-ignore -->
 import HandWrittenReducersNote from "../../components/_HandWrittenReducersNote.mdx";
 
-# Basic Reducer Structure and State Shape
+# 基本 Reducer 结构与状态形状
 
 <HandWrittenReducersNote />
 
-## Basic Reducer Structure
+## 基本 Reducer 结构 {#basic-reducer-structure}
 
-First and foremost, it's important to understand that your entire application really only has **one single reducer function**: the function that you've passed to the store as the `reducer` option of `configureStore`. That one single reducer function ultimately needs to do several things:
+首先需要理解的是，整个应用实际上只有**一个根 reducer 函数**：也就是传给 store 的 `configureStore` 选项 `reducer` 所对应的函数。这个根 reducer 最终需要完成几项工作：
 
 - 当 reducer 第一次被调用时，`state` 的值将是 `undefined`。Reducer 需要处理这种情况，在处理传入的 action 之前提供一个默认的状态值。
 - 它需要查看之前的状态和被分发的 action，并确定需要执行什么样的操作。

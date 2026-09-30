@@ -30,18 +30,18 @@ const libraries: LibraryEntry[] = [
     to: 'introduction/getting-started',
     routeBasePath: '/',
     navbarItems: [
-      { label: 'Getting Started', to: 'introduction/getting-started' },
+      { label: '开始使用', to: 'introduction/getting-started' },
       {
-        label: 'Tutorial',
+        label: '教程',
         to: 'tutorials/essentials/part-1-overview-concepts'
       },
-      { label: 'Usage Guide', type: 'doc', docId: 'usage/index' },
+      { label: '使用指南', type: 'doc', docId: 'usage/index' },
       { label: 'API', type: 'doc', docId: 'api/api-reference' },
-      { label: 'FAQ', to: 'faq' },
-      { label: 'Best Practices', type: 'doc', docId: 'style-guide/style-guide' },
+      { label: '常见问题', to: 'faq' },
+      { label: '最佳实践', type: 'doc', docId: 'style-guide/style-guide' },
       { label: 'GitHub', href: 'https://www.github.com/reduxjs/redux' },
       {
-        label: 'Need help?',
+        label: '帮助',
         to: 'introduction/getting-started#help-and-discussion'
       }
     ]
@@ -51,14 +51,14 @@ const libraries: LibraryEntry[] = [
     to: 'toolkit/introduction/getting-started',
     routeBasePath: 'toolkit',
     navbarItems: [
-      { label: 'Getting Started', to: 'toolkit/introduction/getting-started' },
-      { label: 'Tutorial', to: 'tutorials/index' },
-      { label: 'Usage Guide', to: 'toolkit/usage/usage-guide' },
+      { label: '开始使用', to: 'toolkit/introduction/getting-started' },
+      { label: '教程', to: 'tutorials/index' },
+      { label: '使用指南', to: 'toolkit/usage/usage-guide' },
       { label: 'API', to: 'toolkit/api/configureStore' },
       { label: 'RTK Query', to: 'toolkit/rtk-query/overview' },
       { label: 'GitHub', href: 'https://github.com/reduxjs/redux-toolkit' },
       {
-        label: 'Need help?',
+        label: '帮助',
         to: 'introduction/getting-started#help-and-discussion'
       }
     ]
@@ -69,18 +69,18 @@ const libraries: LibraryEntry[] = [
     routeBasePath: 'react-redux',
     navbarItems: [
       {
-        label: 'Getting Started',
+        label: '开始使用',
         to: 'react-redux/introduction/getting-started'
       },
-      { label: 'Tutorial', to: 'tutorials/quick-start' },
+      { label: '教程', to: 'tutorials/quick-start' },
       {
-        label: 'Using React Redux',
+        label: '使用 React Redux',
         to: 'react-redux/using-react-redux/accessing-store'
       },
       { label: 'API', to: 'react-redux/api/hooks' },
       { label: 'GitHub', href: 'https://www.github.com/reduxjs/react-redux' },
       {
-        label: 'Need help?',
+        label: '帮助',
         to: 'introduction/getting-started#help-and-discussion'
       }
     ]
@@ -90,13 +90,13 @@ const libraries: LibraryEntry[] = [
     to: 'reselect/introduction/getting-started',
     routeBasePath: 'reselect',
     navbarItems: [
-      { label: 'Getting Started', to: 'reselect/introduction/getting-started' },
-      { label: 'Tutorial', to: 'tutorials/index' },
-      { label: 'Usage Guide', to: 'usage/deriving-data-selectors' },
+      { label: '开始使用', to: 'reselect/introduction/getting-started' },
+      { label: '教程', to: 'tutorials/index' },
+      { label: '使用指南', to: 'usage/deriving-data-selectors' },
       { label: 'API', to: 'reselect/api/createSelector' },
       { label: 'GitHub', href: 'https://www.github.com/reduxjs/reselect' },
       {
-        label: 'Need help?',
+        label: '帮助',
         to: 'introduction/getting-started#help-and-discussion'
       }
     ]
@@ -132,7 +132,7 @@ const config: Config = {
         // The leading `*` is the hostname only, so core pages like
         // `/faq/react-redux` stay in the Redux tab.
         tabs: [
-          { name: 'All', pattern: '**/*' },
+          { name: '全部', pattern: '**/*' },
           { name: 'Redux', pattern: '!*/{react-redux,toolkit,reselect}/**' },
           { name: 'Redux Toolkit', pattern: '*/toolkit/**' },
           { name: 'React Redux', pattern: '*/react-redux/**' },
@@ -200,7 +200,7 @@ const config: Config = {
           ]
         },
         {
-          title: 'Libraries',
+          title: '库',
           items: [
             { label: 'Redux', to: '/' },
             {
@@ -215,7 +215,7 @@ const config: Config = {
           ]
         },
         {
-          title: 'Community',
+          title: '社区',
           items: [
             {
               label: 'Discord',

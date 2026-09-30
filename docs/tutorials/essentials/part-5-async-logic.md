@@ -32,7 +32,7 @@ import { LiveExample } from '@site/src/components/LiveExample'
 
 :::tip
 
-Redux Toolkit includes the [**RTK Query data fetching and caching API**](/toolkit/rtk-query/overview). RTK Query is a purpose built data fetching and caching solution for Redux apps, and **can eliminate the need to write _any_ additional Redux logic like thunks or reducers to manage data fetching**. We specifically teach RTK Query as the default approach for data fetching.
+Redux Toolkit 包含 [**RTK Query 数据获取与缓存 API**](/toolkit/rtk-query/overview)。RTK Query 是专为 Redux 应用设计的数据获取和缓存解决方案，**可以免去编写 thunk 或 reducer 等额外 Redux 逻辑来管理数据获取的需要**。我们将 RTK Query 作为数据获取的默认方案来教授。
 
 RTK Query 构建在本页展示的模式之上，因此本节内容有助于你理解 Redux 中数据获取底层的工作机制。
 
@@ -46,11 +46,11 @@ RTK Query 构建在本页展示的模式之上，因此本节内容有助于你�
 
 :::note
 
-The fake API intercepts `fetch()` calls directly inside the page, rather than through a browser Service Worker, so that the project can also run inside StackBlitz. Because of that, **these requests will not show up in the "Network" tab of your browser's DevTools**. You can still see the requests happen by watching the dispatched actions in the Redux DevTools, or by adding `console.log` statements in `src/api/client.ts`.
+模拟 API 会直接在页面内拦截 `fetch()` 调用，而不是通过浏览器 Service Worker，因此项目也能在 StackBlitz 中运行。由此，**这些请求不会显示在浏览器 DevTools 的“Network”标签页中**。你仍可通过 Redux DevTools 中派发的 action，或在 `src/api/client.ts` 中添加 `console.log` 语句来查看请求。
 
 :::
 
-The project also includes a small HTTP API client object that exposes `client.get()` and `client.post()` methods, similar to popular HTTP libraries like `axios`. It's defined in `src/api/client.ts`.
+项目还包含一个小型 HTTP API 客户端对象，提供类似 `axios` 等常用 HTTP 库的 `client.get()` 和 `client.post()` 方法。它定义在 `src/api/client.ts` 中。
 
 本节中，我们将使用该 `client` 对象对内存中的假 REST API 进行 HTTP 调用。
 
@@ -62,7 +62,7 @@ The project also includes a small HTTP API client object that exposes `client.ge
 
 :::
 
-## 使用中间件启用异步逻辑
+## 使用中间件启用异步逻辑 {#using-middleware-to-enable-async-logic}
 
 Redux 存储本身并不支持异步逻辑。它只知道如何同步派发动作、调用根 reducer 函数更新状态，并通知 UI 有变化。任何异步操作都必须在存储之外发生。
 
@@ -94,7 +94,7 @@ Redux 存储本身并不支持异步逻辑。它只知道如何同步派发动�
 
 ## Thunk 与异步逻辑
 
-There are many kinds of async middleware for Redux, and each lets you write your logic using different syntax. The most common async middleware is [`redux-thunk`](https://github.com/reduxjs/redux-thunk), which lets you write plain functions that may contain async logic directly. Redux Toolkit's `configureStore` function [automatically sets up the thunk middleware by default](/toolkit/api/getDefaultMiddleware#included-default-middleware), and [we recommend using thunks as a standard approach for writing async logic with Redux](../../style-guide/style-guide.md#use-thunks-and-listeners-for-other-async-logic).
+Redux 有多种异步 middleware，各自允许使用不同语法编写逻辑。最常见的是 [`redux-thunk`](https://github.com/reduxjs/redux-thunk)，它允许你直接编写包含异步逻辑的普通函数。Redux Toolkit 的 `configureStore` 函数[默认会自动配置 thunk middleware](/toolkit/api/getDefaultMiddleware#included-default-middleware)，并且[我们建议将 thunk 作为使用 Redux 编写异步逻辑的标准方式](../../style-guide/style-guide.md#use-thunks-and-listeners-for-other-async-logic)。
 
 :::info 什么是“Thunk”？
 
@@ -482,9 +482,9 @@ console.log(
 */
 ```
 
-We've also seen that we can use [the `extraReducers` field in `createSlice` to respond to actions that were defined outside of the slice](./part-4-using-data.md#using-extrareducers-to-handle-other-actions).
+我们还看到，可以使用 [`createSlice` 中的 `extraReducers` 字段来响应在 slice 外部定义的 action](./part-4-using-data.md#using-extrareducers-to-handle-other-actions)。
 
-In this case, we need to listen for the "pending" and "fulfilled" action types dispatched by our `fetchPosts` thunk. Those action creators are attached to our actual `fetchPosts` function, and we can pass those to `extraReducers` to listen for those actions:
+这里需要监听 `fetchPosts` thunk 派发的 `pending` 和 `fulfilled` action 类型。这些 action creator 挂载在实际的 `fetchPosts` 函数上，我们可以将它们传给 `extraReducers` 来监听：
 
 ```ts title="features/posts/postsSlice.ts"
 export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => {
@@ -945,7 +945,7 @@ export default usersSlice.reducer
 
 :::info
 
-To learn more about how state updates with Immer work, see the ["Writing Reducers with Immer" guide in the RTK docs](/toolkit/usage/immer-reducers#immer-usage-patterns).
+有关 Immer 状态更新方式的更多信息，请参阅 RTK 文档中的[“使用 Immer 编写 Reducer”指南](/toolkit/usage/immer-reducers#immer-usage-patterns)。
 
 :::
 
@@ -1042,7 +1042,7 @@ export const { postUpdated, reactionAdded } = postsSlice.actions
 // highlight-end
 ```
 
-### 在组件中检查 Thunk 结果
+### 在组件中检查 Thunk 结果 {#checking-thunk-results-in-components}
 
 最后，更新 `<AddPostForm>`，改为派发 `addNewPost` thunk。因为这也是 API 调用，可能耗时且出错。`addNewPost()` thunk 会自动派发 `pending/fulfilled/rejected` 动作，已由我们处理。
 

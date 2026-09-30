@@ -6,7 +6,7 @@ sidebar_label: 性能
 
 ## Redux 常见问题解答：性能
 
-### Redux 在性能和架构方面的“扩展”能力如何？
+### Redux 在性能和架构方面的“扩展”能力如何？ {#how-well-does-redux-scale-in-terms-of-performance-and-architecture}
 
 虽然没有唯一的明确答案，但大多数情况下，这都不应该成为问题。
 
@@ -50,7 +50,7 @@ Redux 处理的工作一般分为几个方面：处理中间件和 reducer 中�
 - [聊天记录：React/Redux 性能 - 更新 10K 条待办列表](https://gist.github.com/markerikson/53735e4eb151bc228d6685eab00f5f85)
 - [聊天记录：React/Redux 性能 - 单个连接 vs 多个连接](https://gist.github.com/markerikson/6056565dd65d1232784bf42b65f8b2ad)
 
-### 每个 action 都调用“所有 reducer”不会很慢吗？
+### 每个 action 都调用“所有 reducer”不会很慢吗？ {#wont-calling-all-my-reducers-for-each-action-be-slow}
 
 重要的是要注意，Redux Store 实际上只有一个 reducer 函数。Store 会将当前状态和派发的 action 传给该 reducer 函数，并让它进行相应处理。
 
@@ -69,13 +69,13 @@ Redux 处理的工作一般分为几个方面：处理中间件和 reducer 中�
 - [Stack Overflow：Redux 应用中的状态具有 reducer 名称属性](https://stackoverflow.com/questions/35667775/state-in-redux-react-app-has-a-property-with-the-name-of-the-reducer/35674297)
 - [Stack Overflow：Redux 如何处理深度嵌套的模型？](https://stackoverflow.com/questions/34494866/how-does-redux-deals-with-deeply-nested-models/34495397)
 
-### 我必须在 reducer 中深拷贝状态吗？复制状态会不会很慢？
+### 我必须在 reducer 中深拷贝状态吗？复制状态会不会很慢？ {#do-i-have-to-deep-clone-my-state-in-a-reducer-isnt-copying-my-state-going-to-be-slow}
 
 不可变更新状态通常是浅拷贝，不是深拷贝。浅拷贝比深拷贝快得多，因为复制的对象和字段更少，实际上就是指针的移动。
 
-In addition, deep cloning state creates new references for every field. Since React-Redux's `useSelector` relies on reference comparisons to determine if data has changed, this means that UI components will be forced to re-render unnecessarily even though the other data hasn't meaningfully changed. See [Why is my component re-rendering too often?](./ReactRedux.md#why-is-my-component-re-rendering-too-often) for details.
+此外，深拷贝状态会为每个字段创建新的引用。React-Redux 的 `useSelector` 通过比较引用来判断数据是否变化，因此即使其他数据实际并未改变，UI 组件也会被迫重新渲染。详情请参阅[为什么组件重新渲染得太频繁？](./ReactRedux.md#why-is-my-component-re-rendering-too-often)。
 
-However, you _do_ need to create a copied and updated object for each level of nesting that is affected. Although that shouldn't be particularly expensive, it's another good reason why you should keep your state normalized and shallow if possible. Reducers written with `createSlice` handle this for you: Immer copies only the objects along the path you changed and keeps every other reference the same.
+不过，对于受影响的每一层嵌套，你_确实_需要创建更新后的副本。虽然这通常不会造成明显开销，但也是尽量保持状态归一化、浅层化的另一个理由。使用 `createSlice` 编写的 reducer 会替你处理这些工作：Immer 只复制被修改路径上的对象，其他引用保持不变。
 
 > 常见误区：你需要深度克隆状态。事实是：如果某部分不变，就保持原引用不变！
 
@@ -93,13 +93,13 @@ However, you _do_ need to create a copied and updated object for each level of n
 - [#994：更新嵌套实体时如何减少样板代码？](https://github.com/reduxjs/redux/issues/994)
 - [Twitter：常见误区 - 深拷贝](https://twitter.com/dan_abramov/status/688087202312491008)
 
-### 如何减少 store 更新事件的次数？
+### 如何减少 store 更新事件的次数？ {#how-can-i-reduce-the-number-of-store-update-events}
 
 Redux 会在每个成功派发的 action 后通知订阅者（即 action 到达 store 并被 reducer 处理后）。有时，尤其当 action 创建者连续派发多个不同 action 时，减少调用订阅者的次数会很有用。
 
 有几个插件以不同方式添加了批处理能力，比如：[redux-batched-actions](https://github.com/tshelburne/redux-batched-actions)（高阶 reducer，让你像处理单个 action 一样派发多个，并在 reducer 解包），[redux-batched-subscribe](https://github.com/tappleby/redux-batched-subscribe)（store 增强器，可对多次派发的订阅调用进行防抖），或 [redux-batch](https://github.com/manaflair/redux-batch)（store 增强器，处理数组派发，只触发一次订阅者通知）。
 
-For React specifically, React 18 and later automatically batch all state updates that happen in the same event loop tick into a single render pass, including updates triggered by Redux dispatches outside of React event handlers (in thunks, timeouts, or promise callbacks). Dispatching several actions in a row will still notify subscribers and run selectors once per action, but React will only render once. React-Redux still exports a `batch()` function from earlier versions, but it is a no-op in React-Redux v9 and will be removed in v10.
+具体到 React，React 18 及更高版本会自动把同一个事件循环周期内发生的状态更新批处理为一次渲染，其中也包括 React 事件处理器之外由 Redux dispatch 触发的更新（例如 thunk、定时器或 Promise 回调中的更新）。连续派发多个 action 仍会逐个通知订阅者并运行 selector，但 React 只会渲染一次。React-Redux 为兼容旧版本仍导出了 `batch()` 函数，不过在 React-Redux v9 中它已不起作用，并将在 v10 移除。
 
 #### 更多信息
 
@@ -112,7 +112,7 @@ For React specifically, React 18 and later automatically batch all state updates
 - [React Redux #263：派发数百个 action 时的巨大性能问题](https://github.com/reduxjs/react-redux/issues/263)
 - [React-Redux #1177：路线图：v6，Context，订阅和 Hooks](https://github.com/reduxjs/react-redux/issues/1177)
 
-### Will having “one state tree” cause memory problems? Will dispatching many actions take up memory?
+### 只有一棵状态树会造成内存问题吗？派发很多 action 会占用内存吗？ {#will-having-one-state-tree-cause-memory-problems-will-dispatching-many-actions-take-up-memory}
 
 首先，就原始内存使用而言，Redux 与任何其它 JavaScript 库没有区别。唯一不同的是所有对象引用被嵌套在一棵树中，而不是像 Backbone 那样保存在各独立模型实例中。第二，典型 Redux 应用可能比等效 Backbone 应用内存使用更少，因为 Redux 鼓励使用普通 JS 对象和数组，而非创建模型和集合实例。最后，Redux 只保留某一时刻的单一状态树引用。未被引用的对象会被垃圾回收。
 
@@ -132,7 +132,7 @@ Redux 本身不存储 action 历史，但 Redux DevTools 会存储 action 以支
 - [Stack Overflow：受控组件的内存使用问题](https://stackoverflow.com/questions/44956071/memory-usage-concern-with-controlled-components?noredirect=1&lq=1)
 - [Reddit：保存初始状态的最佳位置？](https://www.reddit.com/r/reactjs/comments/47m9h5/whats_the_best_place_to_keep_the_initial_state/)
 
-### 缓存远程数据会导致内存问题吗？
+### 缓存远程数据会导致内存问题吗？ {#will-caching-remote-data-cause-memory-problems}
 
 浏览器中运行的 JavaScript 应用可用的内存有限。当缓存的数据量接近可用内存时，会导致性能问题。通常当缓存数据异常庞大或会话异常长时容易出现这种情况。尽管需要注意这些潜在问题，但这不应该阻止你合理高效地缓存数据。
 

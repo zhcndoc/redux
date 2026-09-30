@@ -143,9 +143,9 @@ export const EditPostForm = () => {
 
 ### 缓存数据订阅的生命周期
 
-Let's try this out and see what happens. Open up the Redux DevTools, refresh the page, then login. You should see a pair of `api/executeQuery/pending` and `api/executeQuery/fulfilled` actions for `getPosts` as we fetch the initial data. When you click on a "View Post" button, you should see a second pair of actions for `getPost` that fetches that single post entry. (The fake API intercepts requests inside the page, so they won't show up in the browser's Network tab, but every request RTK Query makes shows up as these actions, and also in the "RTK Query" tab of the Redux DevTools.)
+试着运行并看看效果。打开 Redux DevTools，刷新页面后登录。获取初始数据时，应该能看到 `getPosts` 对应的一组 `api/executeQuery/pending` 和 `api/executeQuery/fulfilled` action。点击“查看帖子”按钮时，会看到第二组 `getPost` action，它会获取单篇帖子。（模拟 API 会在页面内部拦截请求，因此浏览器 Network 标签页不会显示请求；不过，RTK Query 发出的每个请求都会显示为这些 action，也会出现在 Redux DevTools 的“RTK Query”标签页中。）
 
-Now click "Edit Post" inside the single post page. The UI switches over to show `<EditPostForm>`, but this time there's no new request for the individual post. Why not?
+现在点击单篇帖子页面中的“编辑帖子”。UI 会切换为 `<EditPostForm>`，但这次没有重新请求该帖子。这是为什么？
 
 ![RTK Query 网络请求](/img/tutorials/essentials/devtools-cached-requests.png)
 
@@ -221,7 +221,7 @@ export const apiSlice = createApi({
 
 需要注意的是，如果响应无数据或出错，`result` 可能为 `undefined`，所以需安全处理。对于 `getPosts`，可给 `result` 赋默认空数组保证 `map` 不出错；`getPost` 直接返回基于参数 ID 的单元素数组可行；`editPost` 已通过参数传入了帖子对象，因此可直接访问 ID。
 
-With those changes in place, let's go back and try editing a post again, with the Redux DevTools open.
+完成这些更改后，打开 Redux DevTools，再试着编辑一篇帖子。
 
 ![RTK Query 失效与重新获取](/img/tutorials/essentials/devtools-cached-invalidation-refetching.png)
 
@@ -236,7 +236,7 @@ With those changes in place, let's go back and try editing a post again, with th
 
 因为我们用标签建立了端点关系，**RTK Query 知道修改某 ID 后需要重新请求该 ID 的帖子及帖子列表以保持一致性** —— 无需额外代码！同时，在编辑帖子过程中，`getPosts` 缓存超时被清理，重新打开 `<PostsList>` 时 RTK Query 发现缓存空缺自动重新请求数据。
 
-There is one caveat here. By specifying a plain `'Post'` tag in `getPosts` and invalidating it in `addNewPost`, we actually end up forcing a refetch of all _individual_ posts as well. If we really want to just refetch the list of posts for the `getPosts` endpoint, you can include an additional tag with an arbitrary ID, like `{type: 'Post', id: 'LIST'}`, and invalidate that tag instead. The RTK Query docs have [a table that describes what will happen if certain general/specific tag combinations are invalidated](/toolkit/rtk-query/usage/automated-refetching#tag-invalidation-behavior).
+这里有一点需要注意：在 `getPosts` 中指定普通 `'Post'` 标签，并在 `addNewPost` 中将其失效，会导致所有_单篇帖子_也被重新请求。如果只想重新请求 `getPosts` endpoint 的帖子列表，可以额外添加带任意 ID 的标签，例如 `{type: 'Post', id: 'LIST'}`，然后只让这个标签失效。RTK Query 文档提供了[表格说明不同通用/特定标签组合失效后的行为](/toolkit/rtk-query/usage/automated-refetching#tag-invalidation-behavior)。
 
 :::info
 
@@ -378,7 +378,7 @@ main()
 
 :::caution
 
-Manually dispatching an RTKQ request thunk will create a subscription entry, but it's then up to you to [unsubscribe from that data later](/toolkit/rtk-query/usage/usage-without-react-hooks#removing-a-subscription) - otherwise the data stays in the cache permanently. In this case, we always need user data, so we can skip unsubscribing.
+手动派发 RTK Query 请求 thunk 会创建一个订阅条目，但之后需要你自行[取消对该数据的订阅](/toolkit/rtk-query/usage/usage-without-react-hooks#removing-a-subscription)，否则数据会永久留在缓存中。本例始终需要用户数据，因此可以不取消订阅。
 
 :::
 
@@ -460,7 +460,7 @@ export const { selectAll: selectAllUsers, selectById: selectUserById } = usersAd
 
 既然不再使用 `usersSlice` 状态，可以删掉 `createSlice()` 和 `fetchUsers` thunk，删去 store 配置里的 `users: usersReducer`。有关帖子 slice 还有些引用，暂时保留，稍后处理。
 
-### 分割并注入端点
+### 分割并注入端点 {#splitting-and-injecting-endpoints}
 
 我们之前提到，**RTK Query 通常每个应用只有一个“API 切片”**，至今为止我们都直接在 `apiSlice.ts` 中定义所有端点。但较大的应用通常“代码分割”模块，按需“懒加载”首用功能。如果想代码分割定义，或出于文件大小组织规范想拆分端点定义，怎么办？
 
@@ -630,7 +630,7 @@ RTK Query 特意**不实现跨请求完全去重的缓存**。理由包括：
 
 本案例中，我们转换了 `getUsers` 的数据存储为规范化结构，即 `{[id]: value}`，但这并非“规范化缓存”——仅转换了 _该响应的存储方式_，而非消除多个请求间的重复。
 
-### 从结果中选择值
+### 从结果中选择值 {#selecting-values-from-results}
 
 最后，剩下 `<UserPage>` 组件仍从旧 `postsSlice` 读取帖子，筛选当前用户的帖。我们已见过用 `useGetPostsQuery()` 获得全部帖子后可以 `useMemo` 里排序筛选。查询钩子还能通过 `selectFromResult` 选项挑选缓存中特定数据，仅在所选择的部分变化时触发重渲染。
 
@@ -690,7 +690,7 @@ export const UserPage = () => {
 
 :::tip 选择器与参数的 Memo 化
 
-As of RTK 2.x and Reselect 5.x, memoized selectors have [an infinite cache size](/reselect/api/weakMapMemoize), so changing the arguments should still keep earlier memoized results available. If you're using RTK 1.x or Reselect 4.x, note that memoized selectors only have a default cache size of 1. You'll need to [create a unique selector instance per component](../../usage/deriving-data-selectors.md#creating-unique-selector-instances) to ensure the selector memoizes consistently when passed different arguments like IDs.
+从 RTK 2.x 和 Reselect 5.x 开始，记忆化 selector 使用[无限缓存](/reselect/api/weakMapMemoize)，因此参数变化后，之前的记忆化结果仍可用。如果使用 RTK 1.x 或 Reselect 4.x，请注意它们默认只缓存最近一组结果。此时需要[为每个组件创建独立的 selector 实例](../../usage/deriving-data-selectors.md#creating-unique-selector-instances)，以确保传入不同 ID 等参数时都能正确记忆化。
 
 :::
 
@@ -839,7 +839,7 @@ dispatch(
 
 #### `onQueryStarted` 生命周期
 
-The first lifecycle method we'll look at is [**`onQueryStarted`**](/toolkit/rtk-query/api/createApi#onquerystarted). This option is available for both queries and mutations.
+我们要介绍的第一个生命周期方法是 [**`onQueryStarted`**](/toolkit/rtk-query/api/createApi#onquerystarted)。查询和变更都可以使用此选项。
 
 每当发起请求，该回调会执行。这里可放额外代码响应请求。
 
@@ -906,7 +906,7 @@ export const apiSlice = createApi({
 
 这里移除了之前的标签失效，因为点击点赞时我们不想重新请求帖子。
 
-Now, if we click several times on a reaction button quickly, we should see the number increment in the UI each time. If we look at the Redux DevTools, we'll also see a separate `executeMutation` request go out to the server for each click.
+现在快速多次点击某个回应按钮，UI 中的计数应该每次都会递增。查看 Redux DevTools 时，也会看到每次点击都会向服务器单独发出一个 `executeMutation` 请求。
 
 有时变更返回重要数据（如服务器生成的 ID），也可以等请求成功后再基于响应更新缓存，这称为悲观更新。
 
@@ -920,7 +920,7 @@ Now, if we click several times on a reaction button quickly, we should see the n
 
 #### `onCacheEntryAdded` 生命周期
 
-Like `onQueryStarted`, the [**`onCacheEntryAdded`**](/toolkit/rtk-query/api/createApi#oncacheentryadded) lifecycle method is available for both queries and mutations.
+与 `onQueryStarted` 一样，[**`onCacheEntryAdded`**](/toolkit/rtk-query/api/createApi#oncacheentryadded) 生命周期方法也可用于查询和变更。
 
 当新增缓存条目（端点 + 序列化参数）时调用。触发频次比 `onQueryStarted` 少（后者每请求都会跑）。
 
@@ -1414,7 +1414,7 @@ RTK Query 提供了大量强大选项控制缓存管理。未必立即用到全�
 
 恭喜你，**已完成 Redux 精华教程！** 现在你应理解 Redux Toolkit、React-Redux 基础，知道如何写和组织 Redux 逻辑，了解 Redux 数据流及 React 集成，用法包括 `configureStore`、`createSlice`，并能用 RTK Query 简化请求与缓存。
 
-For more details on using RTK Query, see [the RTK Query usage guide docs](/toolkit/rtk-query/usage/queries) and [API reference](/toolkit/rtk-query/api/createApi).
+关于 RTK Query 的更多用法，请参阅 [RTK Query 使用指南](/toolkit/rtk-query/usage/queries)和 [API 参考](/toolkit/rtk-query/api/createApi)。
 
 本教程提供的概念足够让你开始用 React + Redux 写自己的应用。现在就试试做个项目，加深理解。如果无头绪，看看[这份项目点子列表](https://github.com/florinpop17/app-ideas)。
 

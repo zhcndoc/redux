@@ -57,7 +57,7 @@ store.dispatch({
 })
 ```
 
-### 通过纯函数进行更改
+### 通过纯函数进行更改 {#changes-are-made-with-pure-functions}
 
 **为了指定状态树如何根据 action 转换，你需要编写纯[reducer](./Glossary.md#reducer)。**
 

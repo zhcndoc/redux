@@ -8,11 +8,11 @@ description: '结构化 Reducers > 重构 Reducers：重构 reducer 逻辑的示
 <!-- prettier-ignore -->
 import HandWrittenReducersNote from "../../components/_HandWrittenReducersNote.mdx";
 
-# Refactoring Reducer Logic Using Functional Decomposition and Reducer Composition
+# 使用函数分解和 Reducer 组合重构 Reducer 逻辑
 
 <HandWrittenReducersNote />
 
-It may be helpful to see examples of what the different types of sub-reducer functions look like and how they fit together. Let's look at a demonstration of how a large single reducer function can be refactored into a composition of several smaller functions.
+了解不同类型的子 reducer 函数长什么样、如何配合使用，会很有帮助。下面演示如何将一个大型 reducer 函数重构为多个较小函数的组合。
 
 > **注意**：本示例故意采用冗长的样式以便于说明概念和重构过程，而不是追求代码的极致简洁。
 
@@ -406,11 +406,11 @@ const appReducer = combineReducers({
 
 我们现在有了几个拆分 reducer 函数的示例：辅助工具函数如 `updateObject` 和 `createReducer`，具体 case 的处理函数如 `setVisibilityFilter` 和 `addTodo`，以及状态切片的处理函数如 `visibilityReducer` 和 `todosReducer`。我们还看到 `appReducer` 是 “根 reducer” 的一个示例。
 
-Although the final result in this example is noticeably longer than the original version, this is primarily due to the extraction of the utility functions, the addition of comments, and some deliberate verbosity for the sake of clarity, such as separate return statements. Looking at each function individually, the amount of responsibility is now smaller, and the intent is hopefully clearer. Also, in a real application, these functions would probably then be split into separate files such as `reducerUtilities.js`, `visibilityReducer.js`, `todosReducer.js`, and `rootReducer.js`.
+虽然本例的最终代码明显比原始版本长，但主要是因为提取了工具函数、添加了注释，以及为了清晰而有意采用较详尽的写法（例如使用单独的 return 语句）。单独看每个函数，它们现在承担的职责更少，意图也更清楚。在真实应用中，这些函数可能会进一步拆分到不同文件，例如 `reducerUtilities.js`、`visibilityReducer.js`、`todosReducer.js` 和 `rootReducer.js`。
 
-#### The Same Result with Redux Toolkit
+#### 使用 Redux Toolkit 实现相同结果
 
-Every piece we extracted above has a counterpart in Redux Toolkit. `createSlice` is a lookup table of case reducers, like our hand-written `createReducer`, and it generates the action types and action creators for us. Immer handles the copying that `updateObject` and `updateItemInArray` did. `configureStore` calls `combineReducers` when it's given an object of slice reducers. So the two slices from the final step, written with Redux Toolkit, look like this:
+上面提取出的每个部分在 Redux Toolkit 中都有对应实现。`createSlice` 像手写的 `createReducer` 一样使用 case reducer 查找表，并替我们生成 action 类型和 action creator。Immer 则处理原先由 `updateObject` 和 `updateItemInArray` 完成的复制操作。向 `configureStore` 传入 slice reducer 对象时，它会调用 `combineReducers`。因此，最后一步的两个 slice 使用 Redux Toolkit 编写后如下所示：
 
 ```ts
 import { configureStore, createSlice } from '@reduxjs/toolkit'
@@ -470,4 +470,4 @@ export const store = configureStore({
 })
 ```
 
-The structure is the same one we arrived at by hand: case reducers grouped into slice reducers, combined into a root reducer. The difference is that the utilities, the action constants, and the action creators are generated rather than written.
+整体结构与手动重构得到的结果相同：case reducer 组成 slice reducer，再组合为根 reducer。区别在于，工具函数、action 常量和 action creator 都是自动生成的，而不是手动编写的。

@@ -7,19 +7,19 @@ description: '组织 Reducers > 介绍：概述和内容'
 <!-- prettier-ignore -->
 import CoreApiNote from "../../components/_CoreApiNote.mdx";
 
-# Structuring Reducers
+# 组织 Reducer
 
 <CoreApiNote />
 
-At its core, Redux is really a fairly simple design pattern: all your "write" logic goes into a single function, and the only way to run that logic is to give Redux a plain object that describes something that has happened. The Redux store calls that write logic function and passes in the current state tree and the descriptive object, the write logic function returns some new state tree, and the Redux store notifies any subscribers that the state tree has changed.
+从本质上说，Redux 是一种相当简单的设计模式：所有“写入”逻辑都放在一个函数中，而运行该逻辑的唯一方式是向 Redux 传入一个描述已发生事件的普通对象。Redux store 会调用这个写入逻辑函数，并传入当前状态树和描述对象；该函数返回新的状态树后，Redux store 再通知所有订阅者状态树已发生变化。
 
 Redux 对该写入逻辑函数的工作方式施加了一些基本约束。正如在[“Redux 基础” 第3部分：状态、动作和 Reducers](../../tutorials/fundamentals/part-3-state-actions-reducers.md)中描述的，它必须有一个签名 `(previousState, action) => newState`，被称为**_reducer 函数_**，且必须是**纯净**且可预测的。
 
 除此之外，Redux 并不真正关心你如何在该 reducer 函数内部组织逻辑，只要它遵守这些基本规则即可。这既带来了自由，也带来了困惑。不过，在编写 reducers 时，有许多常见模式被广泛使用，还有许多相关主题和概念需要了解。随着应用的增长，这些模式在管理 reducer 代码复杂度、处理真实数据和优化 UI 性能方面起着关键作用。
 
-The pages in this section show these patterns written by hand, with `switch` statements and object spreads. Redux Toolkit's [`createSlice`](/toolkit/api/createSlice) implements the same patterns: each "case function" becomes an entry in its `reducers` object, the immutable update logic is handled by Immer, and `configureStore` combines the resulting slice reducers for you. Read the pages here to understand what `createSlice` is doing, then write your own reducers with it.
+本节页面展示了如何通过 `switch` 语句和对象展开运算符手动编写这些模式。Redux Toolkit 的 [`createSlice`](/toolkit/api/createSlice) 实现了相同模式：每个“case 函数”都会成为其 `reducers` 对象中的一个条目，不可变更新逻辑由 Immer 处理，而 `configureStore` 会替你组合生成的 slice reducer。阅读本节内容可以帮助你理解 `createSlice` 的工作方式，之后即可用它编写 reducer。
 
-### Prerequisite Concepts for Writing Reducers
+### 编写 Reducer 的先决概念 {#prerequisite-concepts-for-writing-reducers}
 
 其中一些概念已经在 Redux 文档的其他部分描述过。其他概念是通用的，适用于 Redux 之外的情况，也有大量现存文章对这些概念进行了详细介绍。这些概念和技术构成了编写坚实的 Redux reducer 逻辑的基础。
 

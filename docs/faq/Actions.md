@@ -9,7 +9,7 @@ sidebar_label: 操作（Actions）
 {/* Anchor for the old heading id, linked from RTK's serializable check warning */}
 <a id="why-should-type-be-a-string-or-at-least-serializable-why-should-my-action-types-be-constants"></a>
 
-### Why should `type` be a string? Why should my action types be constants?
+### 为什么 `type` 应该是字符串？为什么 action 类型应该是常量？ {#why-should-type-be-a-string-why-should-my-action-types-be-constants}
 
 与状态一样，可序列化的操作支持 Redux 的几个核心特性，比如时间旅行调试，以及记录和重放操作。如果 `type` 使用类似 `Symbol` 的类型或对操作本身使用 `instanceof` 检查，就会破坏这些功能。字符串是可序列化且自描述的，因此是更好的选择。请注意，如果操作旨在由中间件使用，操作中使用 Symbols、Promises 或其他不可序列化的值也是可以的。操作只需在真正到达 store 并传递给 reducer 时是可序列化的。
 
@@ -17,15 +17,15 @@ sidebar_label: 操作（Actions）
 
 封装并集中常用代码片段是编程的关键概念。虽然确实可以在任何地方手动创建操作对象并手写每个 `type` 字符串，但定义可复用的常量会使代码维护更便捷。如果把常量放到单独的文件中，还可以通过工具[检查导入语句中的拼写错误](https://www.npmjs.com/package/eslint-plugin-import)，防止意外使用错误的字符串。
 
-In practice, you rarely write action type constants yourself anymore. [`createSlice`](/toolkit/api/createSlice) generates the type strings (as `sliceName/reducerName`, such as `'todos/todoAdded'`) and the matching action creators from the slice's `name` and `reducers` fields, and the reducer is already wired to those types. Dispatch the generated action creator and let TypeScript catch the typos.
+如今通常不需要手动编写 action 类型常量。 [`createSlice`](/toolkit/api/createSlice) 会根据 slice 的 `name` 和 `reducers` 字段生成类型字符串（格式为 `sliceName/reducerName`，例如 `'todos/todoAdded'`）及对应的 action creator，并将 reducer 与这些类型关联起来。派发生成的 action creator，让 TypeScript 帮你捕获拼写错误。
 
-#### Further information
+#### 更多信息
 
 **文档**
 
-- [Style Guide: Write Action Types as `domain/eventName`](../style-guide/style-guide.md#write-action-types-as-domaineventname)
-- [Style Guide: Model Actions as Events, Not Setters](../style-guide/style-guide.md#model-actions-as-events-not-setters)
-- [Using Redux: Reducing Boilerplate](../usage/ReducingBoilerplate.md#actions)
+- [风格指南：将 action 类型命名为 `domain/eventName`](../style-guide/style-guide.md#write-action-types-as-domaineventname)
+- [风格指南：将 action 建模为事件，而非 setter](../style-guide/style-guide.md#model-actions-as-events-not-setters)
+- [使用 Redux：减少样板代码](../usage/ReducingBoilerplate.md#actions)
 
 **讨论**
 
@@ -36,7 +36,7 @@ In practice, you rarely write action type constants yourself anymore. [`createSl
 - [Stack Overflow: 为什么 Redux 需要“操作”作为数据？](https://stackoverflow.com/q/34759047/62937)
 - [Stack Overflow: Redux 中定义常量的意义是什么？](https://stackoverflow.com/q/34965856/62937)
 
-### reducer 和操作之间是否总是一一对应的？
+### reducer 和操作之间是否总是一一对应的？ {#is-there-always-a-one-to-one-mapping-between-reducers-and-actions}
 
 不是。我们建议编写独立的小型 reducer 函数，每个 reducer 负责特定状态片段的更新。我们称这种模式为“reducer 组合”。一个操作可以被全部、部分或无任何 reducer 处理。这样保持组件与实际数据变动解耦，因为一个操作可能影响状态树的不同部分，组件无需知道这些细节。一些用户会选择更紧密地绑定它们，比如“ducks” 文件结构，但默认情况下绝不存在一一对应关系。如果你发现需要在多个 reducer 中处理同一个操作，应该跳出一一对应的思维模式。
 
@@ -54,7 +54,7 @@ In practice, you rarely write action type constants yourself anymore. [`createSl
 - [Reduxible #8: Reducers 和 action creators 不是一一对应](https://github.com/reduxible/reduxible/issues/8)
 - [Stack Overflow: 能否在没有 Redux Thunk 中间件的情况下分发多个操作？](https://stackoverflow.com/questions/35493352/can-i-dispatch-multiple-actions-without-redux-thunk-middleware/35642783)
 
-### 如何表现 “副作用” 例如 AJAX 请求？为什么需要 “操作创建者”、“thunks” 和 “中间件” 来处理异步行为？
+### 如何表现 “副作用” 例如 AJAX 请求？为什么需要 “操作创建者”、“thunks” 和 “中间件” 来处理异步行为？ {#how-can-i-represent-side-effects-such-as-ajax-calls-why-do-we-need-things-like-action-creators-thunks-and-middleware-to-do-async-behavior}
 
 这是一个复杂且意见多样的话题，关于代码应如何组织以及应采用何种方案各家观点不一。
 
@@ -64,22 +64,22 @@ Redux 受到函数式编程的启发，开箱即用时没有执行副作用的�
 
 通常，Redux 建议把副作用代码放进操作创建流程中。尽管这些逻辑可以写在 UI 组件中，但通常更合理抽象成可复用函数，这样同一逻辑可被多处调用，也就是操作创建者函数。
 
-The simplest and most common way to do this is with the [Redux Thunk](https://github.com/reduxjs/redux-thunk) middleware, which lets you write action creators with more complex and asynchronous logic. `configureStore` adds it by default, and [`createAsyncThunk`](/toolkit/api/createAsyncThunk) generates the pending/fulfilled/rejected actions for a promise-based thunk. For data fetching and caching specifically, [RTK Query](/toolkit/rtk-query/overview) handles the whole request lifecycle so you don't write that logic at all. The [listener middleware](/toolkit/api/createListenerMiddleware) covers "run this effect after that action was dispatched" cases. Beyond that, [Redux Saga](https://github.com/redux-saga/redux-saga) lets you write more synchronous-looking code using generators and can act like “background threads” in a Redux app, and there are other community libraries with their own take on side effects.
+最简单、最常见的方式是使用 [Redux Thunk](https://github.com/reduxjs/redux-thunk) 中间件，以便在 action creator 中编写更复杂的异步逻辑。`configureStore` 默认会添加它，而 [`createAsyncThunk`](/toolkit/api/createAsyncThunk) 会为基于 Promise 的 thunk 生成 pending、fulfilled 和 rejected action。对于数据获取和缓存，[RTK Query](/toolkit/rtk-query/overview) 会处理完整的请求生命周期，你无需自行编写这些逻辑。[listener middleware](/toolkit/api/createListenerMiddleware) 适用于“某个 action 派发后运行副作用”的场景。此外，[Redux Saga](https://github.com/redux-saga/redux-saga) 使用 generator 编写更接近同步形式的代码，也能在 Redux 应用中充当“后台线程”；社区中还有其他用于管理副作用的库。
 
 #### 更多信息
 
 **文档**
 
-- [Using Redux: Side Effects Approaches](../usage/side-effects-approaches.mdx)
-- [Using Redux: Writing Logic with Thunks](../usage/writing-logic-thunks.mdx)
-- [Redux Fundamentals: Async Logic and Data Flow](../tutorials/fundamentals/part-6-async-logic.md)
-- [Redux Fundamentals: Store - Middleware](../tutorials/fundamentals/part-4-store.md#middleware)
+- [使用 Redux：副作用处理方案](../usage/side-effects-approaches.mdx)
+- [使用 Redux：使用 thunk 编写逻辑](../usage/writing-logic-thunks.mdx)
+- [Redux 基础：异步逻辑和数据流](../tutorials/fundamentals/part-6-async-logic.md)
+- [Redux 基础：Store - 中间件](../tutorials/fundamentals/part-4-store.md#middleware)
 
 **文章**
 
-- [Redux Side-Effects and You](https://medium.com/@fward/redux-side-effects-and-you-66f2e0842fc3)
-- [React/Redux Links: "Redux Side Effects" category](https://github.com/markerikson/react-redux-links/blob/master/redux-side-effects.md)
-- [Gist: Redux-Thunk examples](https://gist.github.com/markerikson/ea4d0a6ce56ee479fe8b356e099f857e)
+- [Redux 副作用与实践](https://medium.com/@fward/redux-side-effects-and-you-66f2e0842fc3)
+- [React/Redux 链接：“Redux 副作用”分类](https://github.com/markerikson/react-redux-links/blob/master/redux-side-effects.md)
+- [Gist：Redux Thunk 示例](https://gist.github.com/markerikson/ea4d0a6ce56ee479fe8b356e099f857e)
 
 **讨论**
 
@@ -97,27 +97,27 @@ The simplest and most common way to do this is with the [Redux Thunk](https://gi
 - [Reddit: 使用 Redux-Promise Middleware 完成异步 API 调用的帮助](https://www.reddit.com/r/reactjs/comments/469iyc/help_performing_async_api_calls_with_reduxpromise/)
 - [Twitter: 可能的 saga、loops 和其他方案对比](https://twitter.com/dan_abramov/status/689639582120415232)
 
-### 应该使用哪种异步中间件？如何在 thunks、sagas、observables 或其他方案间做选择？
+### 应该使用哪种异步中间件？如何在 thunks、sagas、observables 或其他方案间做选择？ {#what-async-middleware-should-i-use-how-do-you-decide-between-thunks-sagas-observables-or-something-else}
 
-There are many async/side effect middlewares available, but the most commonly used ones are [`redux-thunk`](https://github.com/reduxjs/redux-thunk), Redux Toolkit's [listener middleware](/toolkit/api/createListenerMiddleware), [`redux-saga`](https://github.com/redux-saga/redux-saga), and [`redux-observable`](https://github.com/redux-observable/redux-observable). These are different tools, with different strengths, weaknesses, and use cases.
+目前有许多异步或副作用中间件可选，最常用的包括 [`redux-thunk`](https://github.com/reduxjs/redux-thunk)、Redux Toolkit 的 [listener middleware](/toolkit/api/createListenerMiddleware)、[`redux-saga`](https://github.com/redux-saga/redux-saga) 和 [`redux-observable`](https://github.com/redux-observable/redux-observable)。它们各有优缺点，适用场景也不同。
 
 通用建议：
 
-- If the logic is fetching and caching data from a server, use [RTK Query](/toolkit/rtk-query/overview) rather than writing that logic yourself.
-- Thunks are best for complex synchronous logic (especially code that needs access to the entire Redux store state), and simple async logic (like basic AJAX calls). With the use of `async/await`, it can be reasonable to use thunks for some more complex promise-based logic as well.
-- The listener middleware is best for logic that should run _in response to_ a dispatched action or state change, such as "when the user logs in, start polling" or "when a todo is added, persist the list". It can also cancel or debounce work. This covers most of what sagas were used for, without generator functions.
-- Sagas are best for complex async workflows and decoupled "background thread"-type behavior beyond what the listener middleware handles. They require familiarity with generator functions and `redux-saga`'s "effects" operators.
-- Observables solve the same problems as sagas, but rely on RxJS to implement async behavior. They require familiarity with the RxJS API.
+- 如果逻辑用于从服务器获取并缓存数据，请使用 [RTK Query](/toolkit/rtk-query/overview)，无需自行实现这部分逻辑。
+- Thunk 适用于复杂的同步逻辑（尤其是需要访问整个 Redux store 状态的代码）以及简单的异步逻辑（例如基本的 AJAX 请求）。使用 `async/await` 后，thunk 也可以处理一些更复杂的 Promise 逻辑。
+- Listener middleware 适用于_响应_已派发 action 或状态变化的逻辑，例如“用户登录后开始轮询”或“添加待办后持久化列表”。它也可以取消或防抖任务。无需使用 generator 函数，就能覆盖 saga 的许多常见用途。
+- Saga 适用于复杂异步工作流，以及 listener middleware 无法处理的、彼此解耦的“后台线程”式行为。使用它需要熟悉 generator 函数和 `redux-saga` 的“effects”操作符。
+- Observable 解决的问题与 saga 类似，但依赖 RxJS 实现异步行为，因此需要熟悉 RxJS API。
 
-We recommend that most Redux users should start with RTK Query for data fetching and thunks for other logic, add the listener middleware when they need to react to actions, and only reach for sagas or observables if their app really requires handling for more complex async workflows. See [Use Thunks and Listeners for Other Async Logic](../style-guide/style-guide.md#use-thunks-and-listeners-for-other-async-logic) in the Style Guide and the [Side Effects Approaches](../usage/side-effects-approaches.mdx) page for a longer comparison.
+我们建议大多数 Redux 用户使用 RTK Query 获取数据，使用 thunk 处理其他逻辑；需要响应 action 时再加入 listener middleware，只有应用确实需要处理更复杂的异步工作流时，才考虑 saga 或 observable。更详细的比较请参阅[风格指南中的“使用 thunk 和 listener 处理其他异步逻辑”](../style-guide/style-guide.md#use-thunks-and-listeners-for-other-async-logic)以及[副作用处理方案](../usage/side-effects-approaches.mdx)。
 
 因为 sagas 和 observables 适用场景相同，一个应用一般选其一，而不会两者兼用。但注意，**使用 thunks 以及 sagas 或 observables 其一是完全可以共存的**，因为它们解决的是不同的问题。
 
 **文章**
 
-- [Decembersoft: What is the right way to do asynchronous operations in Redux?](https://decembersoft.com/posts/what-is-the-right-way-to-do-asynchronous-operations-in-redux/)
-- [Redux-Thunk vs Redux-Saga: an overview](https://medium.com/@shoshanarosenfield/redux-thunk-vs-redux-saga-93fe82878b2d)
-- [Redux-Saga V.S. Redux-Observable](https://hackmd.io/@2qVnJRlJRHCk20dvVxsySA/H1xLHUQ8e#side-by-side-comparison)
+- [Decembersoft：在 Redux 中处理异步操作的正确方式是什么？](https://decembersoft.com/posts/what-is-the-right-way-to-do-asynchronous-operations-in-redux/)
+- [Redux Thunk 与 Redux Saga 概览](https://medium.com/@shoshanarosenfield/redux-thunk-vs-redux-saga-93fe82878b2d)
+- [Redux Saga 与 Redux Observable 对比](https://hackmd.io/@2qVnJRlJRHCk20dvVxsySA/H1xLHUQ8e#side-by-side-comparison)
 
 **讨论**
 
@@ -125,7 +125,7 @@ We recommend that most Redux users should start with RTK Query for data fetching
 - [Stack Overflow: 使用 ES2015 生成器的 redux-saga 与 ES2017 async/await 的 redux-thunk 优缺点](https://stackoverflow.com/questions/34930735/pros-cons-of-using-redux-saga-with-es6-generators-vs-redux-thunk-with-es2017-asy)
 - [Stack Overflow: 为什么使用 Redux-Observable 而非 Redux-Saga？](https://stackoverflow.com/questions/40021344/why-use-redux-observable-over-redux-saga/40027778#40027778)
 
-### 我应该在一个操作创建者中连续派发多个操作吗？
+### 我应该在一个操作创建者中连续派发多个操作吗？ {#should-i-dispatch-multiple-actions-in-a-row-from-one-action-creator}
 
 对于操作的结构没有硬性规定。像 Redux Thunk 这样的异步中间件当然支持连续派发多个相关但不同的操作，派发表示 AJAX 请求进度的操作，根据状态条件派发操作，甚至派发某个操作后立即检查更新的状态。
 

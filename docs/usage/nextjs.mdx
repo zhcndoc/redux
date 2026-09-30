@@ -16,10 +16,10 @@ description: '在 Next.js 项目中设置 Redux 的说明'
 
 :::info 前置知识
 
-- Familiarity with [ES2015 syntax and features](https://www.taniarascia.com/es6-syntax-and-feature-overview/)
-- Knowledge of React terminology: [JSX](https://react.dev/learn/writing-markup-with-jsx), [State](https://react.dev/learn/state-a-components-memory), [Function Components, Props](https://react.dev/learn/passing-props-to-a-component), and [Hooks](https://react.dev/reference/react/hooks)
-- Understanding of [Redux terms and concepts](https://redux.js.org/tutorials/fundamentals/part-2-concepts-data-flow)
-- Working through the [Quick Start tutorial](../tutorials/quick-start.md) is recommended, and ideally the full [Redux Essentials](https://redux.js.org/tutorials/essentials/part-1-overview-concepts) tutorial as well
+- 熟悉 [ES2015 语法和特性](https://www.taniarascia.com/es6-syntax-and-feature-overview/)。
+- 了解 React 术语：[JSX](https://react.dev/learn/writing-markup-with-jsx)、[State](https://react.dev/learn/state-a-components-memory)、[函数组件和 Props](https://react.dev/learn/passing-props-to-a-component)以及 [Hooks](https://react.dev/reference/react/hooks)。
+- 理解 [Redux 术语和概念](https://redux.js.org/tutorials/fundamentals/part-2-concepts-data-flow)。
+- 建议先完成[快速开始教程](../tutorials/quick-start.md)，最好也完整学习 [Redux Essentials](https://redux.js.org/tutorials/essentials/part-1-overview-concepts) 教程。
 
 :::
 
@@ -82,9 +82,9 @@ Next 应用的 `/app` 文件夹可位于根目录或 `/src/app` 下。你的 Red
 
 本指南将采用此方案。
 
-## 初始配置
+## 初始配置 {#initial-setup}
 
-Similar to the [Quick Start tutorial](../tutorials/quick-start.md), we need to create a file for the Redux store, as well as the inferred `RootState` and `AppDispatch` types.
+与[快速开始教程](../tutorials/quick-start.md)类似，我们需要创建 Redux store 文件，并推断 `RootState` 和 `AppDispatch` 类型。
 
 不过，由于 Next 的多页面架构，需要与单页应用不同的处理方式。
 
@@ -112,7 +112,7 @@ export type AppDispatch = AppStore['dispatch']
 
 我们没导出 `store` 变量，但可通过 `makeStore` 返回类型推断 `RootState` 和 `AppDispatch`。
 
-You'll also want to create and export [pre-typed versions of the React-Redux hooks as well](../tutorials/quick-start.md#define-typed-hooks), to simplify usage later:
+为了简化后续使用，也需要创建并导出[预设类型的 React-Redux hooks](../tutorials/quick-start.md#define-typed-hooks)：
 
 ```ts title="lib/hooks.ts"
 // file: lib/store.ts noEmit
@@ -188,7 +188,7 @@ export default function StoreProvider({
 }
 ```
 
-In this example code we are ensuring that this client component is re-render safe. The lazy initializer passed to `useState` runs only on the first render, so the store is created exactly once. This component will only be rendered once per request on the server, but might be re-rendered multiple times on the client if there are stateful client components located above this component in the tree, or if this component also contains other mutable state that causes a re-render.
+在此示例中，我们确保该客户端组件可安全重复渲染。传给 `useState` 的惰性初始化函数只会在首次渲染时运行，因此 store 只会创建一次。服务器端每个请求只会渲染该组件一次；但在客户端，如果组件树中它的上层存在带状态的客户端组件，或它本身还包含其他会导致重新渲染的可变状态，就可能重复渲染多次。
 
 :::tip 为什么是客户端组件？
 
@@ -276,7 +276,7 @@ export default function StoreProvider({
 
 如果使用 Next.js 的客户端 SPA 风格导航（使用 `next/navigation`），用户在页面间导航时，仅路由组件会重新渲染。这意味着如果在布局组件中创建并提供了同一个 Redux store，路由切换时该 store 会保留下来。
 
-Shown below is a `ProductName` example component that uses the Redux store to manage the mutable name of a product. The `ProductName` component is part of a product detail route. In order to ensure that we have the correct name in the store we need to set the value in the store any time the `ProductName` component is initially rendered, which happens on any route change to the product detail route.
+下面的 `ProductName` 示例组件使用 Redux store 管理可变的商品名称。`ProductName` 属于商品详情路由。为确保 store 中的名称正确，每当 `ProductName` 首次渲染时都需要将值设置到 store 中；每次导航到商品详情路由时都会发生这种首次渲染。
 
 ```ts title="app/ProductName.tsx"
 // file: lib/features/product/productSlice.ts noEmit
@@ -388,7 +388,7 @@ export const dynamic = 'force-dynamic'
 
 建议仅 **在客户端** 使用 RTK Query 进行数据请求。服务器端的数据请求应该用异步的 React Server Components 中的 `fetch`。
 
-You can learn more about Redux Toolkit Query in the [Redux Toolkit Query tutorial](/toolkit/tutorials/rtk-query).
+有关 Redux Toolkit Query 的更多信息，请参阅 [Redux Toolkit Query 教程](/toolkit/tutorials/rtk-query)。
 
 :::note
 
