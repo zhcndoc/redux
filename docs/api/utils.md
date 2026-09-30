@@ -17,6 +17,21 @@ Redux 核心导出了额外的实用工具函数以供重用。
 
 这也作为一个 TypeScript 类型谓词，能将 TS 类型缩小为 `Action<string>`。
 
+This is mainly useful inside middleware, where the incoming `action` value is typed as `unknown` because it might be a thunk function or some other non-object value:
+
+```ts
+import { isAction } from 'redux'
+import type { Middleware } from 'redux'
+
+const loggerMiddleware: Middleware = store => next => action => {
+  if (isAction(action)) {
+    // `action` is now typed as `Action<string>`
+    console.log('dispatching', action.type)
+  }
+  return next(action)
+}
+```
+
 ## `isPlainObject`
 
 如果值看起来是一个普通的 JS 对象，则返回 true。

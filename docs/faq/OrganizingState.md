@@ -50,18 +50,22 @@ sidebar_label: 状态组织
 
 ### 我如何组织状态中的嵌套或重复数据？
 
-带有 ID、嵌套或关系的数据通常应以“规范化”的方式存储：每个对象只存储一次，以 ID 作为键，其他引用该对象的地方只存储其 ID，而不是整个对象的副本。将 store 的部分内容视为数据库，按类型划分“表”会有所帮助。像 [normalizr](https://github.com/paularmstrong/normalizr) 和 [redux-orm](https://github.com/tommikaikkonen/redux-orm) 这样的库，可以帮你管理规范化数据，并提供抽象。
+Data with IDs, nesting, or relationships should generally be stored in a “normalized” fashion: each object should be stored once, keyed by ID, and other objects that reference it should only store the ID rather than a copy of the entire object. It may help to think of parts of your store as a database, with individual “tables” per item type.
+
+For most applications, use Redux Toolkit's [`createEntityAdapter`](/toolkit/api/createEntityAdapter) to manage normalized collections in your slices. It uses an `{ ids, entities }` state structure and provides reducer functions to add, update, and remove items, along with selectors to read them.
+
+The adapter does not turn nested objects into separate entities or replace relationships with IDs. If your API returns nested data, transform it into the normalized shape before adding it to the store. See [Normalizing Nested Data](../usage/structuring-reducers/NormalizingStateShape.md#normalizing-nested-data) for more on this step and tools such as Normalizr.
 
 #### 更多信息
 
 **文档**
 
-- [Redux 精要：规范化数据](../tutorials/essentials/part-6-performance-normalization#normalizing-data)
-- [Redux 基础：异步逻辑和数据流](../tutorials/fundamentals/part-6-async-logic.md)
-- [Redux 基础：标准 Redux 模式](../tutorials/fundamentals/part-7-standard-patterns.md)
-- [示例：真实世界示例](../introduction/Examples.md#real-world)
-- [使用 Redux：结构化 Reducers - 先决概念](../usage/structuring-reducers/PrerequisiteConcepts.md#normalizing-data)
-- [使用 Redux：结构化 Reducers - 规范化状态形状](../usage/structuring-reducers/NormalizingStateShape.md)
+- [Redux Essentials: Normalizing Data](../tutorials/essentials/part-6-performance-normalization#normalizing-data)
+- [Redux Toolkit: `createEntityAdapter`](/toolkit/api/createEntityAdapter)
+- [Redux Fundamentals: Async Logic and Data Flow](../tutorials/fundamentals/part-6-async-logic.md)
+- [Redux Fundamentals: Standard Redux Patterns](../tutorials/fundamentals/part-7-standard-patterns.md)
+- [Using Redux: Structuring Reducers - Prerequisite Concepts](../usage/structuring-reducers/PrerequisiteConcepts.md#normalizing-data)
+- [Using Redux: Structuring Reducers - Normalizing State Shape](../usage/structuring-reducers/NormalizingStateShape.md)
 
 **相关文章**
 
@@ -86,9 +90,9 @@ sidebar_label: 状态组织
 
 基于此，在大多数情况下，其实不需要基于 Redux 的表单管理库。我们建议按以下顺序尝试：
 
-- 即使数据来自 Redux store，也先手写表单逻辑。通常这就够用了。（参考 [**Gosha Arinich 关于在 React 中处理表单的文章**](https://goshakkk.name/on-forms-react/)）
-- 如果觉得手写表单太难，试试 React 表单库，比如 [Formik](https://github.com/jaredpalmer/formik) 或 [React-Final-Form](https://github.com/final-form/react-final-form)。
-- 如果完全确定必须使用 Redux 表单库（因为其他方法不够用），再考虑 [Redux-Form](https://github.com/erikras/redux-form) 和 [React-Redux-Form](https://github.com/davidkpiano/react-redux-form)。
+- Even if the data is coming from the Redux store, start by writing your form logic by hand with `useState`. It's likely this is all you'll need. (See [**Gosha Arinich's posts on working with forms in React**](https://goshacmd.com/on-forms-react/) for some excellent guidance on this.)
+- If you decide that writing forms "manually" is too difficult, try a React-based form library like [React Hook Form](https://react-hook-form.com/) or [TanStack Form](https://tanstack.com/form/latest). These keep the form state in the component and give you validation and submission handling. When the user submits, dispatch one action (or call an RTK Query mutation) with the final values.
+- Redux-based form libraries such as Redux-Form and React-Redux-Form are no longer actively maintained, and we don't recommend starting new projects with them. If you truly need form values in the store while the user is typing, write a small slice for that form and update it from the component's change handlers.
 
 如果你决定把表单状态放到 Redux，需要考虑性能问题。每次文本输入的击键都派发 action 通常不值得，或许可以考虑[用缓冲击键的方式让更改保持本地，然后再派发](https://blog.isquaredsoftware.com/2017/01/practical-redux-part-7-forms-editing-reducers/)。一如既往，花些时间分析你应用的整体性能需求。
 
@@ -96,10 +100,15 @@ sidebar_label: 状态组织
 
 #### 更多信息
 
-**相关文章**
+**Documentation**
 
-- [Gosha Arinich：关于 React 中表单的写作](https://goshakkk.name/on-forms-react/)
-- [Practical Redux，第 6 部分：连接列表与表单](https://blog.isquaredsoftware.com/2017/01/practical-redux-part-6-connected-lists-forms-and-performance/)
-- [Practical Redux，第 7 部分：处理表单变更](https://blog.isquaredsoftware.com/2017/01/practical-redux-part-7-forms-editing-reducers/)
-- [Practical Redux，第 10 部分：管理模态框和上下文菜单](https://blog.isquaredsoftware.com/2017/07/practical-redux-part-10-managing-modals/)
-- [React/Redux 资源链接：Redux UI 管理](https://github.com/markerikson/react-redux-links/blob/master/redux-ui-management.md)
+- [Style Guide: Avoid Putting Form State In Redux](../style-guide/style-guide.md#avoid-putting-form-state-in-redux)
+- [Style Guide: Evaluate Where Each Piece of State Should Live](../style-guide/style-guide.md#evaluate-where-each-piece-of-state-should-live)
+
+**Articles**
+
+- [Gosha Arinich: Writings on Forms in React](https://goshacmd.com/on-forms-react/)
+- [Practical Redux, Part 6: Connected Lists and Forms](https://blog.isquaredsoftware.com/2017/01/practical-redux-part-6-connected-lists-forms-and-performance/) (2017, uses `connect`; the reasoning about where form state lives still applies)
+- [Practical Redux, Part 7: Form Change Handling](https://blog.isquaredsoftware.com/2017/01/practical-redux-part-7-forms-editing-reducers/) (2017, uses `connect`)
+- [Practical Redux, Part 10: Managing Modals and Context Menus](https://blog.isquaredsoftware.com/2017/07/practical-redux-part-10-managing-modals/)
+- [React/Redux Links: Redux UI Management](https://github.com/markerikson/react-redux-links/blob/master/redux-ui-management.md)

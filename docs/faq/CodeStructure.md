@@ -16,7 +16,7 @@ import { DetailedExplanation } from '../components/DetailedExplanation'
 - “功能文件夹” / “领域” 风格：按功能或领域划分文件夹，可能在每个文件夹内按文件类型再细分子文件夹
 - “Ducks/Slices”：类似领域风格，但明确将 actions 和 reducers 结合起来，通常会在同一文件中定义它们
 
-一般建议 selectors 与 reducers 一起定义并导出，然后在其他地方重用（比如在 `mapStateToProps` 函数中，在异步 action creators 或 sagas 中使用），以便将所有知道状态树具体形状的代码都放在 reducer 文件中。
+It's generally suggested that selectors are defined alongside reducers and exported, and then reused elsewhere (such as in `useSelector` calls, in thunks, or in listener middleware) to colocate all the code that knows about the actual shape of the state tree in the reducer files.
 
 :::tip
 
@@ -55,22 +55,21 @@ import { DetailedExplanation } from '../components/DetailedExplanation'
 
 **文档**
 
-- [风格指南：以功能文件夹单文件逻辑组织](../style-guide/style-guide.md##structure-files-as-feature-folders-with-single-file-logic)
-- [Redux 基础教程：应用结构](../tutorials/essentials/part-2-app-structure.md)
-- [常见问题：Actions - “reducers 和 actions 之间是 1:1 对应吗？”](./Actions.md#actions-reducer-mappings)
+- [Style Guide: Structure Files as Feature Folders with Single-File Logic](../style-guide/style-guide.md#structure-files-as-feature-folders-with-single-file-logic)
+- [Redux Essentials tutorial: App Structure](../tutorials/essentials/part-2-app-structure.md)
+- [FAQ: Actions - "1:1 mapping between reducers and actions?"](./Actions.md#is-there-always-a-one-to-one-mapping-between-reducers-and-actions)
 
 **相关文章**
 
-- [如何扩展 React 应用](https://www.smashingmagazine.com/2016/09/how-to-scale-react-applications/)（配套演讲：[Scaling React Applications](https://vimeo.com/168648012)）
-- [Redux 最佳实践](https://medium.com/lexical-labs-engineering/redux-best-practices-64d59775802e)
-- [结构化 (Redux) 应用的规则](http://jaysoo.ca/2016/02/28/organizing-redux-application/)
-- [React/Redux 应用更好的文件结构](https://marmelab.com/blog/2015/12/17/react-directory-structure.html)
-- [组织代码的四种策略](https://medium.com/@msandin/strategies-for-organizing-code-2c9d690b6f33)
-- [封装 Redux 状态树](https://randycoulman.com/blog/2016/09/13/encapsulating-the-redux-state-tree/)
-- [Redux Reducer/Selector 非对称性](https://randycoulman.com/blog/2016/09/20/redux-reducer-selector-asymmetry/)
-- [模块化 Reducers 和 Selectors](https://randycoulman.com/blog/2016/09/27/modular-reducers-and-selectors/)
-- [我在 React/Redux 上追寻可维护项目结构的历程](https://medium.com/@mmazzarolo/my-journey-toward-a-maintainable-project-structure-for-react-redux-b05dfd999b5)
-- [React/Redux 相关链接：架构 - 项目文件结构](https://github.com/markerikson/react-redux-links/blob/master/react-redux-architecture.md#project-file-structure)
+- [How to Scale React Applications](https://www.smashingmagazine.com/2016/09/how-to-scale-react-applications/) (accompanying talk: [Scaling React Applications](https://vimeo.com/168648012))
+- [Redux Best Practices](https://medium.com/lexical-labs-engineering/redux-best-practices-64d59775802e)
+- [A Better File Structure for React/Redux Applications](https://marmelab.com/blog/2015/12/17/react-directory-structure.html)
+- [Four Strategies for Organizing Code](https://medium.com/@msandin/strategies-for-organizing-code-2c9d690b6f33)
+- [Encapsulating the Redux State Tree](https://randycoulman.com/blog/2016/09/13/encapsulating-the-redux-state-tree/)
+- [Redux Reducer/Selector Asymmetry](https://randycoulman.com/blog/2016/09/20/redux-reducer-selector-asymmetry/)
+- [Modular Reducers and Selectors](https://randycoulman.com/blog/2016/09/27/modular-reducers-and-selectors/)
+- [My journey towards a maintainable project structure for React/Redux](https://medium.com/@mmazzarolo/my-journey-toward-a-maintainable-project-structure-for-react-redux-b05dfd999b5)
+- [React/Redux Links: Architecture - Project File Structure](https://github.com/markerikson/react-redux-links/blob/master/react-redux-architecture.md#project-file-structure)
 
 **讨论**
 
@@ -122,7 +121,7 @@ import { DetailedExplanation } from '../components/DetailedExplanation'
 
 ## 为什么要使用 action creators？
 
-Redux 并不要求必须使用 action creators。你可以用任何适合你的方式创建 actions，包括简单地把对象字面量传递给 `dispatch`。action creators 来源于 [Flux 架构](https://facebook.github.io/react/blog/2014/07/30/flux-actions-and-the-dispatcher.html#actions-and-actioncreators)，并被 Redux 社区采纳，因为它们带来了若干优势。
+Redux does not require action creators. You are free to create actions in any way that is best for you, including simply passing an object literal to `dispatch`. Action creators emerged from the [Flux architecture](https://legacy.reactjs.org/blog/2014/07/30/flux-actions-and-the-dispatcher.html#actions-and-actioncreators) and have been adopted by the Redux community because they offer several benefits.
 
 action creators 更易于维护。对一个 action 的更新可以集中操作，一处修改全局生效。所有该 action 的实例都确保形状相同且拥有相同的默认值。
 
@@ -146,18 +145,14 @@ action creators 是更强大的抽象层。创建一个 action 往往需对数�
 
 Middleware 是在 Redux 应用中处理 websocket 等持久连接的正确位置，原因如下：
 
-- Middleware 生命周期与应用相同
-- 类似于 store，整个应用通常只需要一个连接实例
-- Middleware 能监听所有 dispatch 的 action，也能自己 dispatch action。这样 middleware 可以将 dispatch 的 action 转成 websocket 发送的消息，收到 websocket 消息时再 dispatch 新的 action
-- websocket 连接实例不可序列化，因此不适合放到 store state 中
+- Middleware exist for the lifetime of the application
+- Like with the store itself, you probably only need a single instance of a given connection that the whole app can use
+- Middleware can see all dispatched actions and dispatch actions themselves. This means a middleware can take dispatched actions and turn those into messages sent over the websocket, and dispatch new actions when a message is received over the websocket.
+- A websocket connection instance isn't serializable, so [it doesn't belong in the store state itself](./OrganizingState.md#can-i-put-functions-promises-or-other-non-serializable-items-in-my-store-state)
 
 请参阅[这个示例](https://gist.github.com/markerikson/3df1cf5abbac57820a20059287b4be58)了解如何让 socket middleware 和 Redux action 交互。
 
-市面上有许多 websocket 及类似连接的 middleware 现成可用，见下方链接。
-
-**库**
-
-- [Middleware：Socket 和适配器](https://github.com/markerikson/redux-ecosystem-links/blob/master/middleware-sockets-adapters.md)
+There are many existing middleware for websockets and other similar connections.
 
 ## 如何在非组件文件中使用 Redux store？
 

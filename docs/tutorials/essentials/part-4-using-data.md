@@ -6,6 +6,7 @@ description: '官方 Redux 必备教程：学习如何在 React 组件中处理�
 ---
 
 import { DetailedExplanation } from '../../components/DetailedExplanation'
+import { LiveExample } from '@site/src/components/LiveExample'
 
 :::tip 你将学到
 
@@ -247,7 +248,7 @@ export default postsSlice.reducer
 
 ### 创建编辑帖子表单
 
-我们的新 `<EditPostForm>` 组件会类似 `<AddPostForm>` 和 `<SinglePostPage>`，但逻辑略有不同。我们需要根据 URL 中的 `postId` 从 store 取出正确的帖子对象，然后用它初始化组件内输入字段，供用户修改。用户提交表单后保存更改并更新 store。我们还用 React Router 的 `useNavigate` 钩子在保存后跳转回单条帖子页面展示该帖子。
+Our new `<EditPostForm>` component will look similar to both the `<AddPostForm>` and `<SinglePostPage>`, but the logic needs to be a bit different. We need to retrieve the right `post` object from the store based on the `postId` in the URL, then use that to initialize the input fields in the component so the user can make changes. We'll save the changed title and content values back to the store when the user submits the form. We'll also use React Router's `useNavigate` hook to switch over to the single post page and show that post after they save the changes.
 
 ```tsx title="features/posts/EditPostForm.tsx"
 import React from 'react'
@@ -276,8 +277,8 @@ export const EditPostForm = () => {
     )
   }
 
-  const onSavePostClicked = (e: React.FormEvent<EditPostFormElements>) => {
-    // 阻止表单提交到服务器
+  const onSavePostClicked = (e: React.SubmitEvent<EditPostFormElements>) => {
+    // Prevent server submission
     e.preventDefault()
 
     const { elements } = e.currentTarget
@@ -423,8 +424,8 @@ const postsSlice = createSlice({
 现在组件不用关心 payload 结构，动作创建函数会帮我们组装。我们更新组件在派发 `postAdded` 时传入 `title` 和 `content` 两个参数：
 
 ```ts title="features/posts/AddPostForm.tsx"
-const handleSubmit = (e: React.FormEvent<AddPostFormElements>) => {
-  // 阻止表单提交
+const handleSubmit = (e: React.SubmitEvent<AddPostFormElements>) => {
+  // Prevent server submission
   e.preventDefault()
 
   const { elements } = e.currentTarget
@@ -552,9 +553,7 @@ export const EditPostForm = () => {
 const postsSlice = createSlice({
   name: 'posts',
   initialState,
-  reducers: {
-    /* 省略 reducer 代码 */
-  },
+  reducers: {/* omit reducer logic */},
   // highlight-start
   selectors: {
     // 注意这些选择器接受的是 `PostsState`，不是全局 RootState
@@ -720,8 +719,8 @@ const AddPostForm = () => {
   // highlight-next-line
   const users = useAppSelector(selectAllUsers)
 
-  const handleSubmit = (e: React.FormEvent<AddPostFormElements>) => {
-    // 阻止表单提交服务器
+  const handleSubmit = (e: React.SubmitEvent<AddPostFormElements>) => {
+    // Prevent server submission
     e.preventDefault()
 
     const { elements } = e.currentTarget
@@ -1138,7 +1137,7 @@ export const LoginPage = () => {
   const users = useAppSelector(selectAllUsers)
   const navigate = useNavigate()
 
-  const handleSubmit = (e: React.FormEvent<LoginPageFormElements>) => {
+  const handleSubmit = (e: React.SubmitEvent<LoginPageFormElements>) => {
     e.preventDefault()
 
     const username = e.currentTarget.elements.username.value
@@ -1327,8 +1326,8 @@ export const AddPostForm = () => {
   // highlight-next-line
   const userId = useAppSelector(selectCurrentUsername)!
 
-  const handleSubmit = (e: React.FormEvent<AddPostFormElements>) => {
-    // 阻止表单提交到服务器
+  const handleSubmit = (e: React.SubmitEvent<AddPostFormElements>) => {
+    // Prevent server submission
     e.preventDefault()
 
     const { elements } = e.currentTarget
@@ -1422,9 +1421,9 @@ dispatch(clearUserData())
 
 `extraReducers` 是一个函数，参数是 `builder`。`builder` 有三个方法：
 
-- `builder.addCase(actionCreator, caseReducer)`：监听单一动作
-- `builder.addMatcher(matcherFunction, caseReducer)`：监听多动作，使用 Redux Toolkit 的“匹配器”功能
-- `builder.addDefaultCase(caseReducer)`：默认 case，所有其他未匹配动作都会走
+- `builder.addCase(actionCreator, caseReducer)`: listens for one specific action type
+- `builder.addMatcher(matcherFunction, caseReducer)`: listens for any one of multiple action types, using [a Redux Toolkit "matcher" function](/toolkit/api/matching-utilities) for comparing action objects
+- `builder.addDefaultCase(caseReducer)`: adds a case reducer that runs if nothing else in this slice matched the action (equivalent to a `default` case inside of a `switch`).
 
 这些方法可链式调用。
 
@@ -1477,13 +1476,12 @@ const postsSlice = createSlice({
 
 改动后应用示例如下：
 
-<iframe
-  class="codesandbox"
-  src="https://codesandbox.io/embed/github/reduxjs/redux-essentials-example-app/tree/ts-checkpoint-2-authHandling?fontsize=14&hidenavigation=1&module=%2fsrc%2Ffeatures%2Fposts%2FpostsSlice.ts&theme=dark&runonclick=1"
-  title="redux-essentials-example"
-  allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
-  sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
-></iframe>
+<LiveExample
+  repo="reduxjs/redux-essentials-example-app"
+  ref="ts-checkpoint-2-authHandling"
+  file="src/features/posts/postsSlice.ts"
+  title="Redux Essentials: end of Part 4"
+/>
 
 我们的例子开始变得有趣且实用了！
 

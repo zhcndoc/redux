@@ -5,11 +5,16 @@ sidebar_label: 基本 Reducer 结构
 description: '构建 Reducers > 基本 Reducer 结构：Reducer 函数如何与 Redux 状态协作的概览'
 ---
 
-# 基本 Reducer 结构和状态形状
+<!-- prettier-ignore -->
+import HandWrittenReducersNote from "../../components/_HandWrittenReducersNote.mdx";
 
-## 基本 Reducer 结构
+# Basic Reducer Structure and State Shape
 
-首先，非常重要的一点是，你的整个应用实际上只有**一个单一的 reducer 函数**：即你传入 `createStore` 的第一个参数的那个函数。这个唯一的 reducer 函数最终需要完成以下几件事：
+<HandWrittenReducersNote />
+
+## Basic Reducer Structure
+
+First and foremost, it's important to understand that your entire application really only has **one single reducer function**: the function that you've passed to the store as the `reducer` option of `configureStore`. That one single reducer function ultimately needs to do several things:
 
 - 当 reducer 第一次被调用时，`state` 的值将是 `undefined`。Reducer 需要处理这种情况，在处理传入的 action 之前提供一个默认的状态值。
 - 它需要查看之前的状态和被分发的 action，并确定需要执行什么样的操作。

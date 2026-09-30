@@ -6,6 +6,7 @@ description: 'Redux官方必备教程：学习React + Redux应用中的数据流
 ---
 
 import { DetailedExplanation } from '../../components/DetailedExplanation'
+import { LiveExample } from '@site/src/components/LiveExample'
 
 :::tip 您将学到
 
@@ -41,19 +42,18 @@ import { DetailedExplanation } from '../../components/DetailedExplanation'
 
 为本教程我们准备了一个预配置的起始项目，已经集成了React和Redux，包含了一些默认样式，并提供了假REST API接口，让我们能在应用中编写真实的API请求。您将基于此进行实际代码开发。
 
-开始前，您可以在此打开并fork此CodeSandbox：
+To get started, you can open and fork this StackBlitz project:
 
-<iframe
-  class="codesandbox"
-  src="https://codesandbox.io/embed/github/reduxjs/redux-essentials-example-app/tree/ts-checkpoint-0-setup/?&fontsize=14&hidenavigation=1&theme=dark&runonclick=1"
-  title="redux-essentials-example-app"
-  allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
-  sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
-></iframe>
+<LiveExample
+  repo="reduxjs/redux-essentials-example-app"
+  ref="ts-checkpoint-0-setup"
+  file="src/main.tsx"
+  title="Redux Essentials: starter project"
+/>
 
-您也可以[从此Github仓库克隆相同项目](https://github.com/reduxjs/redux-essentials-example-app)。项目配置使用[Yarn 4](https://yarnpkg.com/)作为包管理器，但您可以使用任意包管理器（[NPM](https://docs.npmjs.com/cli/v10)、[PNPM](https://pnpm.io/)或[Bun](https://bun.sh/docs/cli/install)）根据喜好。安装完依赖后，使用`yarn dev`命令启动本地开发服务器。
+You can also [clone the same project from this Github repo](https://github.com/reduxjs/redux-essentials-example-app). The project is configured to use [NPM](https://docs.npmjs.com/cli/v10) as the package manager, but you can use any package manager ([pnpm](https://pnpm.io/), [Yarn](https://yarnpkg.com/), or [Bun](https://bun.sh/docs/cli/install)) as you prefer. After installing packages, you can start the local dev server with the `npm run dev` command.
 
-若想查看我们将构建的最终版本，可访问[**`tutorial-steps-ts`分支**](https://github.com/reduxjs/redux-essentials-example-app/tree/tutorial-steps-ts)，或[在此CodeSandbox查看最终版本](https://codesandbox.io/s/github/reduxjs/redux-essentials-example-app/tree/tutorial-steps-ts)。
+If you'd like to see the final version of what we're going to build, you can check out [the **`tutorial-steps-ts` branch**](https://github.com/reduxjs/redux-essentials-example-app/tree/tutorial-steps-ts), or [open the final version on StackBlitz](https://stackblitz.com/github/reduxjs/redux-essentials-example-app/tree/ts-checkpoint-6-rtkqConversion).
 
 > 特别感谢[Tania Rascia](https://www.taniarascia.com/)的[《在React中使用Redux》](https://www.taniarascia.com/redux-react-guide/)教程，启发了本页面示例。示例中也使用了她的[Primitive UI CSS样式起始模板](https://taniarascia.github.io/primitive/)。
 
@@ -424,8 +424,8 @@ interface AddPostFormElements extends HTMLFormElement {
 }
 
 export const AddPostForm = () => {
-  const handleSubmit = (e: React.FormEvent<AddPostFormElements>) => {
-    // 阻止表单提交跳转
+  const handleSubmit = (e: React.SubmitEvent<AddPostFormElements>) => {
+    // Prevent server submission
     e.preventDefault()
 
     const { elements } = e.currentTarget
@@ -582,8 +582,8 @@ export const AddPostForm = () => {
 
   // highlight-end
 
-  const handleSubmit = (e: React.FormEvent<AddPostFormElements>) => {
-    // 阻止表单默认提交
+  const handleSubmit = (e: React.SubmitEvent<AddPostFormElements>) => {
+    // Prevent server submission
     e.preventDefault()
 
     const { elements } = e.currentTarget
@@ -655,13 +655,12 @@ export const AddPostForm = () => {
 
 我们搭建了Redux应用的基础：store、切片和reducer，以及派发动作的UI。应用到此为止长这样：
 
-<iframe
-  class="codesandbox"
-  src="https://codesandbox.io/embed/github/reduxjs/redux-essentials-example-app/tree/ts-checkpoint-1-postAdded?fontsize=14&hidenavigation=1&module=%2fsrc%2Ffeatures%2Fposts%2FpostsSlice.ts&theme=dark&runonclick=1"
-  title="redux-essentials-example"
-  allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
-  sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
-></iframe>
+<LiveExample
+  repo="reduxjs/redux-essentials-example-app"
+  ref="ts-checkpoint-1-postAdded"
+  file="src/features/posts/postsSlice.ts"
+  title="Redux Essentials: end of Part 3"
+/>
 
 本节回顾：
 

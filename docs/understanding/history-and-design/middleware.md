@@ -4,9 +4,14 @@ title: 中间件
 description: '历史与设计 > 中间件：中间件如何帮助为 Redux 仓库添加额外功能'
 ---
 
-# 中间件
+<!-- prettier-ignore -->
+import CoreApiNote from "../../components/_CoreApiNote.mdx";
 
-你已经在【["Redux 基础教程"](../../tutorials/fundamentals/part-4-store.md#middleware)】中见识过中间件的实际应用。如果你用过服务器端库如 [Express](https://expressjs.com/) 和 [Koa](https://koajs.com/)，你可能也已经熟悉了 _中间件_ 的概念。在这些框架中，中间件是插入在框架接收请求和生成响应之间的一段代码。比如，Express 或 Koa 中间件可能会添加 CORS 头、日志记录、压缩等等。中间件最棒的特点就是它可以组成链条。你可以在一个项目里使用多个独立的第三方中间件。
+# Middleware
+
+<CoreApiNote />
+
+You've seen middleware in action in the ["Redux Fundamentals" tutorial](../../tutorials/fundamentals/part-4-store.md#middleware). If you've used server-side libraries like [Express](https://expressjs.com/) and [Koa](https://koajs.com/), you were also probably already familiar with the concept of _middleware_. In these frameworks, middleware is some code you can put between the framework receiving a request, and the framework generating a response. For example, Express or Koa middleware may add CORS headers, logging, compression, and more. The best feature of middleware is that it's composable in a chain. You can use multiple independent third-party middleware in a single project.
 
 Redux 中间件解决的问题和 Express 或 Koa 中间件不同，但概念上类似。**它提供了一个第三方扩展点，插入在派发（dispatch）一个 action 和它到达 reducer 之间的时刻。**人们用 Redux 中间件来做日志记录、崩溃报告、调用异步 API、路由等等。
 
@@ -94,7 +99,7 @@ store.dispatch = function dispatchAndLog(action) {
 
 另一个我想到的有用改造是向生产环境的崩溃报告服务上报 JavaScript 错误。全局的 `window.onerror` 事件不够可靠，因为一些旧浏览器不提供堆栈信息，而堆栈信息对理解错误至关重要。
 
-如果每当派发一个 action 过程中抛出了错误，我们能把它连同堆栈、引发错误的 action 以及当前状态一起发送到崩溃报告服务（比如 [Sentry](https://getsentry.com/welcome/)），那该多好。这样在开发时就更容易复现错误。
+Wouldn't it be useful if, any time an error is thrown as a result of dispatching an action, we would send it to a crash reporting service like [Sentry](https://sentry.io/) with the stack trace, the action that caused the error, and the current state? This way it's much easier to reproduce the error in development.
 
 但我们要保持日志记录和崩溃报告分离。理想状态下它们是不同的模块，甚至可能在不同的包里。否则我们就不能形成类似生态系统的工具集。（提示：我们正在慢慢逼近中间件的定义了！）
 
@@ -118,7 +123,7 @@ function patchStoreToAddCrashReporting(store) {
       return next(action)
     } catch (err) {
       console.error('Caught an exception!', err)
-      Raven.captureException(err, {
+      Sentry.captureException(err, {
         extra: {
           action,
           state: store.getState()
@@ -231,7 +236,7 @@ const crashReporter = store => next => action => {
     return next(action)
   } catch (err) {
     console.error('Caught an exception!', err)
-    Raven.captureException(err, {
+    Sentry.captureException(err, {
       extra: {
         action,
         state: store.getState()
@@ -264,7 +269,7 @@ function applyMiddleware(store, middlewares) {
 
 Redux 自带的 [`applyMiddleware()`](../../api/applyMiddleware.md) 实现是类似的，但**在三个重要方面有所不同**：
 
-- 它只对中间件暴露部分[store API](../../api/Store.md)：[`dispatch(action)`](../../api/Store.md#dispatchaction) 和 [`getState()`](../../api/Store.md#getState)。
+- It only exposes a subset of the [store API](../../api/Store.md) to the middleware: [`dispatch(action)`](../../api/Store.md#dispatchaction) and [`getState()`](../../api/Store.md#getstate).
 
 - 它做了些技巧，确保如果你从中间件调用 `store.dispatch(action)` 而不是 `next(action)`，action 依然会走完整的中间件链（包括当前中间件）。[这对异步中间件非常有用](../../tutorials/fundamentals/part-6-async-logic.md)。不过对 setup 期间的 dispatch 有个警告，后面会讲。
 
@@ -293,7 +298,7 @@ const crashReporter = store => next => action => {
     return next(action)
   } catch (err) {
     console.error('Caught an exception!', err)
-    Raven.captureException(err, {
+    Sentry.captureException(err, {
       extra: {
         action,
         state: store.getState()
@@ -324,7 +329,19 @@ const store = createStore(
 store.dispatch(addTodo('Use Redux'))
 ```
 
-## 七个示例
+With Redux Toolkit, the same middleware are added through the `middleware` option of `configureStore`, which calls `applyMiddleware` for you:
+
+```js
+import { configureStore } from '@reduxjs/toolkit'
+
+const store = configureStore({
+  reducer: reducers,
+  middleware: getDefaultMiddleware =>
+    getDefaultMiddleware().concat(logger, crashReporter)
+})
+```
+
+## Seven Examples
 
 如果你读完以上内容感到头晕，那试想写它们是多么烧脑。这部分适合你我放松心情，也有助于激发灵感。
 
@@ -351,7 +368,7 @@ const crashReporter = store => next => action => {
     return next(action)
   } catch (err) {
     console.error('Caught an exception!', err)
-    Raven.captureException(err, {
+    Sentry.captureException(err, {
       extra: {
         action,
         state: store.getState()

@@ -5,9 +5,14 @@ sidebar_label: 先决概念
 description: '结构化 Reducers > 先决概念：使用 Redux 时需要理解的关键概念'
 ---
 
-# 先决 Reducer 概念
+<!-- prettier-ignore -->
+import HandWrittenReducersNote from "../../components/_HandWrittenReducersNote.mdx";
 
-正如在[“Redux 基础”第 3 部分：状态、动作和 Reducers](../../tutorials/fundamentals/part-3-state-actions-reducers.md)中所描述的，Redux reducer 函数：
+# Prerequisite Reducer Concepts
+
+<HandWrittenReducersNote />
+
+As described in ["Redux Fundamentals" Part 3: State, Actions, and Reducers](../../tutorials/fundamentals/part-3-state-actions-reducers.md), a Redux reducer function:
 
 - 应具有 `(previousState, action) => newState` 的签名，类似于你会传递给 [`Array.prototype.reduce(reducer, ?initialValue)`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce) 的函数类型
 - 应该是“纯函数”，这意味着 reducer：
@@ -17,10 +22,10 @@ description: '结构化 Reducers > 先决概念：使用 Redux 时需要理解�
 
 > ##### 关于不可变性、副作用和变异的说明
 >
-> 不推荐变异，因为它通常会破坏时间旅行调试和 React Redux 的 `connect` 函数：
+> Mutation is discouraged because it generally breaks time-travel debugging, and React Redux's `useSelector` hook:
 >
-> - 对于时间旅行，Redux DevTools 期望重放记录的动作能够输出状态值，但不会改变其他任何东西。**副作用如变异或异步行为会导致时间旅行在步骤之间改变行为，从而破坏应用**。
-> - 对于 React Redux，`connect` 会检查 `mapStateToProps` 函数返回的 props 是否变化，以确定组件是否需要更新。为了提升性能，`connect` 采用一些依赖于状态不可变性的优化，并使用浅层引用相等检测变化。这意味着 **通过直接变异修改对象和数组的更改不会被检测到，组件也不会重新渲染**。
+> - For time traveling, the Redux DevTools expect that replaying recorded actions would output a state value, but not change anything else. **Side effects like mutation or asynchronous behavior will cause time travel to alter behavior between steps, breaking the application**.
+> - For React Redux, `useSelector` compares the value returned by your selector against the previous value by reference to decide whether a component needs to update. This means that **changes made to objects and arrays by direct mutation will not be detected, and components will not re-render**. See [Why isn't my component re-rendering?](../../faq/ReactRedux.md#why-isnt-my-component-re-rendering) in the FAQ.
 >
 > 其他如在 reducer 中生成唯一 ID 或时间戳等副作用也会使代码不可预测，且更难调试和测试。
 
@@ -55,23 +60,26 @@ description: '结构化 Reducers > 先决概念：使用 Redux 时需要理解�
 
 **阅读列表**：
 
-- [函数式编程的小思路](http://jaysoo.ca/2016/01/13/functional-programming-little-ideas/)
-- [理解编程副作用](https://c2fo.io/c2fo/programming/2016/05/11/understanding-programmatic-side-effects/)
-- [学习 JavaScript 中的函数式编程](https://youtu.be/e-5obm1G_FY)
-- [理性纯函数式编程入门](https://www.sitepoint.com/an-introduction-to-reasonably-pure-functional-programming/)
+- [Redux Style Guide: Reducers Must Not Have Side Effects](../../style-guide/style-guide.md#reducers-must-not-have-side-effects)
+- [Learning Functional Programming in Javascript](https://youtu.be/e-5obm1G_FY)
+- [An Introduction to Reasonably Pure Functional Programming](https://www.sitepoint.com/an-introduction-to-reasonably-pure-functional-programming/)
 
 #### 不可变数据管理
 
 **关键概念**：
 
-- 可变性与不可变性
-- 安全地不可变更新对象和数组
-- 避免会变异状态的函数和语句
+- Mutability vs immutability
+- Immutably updating objects and arrays safely
+- Avoiding functions and statements that mutate state
+- How Immer lets you write "mutating" code that produces immutable updates
 
 **阅读列表**：
 
-- [在 React 中使用不可变性的优缺点](https://reactkungfu.com/2015/08/pros-and-cons-of-using-immutability-with-react-js/)
-- [使用 ES6 及以后版本实现不可变数据](https://wecodetheweb.com/2016/02/12/immutable-javascript-using-es6-and-beyond/)
+- [Redux Docs: Immutable Update Patterns](./ImmutableUpdatePatterns.md)
+- [React docs: Updating Objects in State](https://react.dev/learn/updating-objects-in-state) and [Updating Arrays in State](https://react.dev/learn/updating-arrays-in-state)
+- [Immer docs](https://immerjs.github.io/immer/) and [Redux Toolkit: Writing Reducers with Immer](/toolkit/usage/immer-reducers)
+- [Dave Ceddia: The Complete Guide to Immutability in React and Redux](https://daveceddia.com/react-redux-immutability-guide/)
+- [Immutable Data using ES6 and Beyond](https://wecodetheweb.com/2016/02/12/immutable-javascript-using-es6-and-beyond/)
 
 #### 数据规范化
 
@@ -86,11 +94,10 @@ description: '结构化 Reducers > 先决概念：使用 Redux 时需要理解�
 
 **阅读列表**：
 
-- [用简单英语解释数据库规范化](https://www.essentialsql.com/get-ready-to-learn-sql-database-normalization-explained-in-simple-english/)
-- [惯用 Redux：规范化状态形状](https://egghead.io/lessons/javascript-redux-normalizing-the-state-shape)
-- [Normalizr 文档](https://github.com/paularmstrong/normalizr)
-- [Redux 无脏话：Normalizr](https://tonyhb.gitbooks.io/redux-without-profanity/content/normalizer.html)
-- [查询 Redux Store](https://medium.com/@adamrackis/querying-a-redux-store-37db8c7f3b0f)
-- [维基百科：关联实体](https://en.wikipedia.org/wiki/Associative_entity)
-- [数据库设计：多对多](https://web.csulb.edu/colleges/coe/cecs/dbdesign/dbdesign.php?page=manymany.php)
-- [避免在结构化应用状态时引入偶然复杂度](https://medium.com/@talkol/avoiding-accidental-complexity-when-structuring-your-app-state-6e6d22ad5e2a)
+- [Database Normalization in Simple English](https://www.essentialsql.com/get-ready-to-learn-sql-database-normalization-explained-in-simple-english/)
+- [Idiomatic Redux: Normalizing the State Shape](https://egghead.io/lessons/javascript-redux-normalizing-the-state-shape)
+- [Redux Toolkit: `createEntityAdapter`](/toolkit/api/createEntityAdapter)
+- [Essentials: Performance and Normalizing Data](../../tutorials/essentials/part-6-performance-normalization.md)
+- [Normalizr Documentation](https://github.com/paularmstrong/normalizr) (stable, but no longer actively maintained)
+- [Querying a Redux Store](https://medium.com/@adamrackis/querying-a-redux-store-37db8c7f3b0f)
+- [Wikipedia: Associative Entity](https://en.wikipedia.org/wiki/Associative_entity)

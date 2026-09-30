@@ -3,7 +3,10 @@ id: writing-custom-middleware
 title: 编写自定义中间件
 ---
 
-# 编写自定义中间件
+<!-- prettier-ignore -->
+import CoreApiNote from "../components/_CoreApiNote.mdx";
+
+# Writing Custom Middleware
 
 :::tip 你将学到什么
 
@@ -13,13 +16,15 @@ title: 编写自定义中间件
 
 :::
 
-Redux 中的中间件主要用于：
+<CoreApiNote />
+
+Middleware in Redux can be mainly used to either
 
 - 为动作创建副作用，
 - 修改或取消动作，或
 - 修改 dispatch 接受的输入。
 
-大多数使用场景属于第一类：例如，[Redux-Saga](https://github.com/redux-saga/redux-saga/)、[redux-observable](https://github.com/redux-observable/redux-observable) 和 [RTK 监听器中间件](https://redux-toolkit.js.org/api/createListenerMiddleware) 都是创建响应动作的副作用。这些例子也表明，这是一种非常常见的需求：能够响应动作，而不仅仅是通过状态变更。
+Most use cases fall into the first category: For example [Redux-Saga](https://github.com/redux-saga/redux-saga/), [redux-observable](https://github.com/redux-observable/redux-observable), and [RTK listener middleware](/toolkit/api/createListenerMiddleware) all create side effects that react to actions. These examples also show that this is a very common need: To be able to react to an action other than with a state change.
 
 修改动作可以用于例如增强动作，添加来自状态或外部输入的信息，或者对动作进行节流、防抖或门控。
 
@@ -27,7 +32,7 @@ Redux 中的中间件主要用于：
 
 ## 何时使用自定义中间件
 
-大多数情况下，你实际上不需要自定义中间件。中间件最可能的用途是处理副作用，并且市场上有许多以良好方式封装副作用的包，这些包经过长时间的使用，解决了你自己构建时可能遇到的微妙问题。一个很好的起点是用于管理服务器端状态的 [RTK Query](https://redux-toolkit.js.org/rtk-query/overview) 和用于其他副作用的 [RTK 监听器中间件](https://redux-toolkit.js.org/api/createListenerMiddleware)。
+Most of the time, you won't actually need custom middleware. The most likely use case for middleware is side effects, and there is plenty of packages who nicely package side effects for Redux and have been in use long enough to get rid of the subtle problems you would run into when building this yourself. A good starting point is [RTK Query](/toolkit/rtk-query/overview) for managing server-side state and [RTK listener middleware](/toolkit/api/createListenerMiddleware) for other side effects.
 
 但你可能仍会在以下两种情况下想使用自定义中间件：
 

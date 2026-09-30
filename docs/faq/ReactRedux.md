@@ -24,155 +24,235 @@ Redux 本身是一个独立的库，可以和任何 UI 层或框架一起使用�
 
 **文档**
 
-- **[React-Redux 文档：为什么使用 React-Redux？](https://react-redux.js.org/introduction/why-use-react-redux)**
+- **[React-Redux docs: Why Use React-Redux?](/react-redux/introduction/why-use-react-redux)**
+- [React-Redux docs: Hooks](/react-redux/api/hooks)
 
-### 为什么我的组件没有重新渲染，或者我的 mapStateToProps 没有被调用？
+### Why isn't my component re-rendering?
 
-最常见导致组件在派发 action 后不重新渲染的原因是意外地直接修改了你的 state。Redux 期望你的 reducer 以“不变式”的方式更新 state，也就是说，总是复制数据，基于副本来做修改。如果 reducer 返回了相同的对象引用，即使内部内容改变了，Redux 也认为没有改变。同样，React Redux 为了优化性能，会在 `shouldComponentUpdate` 中做浅层相等性引用检查，如果所有引用都相同，`shouldComponentUpdate` 返回 `false`，组件不会更新。
+`useSelector` runs your selector after every dispatched action and compares the new result to the previous one with `===`. If the two results are the same reference, the component does not re-render. So when a component fails to update, the usual cause is that the selected value did not actually change reference.
 
-重要的是，一旦更新了嵌套的值，必须返回包含该值的所有上一级对象的新副本。如果你有 `state.a.b.c.d`，且想更新 `d`，你也必须返回 `c`、`b`、`a` 和 `state` 的新副本。这个[状态树修改示意图](https://miro.medium.com/v2/resize:fit:1400/1*87dJ5EB3ydD7_AbhKb4UOQ.png)演示了树深处的更改需要沿着树向上修改。
+**The most common reason is a reducer that mutated state instead of returning a new value.** If a reducer does `state.todos.push(newTodo)` and then returns `state`, the `todos` array is the same reference it was before, and every `useSelector(state => state.todos)` in the app sees "no change". Redux itself will not catch this, but Redux Toolkit's `configureStore` adds an immutability check middleware in development that throws an error when a reducer mutates its argument.
 
-注意，“不变式更新数据”**不**意味着你必须使用 [Immer](https://github.com/immerjs/immer)，虽然那是一个选项。你可以用多种方式让普通 JS 对象和数组做不变式更新：
+If you are writing reducers with `createSlice`, this problem mostly disappears: case reducers run inside Immer, so `state.todos.push(newTodo)` is turned into a correct immutable update. The mutation problem shows up when writing reducers by hand, or when mutating data _outside_ a reducer (for example, sorting an array that was read from the store in a component).
 
-- 使用类似 `Object.assign()` 或 `_.extend()` 的函数复制对象，以及数组的 `slice()` 和 `concat()`
-- ES2015 的数组展开运算符，以及 ES2018 的类似对象展开运算符
-- 使用封装了不变式更新逻辑的工具库，简化操作
+Other things to check:
+
+- **The selector reads the wrong field.** With TypeScript and [typed hooks](#how-do-i-type-useselector-and-usedispatch), this becomes a compile error rather than a silent `undefined`.
+- **The component is rendered outside the `<Provider>`**, or under a `<Provider>` for a different store instance. Portals and test renderers are the usual places this happens.
+- **The action was never dispatched**, or was dispatched to a different store. Check the Redux DevTools action list.
+- **Immutability was broken further up the tree.** Updating `state.a.b.c` immutably means `c`, `b`, `a`, and the root all need to be new references. Immer handles this for you; hand-written spreads have to do it at every level.
+
+```ts
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
+
+interface Todo {
+  id: string
+  text: string
+  completed: boolean
+}
+
+const todosSlice = createSlice({
+  name: 'todos',
+  initialState: [] as Todo[],
+  reducers: {
+    todoAdded(state, action: PayloadAction<Todo>) {
+      // Fine inside createSlice: Immer turns this into an immutable update,
+      // so the todos array gets a new reference and subscribers re-render.
+      state.push(action.payload)
+    }
+  }
+})
+```
 
 #### 详细信息
 
 **文档**
 
-- [故障排除](../usage/Troubleshooting.md)
-- [React Redux: 故障排除](https://react-redux.js.org/troubleshooting)
-- [使用 Redux：组织 Reducer - 前置概念](../usage/structuring-reducers/PrerequisiteConcepts.md)
-- [使用 Redux：组织 Reducer - 不变式更新模式](../usage/structuring-reducers/ImmutableUpdatePatterns.md)
-
-**文章**
-
-- [使用不可变数据与 React 的利弊](https://reactkungfu.com/2015/08/pros-and-cons-of-using-immutability-with-react-js/)
-- [React/Redux 相关链接：不可变数据](https://github.com/markerikson/react-redux-links/blob/master/immutable-data.md)
-
-**讨论**
-
-- [#1262：不可变数据 + 性能不佳](https://github.com/reduxjs/redux/issues/1262)
-- [React Redux #235：用于更新组件的谓词函数](https://github.com/reduxjs/react-redux/issues/235)
-- [React Redux #291：dispatch 后 mapStateToProps 是否每次都会被调用？](https://github.com/reduxjs/react-redux/issues/291)
-- [Stack Overflow：Redux 中更简洁/更短的嵌套状态更新方法？](https://stackoverflow.com/questions/35592078/cleaner-shorter-way-to-update-nested-state-in-redux)
-- [Gist：状态变更](https://gist.github.com/amcdnl/7d93c0c67a9a44fe5761#gistcomment-1706579)
+- [Troubleshooting](../usage/Troubleshooting.md)
+- [Redux Toolkit: Immutability Middleware](/toolkit/api/immutabilityMiddleware)
+- [Using Redux: Structuring Reducers - Prerequisite Concepts](../usage/structuring-reducers/PrerequisiteConcepts.md)
+- [Using Redux: Structuring Reducers - Immutable Update Patterns](../usage/structuring-reducers/ImmutableUpdatePatterns.md)
+- [FAQ: Immutable Data](./ImmutableData.md)
 
 ### 为什么我的组件重渲染太频繁？
 
-React Redux 实现了多种优化，保证你的组件只在真正需要时才重新渲染。其中之一是对由 `connect` 传入的 `mapStateToProps` 和 `mapDispatchToProps` 生成的合并 props 对象做浅层相等性检查。不幸的是，如果每次调用 `mapStateToProps` 都创建新的数组或对象实例，浅层相等性检查就无能为力。
+There are two separate reasons a component using `useSelector` can render more than you expect. They have different fixes.
 
-一个常见示例是映射 ID 数组并返回匹配的对象引用，比如：
+**The selector returns a new reference every time it runs.** Because `useSelector` compares results with `===`, a selector that builds a new object or array on each call will always look "changed", and the component will re-render after _every_ dispatched action, no matter which slice of state was updated. (`useAppSelector` in these examples is the pre-typed hook from [How do I type `useSelector` and `useDispatch`?](#how-do-i-type-useselector-and-usedispatch).)
 
-```js
-const mapStateToProps = state => {
-  return {
-    objects: state.objectIds.map(id => state.objects[id])
-  }
-}
+```ts
+// Re-renders on every action: `.map()` always returns a new array
+const todoObjects = useAppSelector(state =>
+  state.todos.ids.map(id => state.todos.entities[id])
+)
+
+// Re-renders on every action: the object literal is new each call
+const { count, user } = useAppSelector(state => ({
+  count: state.counter.value,
+  user: state.auth.user
+}))
 ```
 
-即使数组里的对象引用没有变，但数组本身是新创建的引用，浅层相等性检查会失败，React Redux 会重新渲染包装的组件。
+React-Redux checks for this in development. The first time a `useSelector` call runs, it runs the selector twice with the same state and logs a warning ("Selector ... returned a different result when called with the same parameters") if the two results are not equal. If you see that warning, the fix is one of:
 
-可以通过把对象数组存入 reducer 的 state，或使用 [Reselect](https://github.com/reduxjs/reselect) 缓存映射数组，或手写 `shouldComponentUpdate` 并用类似 `_.isEqual` 函数做深入比较来解决额外的重渲染问题。注意不要让自定义的 `shouldComponentUpdate()` 比渲染本身还耗性能！一定用性能分析工具验证你的性能假设。
+- Select the raw values from the store and derive data in the component (with `useMemo` if it is expensive).
+- Memoize the selector with `createSelector`, so it only returns a new reference when its inputs change.
+- Pass `shallowEqual` as the equality function, if the selector returns a flat object of primitives.
 
-对于未连接的组件，请检查传入的 props。一个常见问题是父组件在 render 中重新绑定回调函数，如 `<Child onClick={this.handleClick.bind(this)} />`，这会每次父组件渲染都创建新的函数引用。通常建议只在父组件构造函数中绑定一次回调。
+See [How do I select multiple values from the store?](#how-do-i-select-multiple-values-from-the-store) for examples of each.
+
+**The parent re-rendered.** `useSelector` only controls re-renders caused by store updates. If a parent component renders, React renders its children too, whether or not their props or selected state changed. This is normal React behavior and has nothing to do with Redux. If a component is expensive and its parent renders often, wrap it in `React.memo`, and make sure the props being passed in are referentially stable (callbacks wrapped in `useCallback`, objects in `useMemo`).
+
+Two other things worth knowing:
+
+- Selecting the entire root state (`useSelector(state => state)`) makes the component re-render on every action. React-Redux warns about this in development as well. Select the smallest piece of state the component needs.
+- Multiple `useSelector` calls in one component that all change from one dispatch still result in a single render, because React batches the updates.
 
 #### 详细信息
 
 **文档**
 
-- [常见问题：性能 - 扩展性](./Performance.md#performance-scaling)
+- [React Redux: Hooks - Development mode checks](/react-redux/api/hooks#development-mode-checks)
+- [React: `memo`](https://react.dev/reference/react/memo)
+- [FAQ: Performance - How well does Redux "scale"?](./Performance.md#how-well-does-redux-scale-in-terms-of-performance-and-architecture)
+- [Using Redux: Deriving Data with Selectors](../usage/deriving-data-selectors.md)
 
 **文章**
 
-- [深入探讨 React 性能调试](https://benchling.engineering/a-deep-dive-into-react-perf-debugging-fd2063f5a667)
-- [React.js 纯渲染性能反模式](https://medium.com/@esamatti/react-js-pure-render-performance-anti-pattern-fb88c101332f)
-- [用 Reselect 改进 React 和 Redux 性能](https://rangle.io/blog/react-and-redux-performance-with-reselect/)
-- [封装 Redux 状态树](https://randycoulman.com/blog/2016/09/13/encapsulating-the-redux-state-tree/)
-- [React/Redux 相关链接：React/Redux 性能](https://github.com/markerikson/react-redux-links/blob/master/react-performance.md)
+- [A (Mostly) Complete Guide to React Rendering Behavior](https://blog.isquaredsoftware.com/2020/05/blogged-answers-a-mostly-complete-guide-to-react-rendering-behavior/)
+- [Improving React and Redux Performance with Reselect](https://rangle.io/blog/react-and-redux-performance-with-reselect/)
 
-**讨论**
+### How do I select multiple values from the store?
 
-- [Stack Overflow：React Redux 应用能像 Backbone 一样扩展吗？](https://stackoverflow.com/questions/34782249/can-a-react-redux-app-really-scale-as-well-as-say-backbone-even-with-reselect)
+Call `useSelector` more than once. Each call is its own subscription, each returns a single value, and `===` comparison works correctly on primitives and on object references that already live in the store:
 
-**库**
+```ts
+const count = useAppSelector(state => state.counter.value)
+const user = useAppSelector(state => state.auth.user)
+```
 
-- [Redux 附加库目录：DevTools - 组件更新监控](https://github.com/markerikson/redux-ecosystem-links/blob/master/devtools.md#component-update-monitoring)
+This is the default recommendation. It reads clearly, and there is no meaningful performance cost to several `useSelector` calls in one component.
 
-### 如何加速我的 `mapStateToProps`？
+If you need to derive a combined value, or you want a single selector for reuse, memoize it with `createSelector` (exported from Redux Toolkit, or from Reselect directly). The output function only re-runs when one of the input selectors returns a new value, so the result reference is stable in between:
 
-虽然 React Redux 会尽量减少调用 `mapStateToProps` 的次数，但确保 `mapStateToProps` 运行迅速且做的工作量最小依然很重要。常用做法是用 [Reselect](https://github.com/reduxjs/reselect) 创建记忆化的“selector”函数。这些选择器可以组合和管道执行，管道后端的选择器只会在其输入变化时运行。这让你可以创建过滤或排序的选择器，确保只有必要时才执行真正耗性能的工作。
+```ts
+import { createSelector } from '@reduxjs/toolkit'
+import type { RootState } from './store'
 
-#### 详细信息
+export const selectCompletedTodos = createSelector(
+  [(state: RootState) => state.todos],
+  todos => todos.filter(todo => todo.completed)
+)
 
-**文档**
+// In a component:
+const completedTodos = useAppSelector(selectCompletedTodos)
+```
 
-- [使用 Redux：用选择器派生数据](../usage/deriving-data-selectors.md)
+Declare memoized selectors outside the component, so every render uses the same selector instance. A `createSelector` call inside the component body creates a fresh cache on every render and memoizes nothing.
 
-**文章**
+If the selector returns a flat object whose fields are primitives or stable references, `shallowEqual` from React-Redux can be passed as the equality function. `useSelector` then compares each field of the two results instead of the object identity:
 
-- [用 Reselect 改进 React 和 Redux 性能](https://rangle.io/blog/react-and-redux-performance-with-reselect/)
+```ts
+import { shallowEqual } from 'react-redux'
 
-**讨论**
+const { count, status } = useAppSelector(
+  state => ({ count: state.counter.value, status: state.counter.status }),
+  shallowEqual
+)
+```
 
-- [#815：处理数据结构](https://github.com/reduxjs/redux/issues/815)
-- [Reselect #47：记忆化分层选择器](https://github.com/reduxjs/reselect/issues/47)
-
-### 为什么我在连接组件中没有 `this.props.dispatch`？
-
-`connect()` 函数接受两个主要参数，都是可选的。第一个是 `mapStateToProps`，你用它从 store 中拉取数据并作为 props 传给组件。第二个是 `mapDispatchToProps`，你用它利用 store 的 `dispatch` 函数，通常通过创建绑定好的 action 创造者让调用时自动分发 action。
-
-如果调用 `connect()` 时你没有提供 `mapDispatchToProps`，React Redux 会默认提供一个函数，直接把 `dispatch` 作为 prop 返回。这意味着如果你提供了自己的函数，`dispatch` 就**不会自动提供**。如果你仍然需要它作为 prop，就必须在你的 `mapDispatchToProps` 中主动返回它。
-
-#### 详细信息
-
-**文档**
-
-- [React Redux API: connect()](https://react-redux.js.org/api/connect)
-
-**讨论**
-
-- [React Redux #89：我可以用一个 prop 名包裹多个 actionCreators 吗？](https://github.com/reduxjs/react-redux/issues/89)
-- [React Redux #145：考虑无论 `mapDispatchToProps` 怎么写都传递 `dispatch`](https://github.com/reduxjs/react-redux/issues/145)
-- [React Redux #255：使用 `mapDispatchToProps` 时，`this.props.dispatch` 是 undefined](https://github.com/react-redux/react-redux/issues/255)
-- [Stack Overflow：如何用 connect 从 this.props 获得简单的 dispatch？](https://stackoverflow.com/questions/34458261/how-to-get-simple-dispatch-from-this-props-using-connect-w-redux/34458710)
-
-### 我应该只连接顶层组件，还是树中多个组件都连接？
-
-早期 Redux 文档建议只在组件树顶部连接少数几个组件。随着时间推移和实际经验发现，这样的组件架构通常让上层组件对所有后代组件的数据需求知道得太多，且需要传递过多 props，使结构变得混乱。
-
-当前建议的最佳实践是把组件分类为“展示组件”和“容器组件”，并根据实际需要创建连接后的容器组件：
-
-> 在 Redux 示例中过度强调“只有一个顶层容器组件”是个错误。不要把它当作法则。尽量保持展示组件分离。方便时用连接创建容器组件。只要你感觉父组件为了给同类子组件提供数据重复写代码，或父组件了解子组件“私有”的数据或操作太多，就该抽取一个容器组件。
-
-事实上，基准测试显示，连接更多组件通常性能更优于连接更少组件。
-
-总体来看，尝试在可理解的数据流和组件职责划分间找到平衡。
+Both `createSelector` and `shallowEqual` are workarounds for one specific problem: a selector that has to return a new object. If you can select the individual values instead, do that.
 
 #### 详细信息
 
 **文档**
 
-- [基础知识：UI 和 React](../tutorials/fundamentals/part-5-ui-and-react.md)
-- [常见问题：性能 - 扩展性](../faq/Performance.md#performance-scaling)
+- [Using Redux: Deriving Data with Selectors](../usage/deriving-data-selectors.md)
+- [Reselect docs](/reselect/introduction/getting-started)
+- [React Redux: Hooks - Equality Comparisons and Updates](/react-redux/api/hooks#equality-comparisons-and-updates)
 
-**文章**
+### How do I use Redux with React 18 and React 19?
 
-- [展示组件与容器组件](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0)
-- [高性能 Redux](https://somebody32.github.io/high-performance-redux/)
-- [React/Redux 相关链接：架构 - Redux 架构](https://github.com/markerikson/react-redux-links/blob/master/react-redux-architecture.md#redux-architecture)
-- [React/Redux 相关链接：性能 - Redux 性能](https://github.com/markerikson/react-redux-links/blob/master/react-performance.md#redux-performance)
+React-Redux v8 and later support React 18, and v9 supports React 18 and 19. `useSelector` is implemented with React's `useSyncExternalStore` hook, which is the API React provides for subscribing to data that lives outside React. That means:
 
-**讨论**
+- **Store updates are always rendered synchronously.** When an action is dispatched, React re-renders subscribed components in a synchronous pass, outside of any pending transition. Redux state updates cannot be marked as low priority with `startTransition`, and a component that suspends while reading Redux state will fall back to its nearest `Suspense` boundary rather than keeping the old UI visible. This is a deliberate choice by React for external stores: it prevents "tearing", where different parts of one render see different store snapshots.
+- **Concurrent rendering is safe.** Because React reads the store through `useSyncExternalStore`, a render that was interrupted and resumed will re-read the current state instead of using a stale value.
+- **Automatic batching applies.** Several dispatches in the same tick (in an event handler, a `setTimeout`, a promise callback, or a thunk) result in one React render, without any extra work on your part. React-Redux's old `batch()` helper is a no-op in v9 and will be removed in v10.
 
-- [Twitter：强调“只一个容器”是个错误](https://twitter.com/dan_abramov/status/668585589609005056)
-- [#419：推荐的 connect 用法](https://github.com/reduxjs/redux/issues/419)
-- [#756：容器组件 vs 展示组件？](https://github.com/reduxjs/redux/issues/756)
-- [#1176：只有无状态组件的 Redux+React](https://github.com/reduxjs/redux/issues/1176)
-- [Stack Overflow：无状态组件能用 Redux 容器吗？](https://stackoverflow.com/questions/34992247/can-a-dumb-component-use-render-redux-container-component)
+React Server Components and frameworks built on them, such as the Next.js App Router, run part of your tree on the server, where there is no Redux store. Redux is a client-side library: the `<Provider>` and every component that calls `useSelector` or `useDispatch` must be client components, and the store must be created once per request on the server, never as a module-level singleton. The [Redux Toolkit Setup with Next.js](../usage/nextjs.mdx) page shows a `StoreProvider` component that does this correctly.
+
+#### 详细信息
+
+**文档**
+
+- [React: `useSyncExternalStore`](https://react.dev/reference/react/useSyncExternalStore)
+- [Using Redux: Redux Toolkit Setup with Next.js](../usage/nextjs.mdx)
+- [Using Redux: Server Rendering](../usage/ServerRendering.md)
+
+### How do I access the store outside a component?
+
+Prefer not to. Most code that wants the store from outside a component is doing async logic or responding to an action, and both belong in a [thunk](../usage/writing-logic-thunks.mdx) or a [listener middleware](/toolkit/api/createListenerMiddleware) effect, where `dispatch` and `getState` are passed in as arguments.
+
+When you do need the store instance itself:
+
+- **Inside a component**, `useStore()` returns the store from the nearest `<Provider>`. This is for rare cases like reading state once in an event handler without subscribing to it, or calling `store.replaceReducer`. It does not cause re-renders when state changes, so do not use it as a replacement for `useSelector`.
+- **In a plain module**, such as an API client that needs to read an auth token or a `setupListeners` call, import the store directly from the module that created it. If that creates a circular import (the store module imports the API module, which imports the store module), use an `injectStore` function: the API module exports a setter, and the store module calls it after creating the store. The [Code Structure FAQ](./CodeStructure.md#how-can-i-use-the-redux-store-in-non-component-files) shows this pattern.
+
+Importing a store singleton does not work with server rendering, where each request has its own store. In that case, pass the store or `dispatch` explicitly.
+
+#### 详细信息
+
+**文档**
+
+- [FAQ: Code Structure - How can I use the Redux store in non-component files?](./CodeStructure.md#how-can-i-use-the-redux-store-in-non-component-files)
+- [React Redux: Hooks - `useStore()`](/react-redux/api/hooks#usestore)
+- [Using Redux: Writing Logic with Thunks](../usage/writing-logic-thunks.mdx)
+
+### How do I type `useSelector` and `useDispatch`?
+
+Infer `RootState` and `AppDispatch` from the store, then create pre-typed versions of the hooks with `.withTypes()`, and use those everywhere instead of the plain imports from `react-redux`:
+
+```ts title="app/store.ts"
+import { configureStore } from '@reduxjs/toolkit'
+import { useDispatch, useSelector } from 'react-redux'
+import todosReducer from '../features/todos/todosSlice'
+
+export const store = configureStore({
+  reducer: { todos: todosReducer }
+})
+
+export type RootState = ReturnType<typeof store.getState>
+export type AppDispatch = typeof store.dispatch
+
+export const useAppDispatch = useDispatch.withTypes<AppDispatch>()
+export const useAppSelector = useSelector.withTypes<RootState>()
+```
+
+`useAppSelector` knows the shape of `state`, so `state => state.todso` is a compile error. `useAppDispatch` knows about the thunk middleware that `configureStore` adds, so `dispatch(fetchTodos())` type-checks; with the untyped `useDispatch`, dispatching a thunk fails with an error about the argument not being assignable to `UnknownAction`.
+
+#### Further information
+
+**Documentation**
+
+- [Using Redux: Usage with TypeScript](../usage/UsageWithTypescript.md#define-typed-hooks)
+- [React Redux: `useSelector` and `useDispatch` API reference](/react-redux/api/hooks)
+
+### Is `connect` still supported?
+
+Yes. `connect`, `mapStateToProps`, and `mapDispatchToProps` still work in React-Redux v9 and are not deprecated. **New code should use the hooks.** They are shorter, they work with TypeScript without the `ConnectedProps` ceremony, and they are the API the React-Redux docs, the Redux tutorials, and Redux Toolkit assume.
+
+<details>
+<summary>Notes for existing connect-based code</summary>
+
+- `connect` compares the object returned by `mapStateToProps` with shallow equality, field by field, and only re-renders the wrapped component when a field changed. This is why the "new object from the selector" problem described above did not exist with `connect`, and why code converted from `mapStateToProps` to a single `useSelector` returning an object starts re-rendering on every action. Split it into one `useSelector` per field.
+- `connect` also skips re-rendering when the parent re-renders with the same props. `useSelector` does not; use `React.memo` if that matters.
+- If you provide a `mapDispatchToProps` function, `dispatch` is no longer passed as a prop automatically. Return it from your `mapDispatchToProps` if you still need it, or use the object shorthand form, which binds action creators and does not need `dispatch` at all.
+- Connected components anywhere in the tree are fine and were always fine. "Only connect the top component" was early advice that Dan Abramov withdrew; more, smaller subscribed components generally perform better than a few large ones. The same is true for `useSelector`.
+- `connect` and the hooks can be mixed in one app. Migrate a component at a time.
+
+The [React-Redux `connect` API docs](/react-redux/api/connect) and the [Connect tutorial](/react-redux/tutorials/connect) cover the full API.
+
+</details>
 
 ### Redux 和 React Context API 有什么区别？
 
@@ -190,6 +270,7 @@ Redux 和 React Context 在数据处理上有本质区别。Redux 把整个应�
 
 #### 详细信息
 
-- [什么时候该用 Redux，什么时候不用](https://changelog.com/posts/when-and-when-not-to-reach-for-redux)
-- [Redux VS React Context API](https://daveceddia.com/context-api-vs-redux/)
-- [你可能不需要 Redux（但不能被 Hooks 替代）](https://www.simplethread.com/cant-replace-redux-with-hooks/)
+- [Why React Context is Not a "State Management" Tool (and Why It Doesn't Replace Redux)](https://blog.isquaredsoftware.com/2021/01/context-redux-differences/)
+- [When (and when not) to reach for Redux](https://changelog.com/posts/when-and-when-not-to-reach-for-redux)
+- [Redux vs. The React Context API](https://daveceddia.com/context-api-vs-redux/)
+- [You Might Not Need Redux (But You Can’t Replace It With Hooks)](https://www.simplethread.com/cant-replace-redux-with-hooks/)

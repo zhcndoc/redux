@@ -8,7 +8,7 @@ sidebar_label: 设计决策
 
 ### 为什么 Redux 不将 state 和 action 传递给订阅者？
 
-订阅者旨在对 state 本身的值作出响应，而不是对 action。对 state 的更新是同步处理的，但对订阅者的通知可以批量处理或防抖处理，这意味着订阅者并不总是对每个 action 都接收到通知。这是一种常见的[性能优化](./Performance.md#performance-update-events)，用来避免重复的重新渲染。
+Subscribers are intended to respond to the state value itself, not the action. Updates to the state are processed synchronously, but notifications to subscribers can be batched or debounced, meaning that subscribers are not always notified with every action. This is a common [performance optimization](./Performance.md#how-can-i-reduce-the-number-of-store-update-events) to avoid repeated re-rendering.
 
 通过使用增强器覆盖 `store.dispatch` 来改变订阅者通知的方式，可以实现批量处理或防抖处理。此外，也有库通过批量处理 action 来优化性能，避免重复渲染：
 
@@ -19,16 +19,16 @@ sidebar_label: 设计决策
 
 一个潜在的，也是不被支持的用例，是在订阅者中使用 action，以确保组件仅在特定类型的 action 后才重新渲染。但实际上，重新渲染应通过以下方法控制：
 
-1. [shouldComponentUpdate](https://facebook.github.io/react/docs/react-component.html#shouldcomponentupdate) 生命周期方法
-2. [虚拟 DOM 相等检查 (vDOMEq)](https://facebook.github.io/react/docs/optimizing-performance.html#avoid-reconciliation)
-3. [React.PureComponent](https://facebook.github.io/react/docs/optimizing-performance.html#examples)
-4. 使用 React-Redux：通过 [mapStateToProps](https://react-redux.js.org/api#connect) 仅订阅组件所需的 store 部分。
+1. Using React-Redux: have each `useSelector` call return only the smallest piece of state the component needs, so the component re-renders only when that value changes.
+2. Wrapping the component in [`React.memo`](https://react.dev/reference/react/memo) so that a parent re-render does not force it to re-render as well.
+
+See [Why is my component re-rendering too often?](./ReactRedux.md#why-is-my-component-re-rendering-too-often) for details.
 
 #### 进一步信息
 
 **文章**
 
-- [我如何减少 store 更新事件的次数？](./Performance.md#performance-update-events)
+- [How can I reduce the number of store update events?](./Performance.md#how-can-i-reduce-the-number-of-store-update-events)
 
 **讨论**
 
@@ -39,7 +39,7 @@ sidebar_label: 设计决策
 
 用函数（称为 action creators）来返回 action 对象的模式，对于有大量面向对象编程经验的程序员来说，可能感觉相悖，因为他们会认为这是使用类和实例的典型场景。Redux 不支持用类实例作为 action 对象和 reducer 的原因在于，类实例会使序列化和反序列化变得复杂。像 `JSON.parse(string)` 这类反序列化方法会返回普通的 JavaScript 对象，而非类实例。
 
-如同[Store 常见问答](./OrganizingState.md#organizing-state-non-serializable)中所述，如果你接受诸如持久化和时间旅行调试等功能无法正常工作，则可以在 Redux store 中放入非序列化数据。
+As described in the [Store FAQ](./OrganizingState.md#can-i-put-functions-promises-or-other-non-serializable-items-in-my-store-state), if you are okay with things like persistence and time-travel debugging not working as intended, you are welcome to put non-serializable items into your Redux store.
 
 序列化使浏览器能以更节省内存的方式存储所有已分发的 actions 和之前的 store state。重放历史和“热加载” store 是 Redux 开发体验和 Redux DevTools 功能的核心。这也使得服务器端渲染的情况下，能够将反序列化的 actions 存储在服务器端，并在浏览器端重新序列化。
 
@@ -47,7 +47,7 @@ sidebar_label: 设计决策
 
 **文章**
 
-- [我可以在 store state 中放入函数、Promise 或其他非序列化项目吗？](./OrganizingState.md#organizing-state-non-serializable)
+- [Can I put functions, promises, or other non-serializable items in my store state?](./OrganizingState.md#can-i-put-functions-promises-or-other-non-serializable-items-in-my-store-state)
 
 **讨论**
 
@@ -84,7 +84,7 @@ Redux 中间件是用三层嵌套函数的结构编写的，看起来像这样�
 
 `combineReducers` 的设计宗旨是鼓励按领域拆分 reducer 逻辑。如 [超越 `combineReducers`](../usage/structuring-reducers/BeyondCombineReducers.md) 所述，`combineReducers` 有意识地被限制为处理一种常见用例：通过委托给每个切片的 reducer 来更新纯 JavaScript 对象形式的状态树。
 
-很难直接确定给每个 reducer 的潜在第三个参数应该是什么：是整个状态树、某个回调函数，还是状态树的其他部分？如果 `combineReducers` 不符合你的使用需求，可以考虑使用其他库，如 [combineSectionReducers](https://github.com/ryo33/combine-section-reducers) 或 [reduceReducers](https://github.com/acdlite/reduce-reducers)，它们支持更深的嵌套 reducer 和需要访问全局状态的 reducer。
+It's not immediately obvious what a potential third argument to each reducer should be: the entire state tree, some callback function, some other part of the state tree, etc. If `combineReducers` doesn't fit your use case, consider using libraries like [combineSectionReducers](https://github.com/ryo33/combine-section-reducers) or [reduceReducers](https://github.com/redux-utilities/reduce-reducers) for other options with deeply nested reducers and reducers that require access to the global state.
 
 如果现有工具都无法满足需求，你也可以自己编写一个函数，精确实现你的需求。
 
@@ -100,7 +100,9 @@ Redux 中间件是用三层嵌套函数的结构编写的，看起来像这样�
 
 ### 为什么 `mapDispatchToProps` 不允许使用 `getState()` 或 `mapStateToProps()` 的返回值？
 
-有人提出希望在 `mapDispatch` 中使用整个 `state` 或 `mapState` 的返回值，以使在 `mapDispatch` 中声明的函数能闭包访问 store 的最新返回值。
+This question applies to React-Redux's legacy `connect` API. With hooks, a component can call `useSelector` and `useDispatch` and combine the results however it wants, so there is no equivalent limitation.
+
+There have been requests to use either the entire `state` or the return value of `mapState` inside of `mapDispatch`, so that when functions are declared inside of `mapDispatch`, they can close over the latest returned values from the store.
 
 这种做法在 `mapDispatch` 中不被支持，因为这意味着每次 store 更新都要调用 `mapDispatch`，从而重复创建函数，带来严重的性能开销。
 

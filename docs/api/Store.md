@@ -4,14 +4,19 @@ title: 存储
 description: 'API > Store：核心 Redux 存储方法'
 ---
 
-# 存储
+<!-- prettier-ignore -->
+import CoreApiNote from "../components/_CoreApiNote.mdx";
+
+# Store
 
 存储包含了您应用程序的整个[状态树](../understanding/thinking-in-redux/Glossary.md#state)。
 更改其内部状态的唯一方法是派发一个[action](../understanding/thinking-in-redux/Glossary.md#action)，这会触发[根 reducer 函数](../understanding/thinking-in-redux/Glossary.md#reducer)来计算新的状态。
 
 存储不是一个类。它只是一个具有几个方法的对象。
 
-要创建存储，**将您的根[reducer 函数](../understanding/thinking-in-redux/Glossary.md#reducer)传递给 Redux Toolkit 的 [`configureStore` 方法](https://redux-toolkit.js.org/api/configureStore)**，该方法将以良好的默认配置设置 Redux 存储。（或者，如果您还未使用 Redux Toolkit，可以使用原始的[`createStore`](createStore.md)方法，但我们鼓励您尽快[将代码迁移到使用 Redux Toolkit](../usage/migrating-to-modern-redux.mdx)）
+<CoreApiNote />
+
+To create a store, pass your root [reducer function](../understanding/thinking-in-redux/Glossary.md#reducer) to `configureStore` (or to the deprecated core [`createStore`](createStore.md)).
 
 ## 存储方法
 
@@ -56,15 +61,15 @@ _(any)_：您应用程序当前的状态树。
 
 但是，如果使用[`applyMiddleware`](applyMiddleware.md)包装[`createStore`](createStore.md)，中间件可以对 action 做不同解释，并支持派发[异步 action](../understanding/thinking-in-redux/Glossary.md#async-action)。异步 action 通常是如 Promise、Observable 或 thunk 之类的异步原语。
 
-中间件由社区创建，Redux 默认不含中间件。您需要显式安装诸如 [redux-thunk](https://github.com/reduxjs/redux-thunk) 或 [redux-promise](https://github.com/acdlite/redux-promise) 等包来使用它。您也可以创建自己的中间件。
+Middleware does not ship with the Redux core package. The most common middleware, [redux-thunk](https://github.com/reduxjs/redux-thunk), is included and enabled by default when you create a store with Redux Toolkit's `configureStore`. If you are using the core `createStore` directly, you need to install and apply middleware yourself. You may also create your own middleware.
 
 如需了解如何描述异步 API 调用、在 action 创建中读取当前状态、执行副作用或链式执行异步操作，请查看[`applyMiddleware`](applyMiddleware.md)的示例。
 
 #### 示例
 
 ```js
-import { createStore } from 'redux'
-const store = createStore(todos, ['Use Redux'])
+import { configureStore } from '@reduxjs/toolkit'
+const store = configureStore({ reducer: todos, preloadedState: ['Use Redux'] })
 
 function addTodo(text) {
   return {

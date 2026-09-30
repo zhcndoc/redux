@@ -14,15 +14,7 @@ description: 'API > createStore：创建核心 Redux 存储'
 
 :::danger
 
-**原始的 Redux 核心 `createStore` 方法已被弃用！**
-
-`createStore` 会一直保持可用，但我们不建议直接使用 `createStore` 或原始的 `redux` 包。
-
-相反，你应该使用我们官方 [Redux Toolkit](https://redux-toolkit.js.org) 包中的 [ `configureStore` 方法](https://redux-toolkit.js.org/api/configureStore)，它对 `createStore` 进行了封装，提供了更好的默认配置和使用方式。你还应该使用 Redux Toolkit 的 [`createSlice` 方法](https://redux-toolkit.js.org/api/createSlice) 来编写 reducer 逻辑。
-
-Redux Toolkit 还重新导出 `redux` 包中包含的所有其他 API。
-
-有关如何将现有的旧版 Redux 代码库迁移为使用 Redux Toolkit，请参见 [**迁移到现代 Redux** 页面](../usage/migrating-to-modern-redux.mdx)。
+**`createStore` is deprecated.** Use Redux Toolkit's [`configureStore`](/toolkit/api/configureStore) instead, which wraps `createStore` with a better default setup. `createStore` still works and will not be removed; see [Deprecation and `legacy_createStore`](#deprecation-and-alternate-legacy_createstore-export) below for details and [Migrating to Modern Redux](../usage/migrating-to-modern-redux.mdx) for how to update existing code.
 
 :::
 

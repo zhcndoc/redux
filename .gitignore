@@ -6,21 +6,13 @@ dist
 lib
 es
 
-# Yarn
 .cache
-.yarnrc
-.yarn/cache/
-.yarn/*
-!.yarn/patches
-!.yarn/releases
-!.yarn/plugins
-!.yarn/sdks
-!.yarn/versions
-.pnp.*
 *.tgz
 
-website/.yarn/
-docs/.yarn/
+# pnpm content-addressable stores kept inside the repo so Netlify can cache them.
+.pnpm-store/
+website/.pnpm-store/
+docs/.pnpm-store/
 
 # yalc
 .yalc

@@ -5,6 +5,8 @@ sidebar_label: '异步逻辑与数据获取'
 description: '官方 Redux 基础教程：学习如何结合 Redux 使用异步逻辑'
 ---
 
+import { LiveExample } from '@site/src/components/LiveExample'
+
 <!-- prettier-ignore -->
 import FundamentalsWarning from "../../components/_FundamentalsWarning.mdx";
 
@@ -35,7 +37,7 @@ import FundamentalsWarning from "../../components/_FundamentalsWarning.mdx";
 
 :::tip
 
-Redux Toolkit 包含了 [**RTK Query 数据获取与缓存 API**](https://redux-toolkit.js.org/rtk-query/overview)。RTK Query 是专为 Redux 应用设计的数据获取和缓存方案，**能免去编写 _任何_ thunk 或 reducer 来管理数据获取的需求**。我们会在后续教程中作为默认数据获取方式介绍 RTK Query，而 RTK Query 本身建立在本页所展示的模式之上。
+Redux Toolkit includes the [**RTK Query data fetching and caching API**](/toolkit/rtk-query/overview). RTK Query is a purpose built data fetching and caching solution for Redux apps, and **can eliminate the need to write _any_ thunks or reducers to manage data fetching**. We specifically teach RTK Query as the default approach for data fetching, and RTK Query is built on the same patterns shown in this page.
 
 在 [Redux 精要，第 7 部分：RTK Query 基础](../essentials/part-7-rtk-query-basics.md) 中学习如何使用 RTK Query 进行数据获取。
 
@@ -43,7 +45,9 @@ Redux Toolkit 包含了 [**RTK Query 数据获取与缓存 API**](https://redux-
 
 ### 示例 REST API 与客户端
 
-为保持示例项目的独立性但又具备现实感，初始项目配置了一个基于内存的假 REST API（通过 [Mirage.js 模拟 API 工具](https://miragejs.com/) 配置）。API 使用 `/fakeApi` 作为端点基础 URL，支持 `/fakeApi/todos` 的常见 HTTP 方法 `GET/POST/PUT/DELETE`。其定义在 `src/api/server.js`。
+To keep the example project isolated but realistic, the initial project setup already included a fake in-memory REST API for our data (configured using the [Mock Service Worker](https://mswjs.io/) library). The API uses `/fakeApi` as the base URL for the endpoints, and supports the typical `GET/POST/PUT/DELETE` HTTP methods for `/fakeApi/todos`. It's defined in `src/api/server.js`.
+
+The fake API intercepts `fetch` calls directly in the page, so these requests won't show up in the browser DevTools Network tab. You can use the Redux DevTools to see the actions that are dispatched as the data is loaded.
 
 项目还包含一个小型 HTTP API 客户端对象，暴露了类似于流行 HTTP 库（如 `axios`）的 `client.get()` 和 `client.post()` 方法，定义在 `src/api/client.js`。
 
@@ -204,7 +208,7 @@ npm install redux-thunk
 import { createStore, applyMiddleware } from 'redux'
 // highlight-next-line
 import { thunk } from 'redux-thunk'
-import { composeWithDevTools } from 'redux-devtools-extension'
+import { composeWithDevTools } from '@redux-devtools/extension'
 import rootReducer from './reducer'
 
 // highlight-next-line
@@ -241,13 +245,13 @@ export async function fetchTodos(dispatch, getState) {
 
 该 API 调用只需在应用首次加载时执行一次，执行时机可放在：
 
-- `<App>` 组件中的 `useEffect` 钩子
-- `<TodoList>` 组件中的 `useEffect` 钩子
-- 或直接在 `index.js` 文件导入 Store 后调用
+- In the `<App>` component, in a `useEffect` hook
+- In the `<TodoList>` component, in a `useEffect` hook
+- In the `main.jsx` file directly, right after we import the store
 
-这里演示放在 `index.js` 中：
+For now, let's try putting this directly in `main.jsx`:
 
-```js title="src/index.js"
+```js title="src/main.jsx"
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
@@ -358,7 +362,7 @@ export function saveNewTodo(text) {
 
 然后在 `<Header>` 组件中使用：
 
-```js title="src/features/header/Header.js"
+```js title="src/features/header/Header.jsx"
 import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
 
@@ -391,7 +395,7 @@ const Header = () => {
 
 由于我们知道组件中会立刻把 thunk 函数传给 `dispatch`，可省略临时变量，直接将返回的 thunk 函数传给 `dispatch`：
 
-```js title="src/features/header/Header.js"
+```js title="src/features/header/Header.jsx"
 const handleKeyDown = e => {
   // 用户按下回车
   const trimmedText = text.trim()
@@ -451,13 +455,11 @@ Thunk 函数不仅能写异步逻辑，也能写同步逻辑。Thunk 提供了�
 
 当前应用界面如下：
 
-<iframe
-  class="codesandbox"
-  src="https://codesandbox.io/embed/github/reduxjs/redux-fundamentals-example-app/tree/checkpoint-6-asyncThunks/?codemirror=1&fontsize=14&hidenavigation=1&theme=dark&runonclick=1"
-  title="redux-fundamentals-example-app"
-  allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
-  sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
-></iframe>
+<LiveExample
+  repo="reduxjs/redux-fundamentals-example-app"
+  ref="checkpoint-6-asyncThunks"
+  title="Redux Fundamentals: async thunks"
+/>
 
 :::tip 总结
 

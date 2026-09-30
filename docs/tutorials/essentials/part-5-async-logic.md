@@ -6,6 +6,7 @@ description: 'Redux 官方基础教程：学习 Redux 应用中异步逻辑的�
 ---
 
 import { DetailedExplanation } from '../../components/DetailedExplanation'
+import { LiveExample } from '@site/src/components/LiveExample'
 
 :::tip 你将学到
 
@@ -31,7 +32,7 @@ import { DetailedExplanation } from '../../components/DetailedExplanation'
 
 :::tip
 
-Redux Toolkit 包含了 [**RTK Query 数据获取和缓存 API**](https://redux-toolkit.js.org/rtk-query/overview)。RTK Query 是为了 Redux 应用特别设计的数据获取和缓存方案，**可以完全免去你编写像 thunk 或 reducer 这样额外 Redux 代码来管理数据获取的需要。** 我们也会将 RTK Query 作为数据获取的默认教学方案。
+Redux Toolkit includes the [**RTK Query data fetching and caching API**](/toolkit/rtk-query/overview). RTK Query is a purpose built data fetching and caching solution for Redux apps, and **can eliminate the need to write _any_ additional Redux logic like thunks or reducers to manage data fetching**. We specifically teach RTK Query as the default approach for data fetching.
 
 RTK Query 构建在本页展示的模式之上，因此本节内容有助于你理解 Redux 中数据获取底层的工作机制。
 
@@ -43,7 +44,13 @@ RTK Query 构建在本页展示的模式之上，因此本节内容有助于你�
 
 为了保持示例项目既独立又现实，初始项目已包含一个基于假内存的 REST API（使用 [Mock Service Worker 模拟 API 工具](https://mswjs.io/) 配置）。API 以 `/fakeApi` 作为端点基地址，支持 `/fakeApi/posts`、`/fakeApi/users` 和 `/fakeApi/notifications` 的典型 `GET/POST/PUT/DELETE` HTTP 方法。API 定义在 `src/api/server.ts` 中。
 
-项目还包括一个小型 HTTP API 客户端对象，该对象暴露了类似于流行 HTTP 库 `axios` 的 `client.get()` 和 `client.post()` 方法，定义在 `src/api/client.ts` 中。
+:::note
+
+The fake API intercepts `fetch()` calls directly inside the page, rather than through a browser Service Worker, so that the project can also run inside StackBlitz. Because of that, **these requests will not show up in the "Network" tab of your browser's DevTools**. You can still see the requests happen by watching the dispatched actions in the Redux DevTools, or by adding `console.log` statements in `src/api/client.ts`.
+
+:::
+
+The project also includes a small HTTP API client object that exposes `client.get()` and `client.post()` methods, similar to popular HTTP libraries like `axios`. It's defined in `src/api/client.ts`.
 
 本节中，我们将使用该 `client` 对象对内存中的假 REST API 进行 HTTP 调用。
 
@@ -87,7 +94,7 @@ Redux 存储本身并不支持异步逻辑。它只知道如何同步派发动�
 
 ## Thunk 与异步逻辑
 
-Redux 有许多异步中间件，允许你用不同语法编写异步逻辑。最常见的是 [`redux-thunk`](https://github.com/reduxjs/redux-thunk)，它允许你直接编写包含异步逻辑的普通函数。Redux Toolkit 的 `configureStore` 函数[默认自动配置 thunk 中间件](https://redux-toolkit.js.org/api/getDefaultMiddleware#included-default-middleware)，我们也建议[用 thunk 作为 Redux 异步逻辑编写的标准方式](../../style-guide/style-guide.md#use-thunks-and-listeners-for-other-async-logic)。
+There are many kinds of async middleware for Redux, and each lets you write your logic using different syntax. The most common async middleware is [`redux-thunk`](https://github.com/reduxjs/redux-thunk), which lets you write plain functions that may contain async logic directly. Redux Toolkit's `configureStore` function [automatically sets up the thunk middleware by default](/toolkit/api/getDefaultMiddleware#included-default-middleware), and [we recommend using thunks as a standard approach for writing async logic with Redux](../../style-guide/style-guide.md#use-thunks-and-listeners-for-other-async-logic).
 
 :::info 什么是“Thunk”？
 
@@ -159,7 +166,7 @@ Redux 数据获取逻辑通常遵循以下模式：
 
 这些步骤并非 _必须_，但很常见。（如果只关心成功结果，可以只派发请求结束的“成功”动作，省略“开始”和“失败”动作。）
 
-**Redux Toolkit 提供了 [`createAsyncThunk`](https://redux-toolkit.js.org/api/createAsyncThunk) API，帮助你实现异步请求相关动作的自动创建和派发**。
+**Redux Toolkit provides a [`createAsyncThunk`](/toolkit/api/createAsyncThunk) API to implement the creation and dispatching of actions describing an async request**.
 
 `createAsyncThunk` 的基础用法如下：
 
@@ -306,8 +313,8 @@ export const createAppAsyncThunk = createAsyncThunk.withTypes<{
 
 ```ts
 {
-  // 可选的状态字符串联合值
-  status: 'idle' | 'pending' | 'succeeded' | 'failed',
+  // Multiple possible status string union values
+  status: 'idle' | 'pending' | 'succeeded' | 'rejected',
   error: string | null
 }
 ```
@@ -326,7 +333,7 @@ import { createSlice, nanoid } from '@reduxjs/toolkit'
 // highlight-start
 interface PostsState {
   posts: Post[]
-  status: 'idle' | 'pending' | 'succeeded' | 'failed'
+  status: 'idle' | 'pending' | 'succeeded' | 'rejected'
   error: string | null
 }
 
@@ -475,7 +482,7 @@ console.log(
 */
 ```
 
-也见过 [`createSlice` 中的 `extraReducers` 字段可以响应 slice 外定义的动作](./part-4-using-data.md##using-extrareducers-to-handle-other-actions)。
+We've also seen that we can use [the `extraReducers` field in `createSlice` to respond to actions that were defined outside of the slice](./part-4-using-data.md#using-extrareducers-to-handle-other-actions).
 
 In this case, we need to listen for the "pending" and "fulfilled" action types dispatched by our `fetchPosts` thunk. Those action creators are attached to our actual `fetchPosts` function, and we can pass those to `extraReducers` to listen for those actions:
 
@@ -508,8 +515,8 @@ const postsSlice = createSlice({
         state.posts.push(...action.payload)
       })
       .addCase(fetchPosts.rejected, (state, action) => {
-        state.status = 'failed'
-        state.error = action.error.message ?? '未知错误'
+        state.status = 'rejected'
+        state.error = action.error.message ?? 'Unknown Error'
       })
       // highlight-end
   }
@@ -518,9 +525,9 @@ const postsSlice = createSlice({
 
 根据我们返回的 Promise，处理 thunk 可能派发的三种动作：
 
-- 请求开始，状态设为 `'pending'`
-- 请求成功，状态设为 `'succeeded'`，将获取的帖子添加到 `state.posts`
-- 请求失败，状态设为 `'failed'`，保存错误信息以便展示
+- When the request starts, we'll set the `status` to `'pending'`
+- If the request succeeds, we mark the `status` as `'succeeded'`, and add the fetched posts to `state.posts`
+- If the request fails, we'll mark the `status` as `'rejected'`, and save any error message into the state so we can display it
 
 ### 组件派发 Thunk
 
@@ -938,7 +945,7 @@ export default usersSlice.reducer
 
 :::info
 
-想了解 Immer 状态更新原理，参考 [RTK 文档中的“用 Immer 写 Reducer”指南](https://redux-toolkit.js.org/usage/immer-reducers#immer-usage-patterns)。
+To learn more about how state updates with Immer work, see the ["Writing Reducers with Immer" guide in the RTK docs](/toolkit/usage/immer-reducers#immer-usage-patterns).
 
 :::
 
@@ -956,8 +963,8 @@ import { fetchUsers } from './features/users/usersSlice'
 import { worker } from './api/server'
 
 async function start() {
-  // 启动模拟 API 服务器
-  await worker.start({ onUnhandledRequest: 'bypass' })
+  // Start our mock API server
+  worker.listen({ onUnhandledRequest: 'bypass' })
 
   // highlight-next-line
   store.dispatch(fetchUsers())
@@ -1069,8 +1076,8 @@ export const AddPostForm = () => {
   const userId = useAppSelector(selectCurrentUsername)!
 
   // highlight-next-line
-  const handleSubmit = async (e: React.FormEvent<AddPostFormElements>) => {
-    // 阻止提交到服务器
+  const handleSubmit = async (e: React.SubmitEvent<AddPostFormElements>) => {
+    // Prevent server submission
     e.preventDefault()
 
     const { elements } = e.currentTarget
@@ -1113,13 +1120,12 @@ export const AddPostForm = () => {
 
 下面是我们改造后的应用示例，数据来自那个假 API：
 
-<iframe
-  class="codesandbox"
-  src="https://codesandbox.io/embed/github/reduxjs/redux-essentials-example-app/tree/ts-checkpoint-3-postRequests?fontsize=14&hidenavigation=1&module=%2fsrc%2Ffeatures%2Fposts%2FpostsSlice.ts&theme=dark&runonclick=1"
-  title="redux-essentials-example"
-  allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
-  sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
-></iframe>
+<LiveExample
+  repo="reduxjs/redux-essentials-example-app"
+  ref="ts-checkpoint-3-postRequests"
+  file="src/features/posts/postsSlice.ts"
+  title="Redux Essentials: end of Part 5"
+/>
 
 提醒，本节重点内容如下：
 

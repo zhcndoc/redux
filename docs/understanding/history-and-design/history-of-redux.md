@@ -36,7 +36,7 @@ Dan 早期就说过：“Redux 并非写最少代码的方式——它是为了�
 
 ## 2017：生态系统的竞争
 
-到了 2017-18 年，情况发生了变化。社区更多关注“数据获取与缓存”，而非“客户端状态管理”，于是出现了 Apollo、React Query、SWR 和 Urql 等数据获取库。与此同时，全新 React Context API 也发布，可正确传递更新值。
+By 2017-18, things had changed. A lot of the community was now focusing more on "data fetching and caching" rather than "client-side state management", and that's when we saw the rise of libraries like Apollo, React Query (now TanStack Query), SWR, and Urql for data fetching. At the same time, we also had the _new_ React Context API came out, which does properly pass updated values down the component tree.
 
 这意味着 Redux 不再“必需”——存在其他工具解决类似问题，且往往代码更少。“模板代码繁多”的抱怨也使 Redux 用户中产生不少担忧。
 

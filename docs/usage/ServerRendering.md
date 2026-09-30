@@ -7,7 +7,15 @@ title: 服务器渲染
 
 服务器端渲染最常见的用例是在用户（或搜索引擎爬虫）首次请求我们的应用时处理 _初始渲染_。当服务器接收到请求时，它将所需的组件渲染成一个 HTML 字符串，然后将其作为响应发送给客户端。从那时起，客户端接管渲染任务。
 
-下面的示例中我们将使用 React，但同样的技术也可以用于其他支持服务器渲染的视图框架。
+:::tip Use a framework if you can
+
+Most apps that render on the server today use a framework that handles the request lifecycle, routing, data loading, and hydration for you: [Next.js](https://nextjs.org/), [React Router in framework mode](https://reactrouter.com/start/framework/installation), or [TanStack Start](https://tanstack.com/start/latest). If you use one of those, follow its data-loading conventions and see [Redux Toolkit Setup with Next.js](./nextjs.mdx) for how to create a per-request store in that setting.
+
+This page explains the mechanics underneath: what Redux has to do on the server, how the state gets to the browser, and what to watch out for. That is useful for understanding what a framework does for you, or for wiring it up yourself with a plain Node server.
+
+:::
+
+We will use React in the examples below, but the same techniques can be used with other view frameworks that can render on the server.
 
 ### 服务器上的 Redux
 
@@ -25,47 +33,67 @@ Redux 在服务器端的**唯一**职责是提供应用的**初始状态**。
 
 ## 环境搭建
 
-在接下来的示例中，我们将演示如何设置服务器端渲染。我们将使用简单的 [Counter 应用](https://github.com/reduxjs/redux/tree/master/examples/counter) 来作为示例，展示服务器如何根据请求提前渲染状态。
-
-### 安装依赖包
-
-在这个例子中，我们将使用 [Express](https://expressjs.com/) 作为简单的 Web 服务器。由于 Redux 默认不包含 React 绑定，我们还需要安装 React 与 Redux 的绑定库。
+The examples below use a small counter app with a single `counter` slice, and [Express](https://expressjs.com/) as the web server. Any Node HTTP server works the same way; Express just gives us a request handler and a response object.
 
 ```sh
-npm install express react-redux
+npm install express @reduxjs/toolkit react-redux
+```
+
+Because the shared code is TypeScript and JSX, you'll need to compile it for Node with a tool such as `tsx`, Vite's SSR build, or `tsc`. The details vary by tool and are not covered here.
+
+The store setup is the same one you would use in a client-only app, except that it exports a factory function rather than a single store instance:
+
+##### `app/store.ts`
+
+```ts
+import { configureStore } from '@reduxjs/toolkit'
+import counterReducer from '../features/counter/counterSlice'
+
+const rootReducer = {
+  counter: counterReducer
+}
+
+export function makeStore(preloadedState?: Partial<RootState>) {
+  return configureStore({
+    reducer: rootReducer,
+    preloadedState
+  })
+}
+
+export type AppStore = ReturnType<typeof makeStore>
+export type RootState = ReturnType<AppStore['getState']>
+export type AppDispatch = AppStore['dispatch']
 ```
 
 ## 服务器端
 
-服务器端的大致框架如下。我们将使用 [Express 中间件](https://expressjs.com/guide/using-middleware.html)，通过 [app.use](http://expressjs.com/api.html#app.use) 处理传入服务器的所有请求。如果你不熟悉 Express 或中间件，只需知道每当服务器收到请求时，我们的 `handleRender` 函数都会被调用。
+The following is the outline for what our server side is going to look like. We are going to set up an [Express middleware](https://expressjs.com/guide/using-middleware.html) using `app.use` to handle all requests that come in to our server. If you're unfamiliar with Express or middleware, just know that our `handleRender` function will be called every time the server receives a request.
 
-另外，由于我们使用现代 JS 和 JSX 语法，需要用 [Babel](https://babeljs.io/) 编译（参见 [使用 Babel 的 Node 服务器示例](https://github.com/babel/example-node-server)），并使用 [React preset](https://babeljs.io/docs/plugins/preset-react/)。
+##### `server.tsx`
 
-##### `server.js`
-
-```js
-import path from 'path'
-import Express from 'express'
-import React from 'react'
-import { createStore } from 'redux'
+```tsx
+import express from 'express'
+import type { Request, Response } from 'express'
+import { renderToString } from 'react-dom/server'
 import { Provider } from 'react-redux'
-import counterApp from './reducers'
-import App from './containers/App'
+import { makeStore } from './app/store'
+import type { RootState } from './app/store'
+import App from './App'
 
-const app = Express()
+const app = express()
 const port = 3000
 
-// 提供静态文件服务
-app.use('/static', Express.static('static'))
+// Serve static files
+app.use('/static', express.static('static'))
 
 // 每次服务器接收到请求时都会触发
 app.use(handleRender)
 
-// 以下函数将在后续章节中完善
-function handleRender(req, res) {
+// We are going to fill these out in the sections to follow
+async function handleRender(req: Request, res: Response) {
   /* ... */
 }
-function renderFullPage(html, preloadedState) {
+function renderFullPage(html: string, preloadedState: RootState) {
   /* ... */
 }
 
@@ -78,16 +106,14 @@ app.listen(port)
 
 渲染时，我们将根组件 `<App />` 包裹在 `<Provider>` 中，使 store 可供组件树中的所有组件访问，就像我们在[“Redux 基础”第五部分：UI 与 React](../tutorials/fundamentals/part-5-ui-and-react.md)中看到的那样。
 
-服务器渲染的关键步骤是 _**在发送给客户端之前**_ 渲染组件的初始 HTML。为此，我们使用 [ReactDOMServer.renderToString()](https://react.dev/reference/react-dom/server/renderToString)。
+The key step in server side rendering is to render the initial HTML of our component _**before**_ we send it to the client side. To do this, we use [`renderToString()`](https://react.dev/reference/react-dom/server/renderToString) from `react-dom/server`.
 
-接着，我们通过 [`store.getState()`](../api/Store.md#getState) 获取 Redux store 的初始状态。如何将这个状态传递出去，我们将在 `renderFullPage` 函数中看到。
+We then get the initial state from our Redux store using [`store.getState()`](../api/Store.md#getstate). We will see how this is passed along in our `renderFullPage` function.
 
-```js
-import { renderToString } from 'react-dom/server'
-
-function handleRender(req, res) {
-  // 创建一个新的 Redux store 实例
-  const store = createStore(counterApp)
+```tsx
+async function handleRender(req: Request, res: Response) {
+  // Create a new Redux store instance
+  const store = makeStore()
 
   // 将组件渲染为字符串
   const html = renderToString(
@@ -104,7 +130,13 @@ function handleRender(req, res) {
 }
 ```
 
-### 注入初始组件 HTML 和状态
+:::caution Never share a store between requests
+
+The store must be created inside the request handler. A store created at module scope would be shared by every request the server handles, so one user's data would leak into another user's page. This applies equally to Express handlers, framework loaders, and React Server Components.
+
+:::
+
+### Inject Initial Component HTML and State
 
 服务器端的最后一步，是将我们的初始组件 HTML 和初始状态注入一个模板中，以便客户端渲染。为了传递状态，我们添加了一个 `<script>` 标签，将 `preloadedState` 赋值给 `window.__PRELOADED_STATE__`。
 
@@ -112,13 +144,13 @@ function handleRender(req, res) {
 
 我们还通过 script 标签引入了客户端应用的捆绑文件。这个文件是打包工具输出的客户端入口点，可能是静态文件，也可能是热重载开发服务器的 URL。
 
-```js
-function renderFullPage(html, preloadedState) {
+```tsx
+function renderFullPage(html: string, preloadedState: RootState) {
   return `
     <!doctype html>
     <html>
       <head>
-        <title>Redux Universal Example</title>
+        <title>Redux Server Rendering Example</title>
       </head>
       <body>
         <div id="root">${html}</div>
@@ -139,37 +171,42 @@ function renderFullPage(html, preloadedState) {
 
 ## 客户端
 
-客户端非常直接。我们只需要从 `window.__PRELOADED_STATE__` 中获取初始状态，并将它作为初始状态传给 [`createStore()`](../api/createStore.md) 函数。
+The client side is very straightforward. All we need to do is grab the initial state from `window.__PRELOADED_STATE__`, and pass it to `makeStore` as the `preloadedState`.
 
 来看一下客户端的文件：
 
-#### `client.js`
+#### `client.tsx`
 
-```js
-import React from 'react'
-import { hydrate } from 'react-dom'
-import { createStore } from 'redux'
+```tsx
+import { hydrateRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
-import App from './containers/App'
-import counterApp from './reducers'
+import { makeStore } from './app/store'
+import type { RootState } from './app/store'
+import App from './App'
 
-// 用服务器注入的状态创建 Redux store
-const store = createStore(counterApp, window.__PRELOADED_STATE__)
+declare global {
+  interface Window {
+    __PRELOADED_STATE__?: RootState
+  }
+}
+
+// Create Redux store with state injected by the server
+const store = makeStore(window.__PRELOADED_STATE__)
 
 // 允许注入的状态被垃圾回收
 delete window.__PRELOADED_STATE__
 
-hydrate(
+hydrateRoot(
+  document.getElementById('root')!,
   <Provider store={store}>
     <App />
-  </Provider>,
-  document.getElementById('root')
+  </Provider>
 )
 ```
 
-你可以使用你偏好的构建工具（Webpack、Browserify 等）将文件编译并输出为 `static/bundle.js`。
+You can set up your build tool of choice (Vite, webpack, etc.) to compile a bundle file into `static/bundle.js`.
 
-页面加载时，该捆绑文件启动，[`ReactDOM.hydrate()`](https://reactjs.org/docs/react-dom.html#hydrate) 会复用服务端渲染的 HTML。这会将新启动的 React 实例连接到服务器用的虚拟 DOM。由于我们有相同的 Redux 初始状态，并且所有视图组件使用了相同代码，输出的真实 DOM 结构将保持一致。
+When the page loads, the bundle file will be started up and [`hydrateRoot()`](https://react.dev/reference/react-dom/client/hydrateRoot) will reuse the server-rendered HTML. This attaches React to the existing DOM instead of creating it from scratch. Since we have the same initial state for our Redux store and used the same code for all our view components, the result will be the same real DOM.
 
 就是这样！这就是实现服务器渲染所需做的全部工作。
 
@@ -177,7 +214,7 @@ hydrate(
 
 :::info
 
-我们建议直接将 `window.__PRELOADED_STATE__` 传递给 `createStore`，避免创建额外的引用（例如 `const preloadedState = window.__PRELOADED_STATE__`），以促进垃圾回收。
+We recommend passing `window.__PRELOADED_STATE__` directly to `makeStore` and avoid creating additional references to the preloaded state (e.g. `const preloadedState = window.__PRELOADED_STATE__`) so that it can be garbage collected.
 
 :::
 
@@ -191,22 +228,18 @@ hydrate(
 
 请求包含描述所请求 URL 的信息，包括查询参数，在使用类似 [React Router](https://github.com/remix-run/react-router) 时这很有用。请求还可能包含如 cookie、授权信息的 headers 或 POST 请求体数据。来看如何根据查询参数设置计数器的初始状态。
 
-#### `server.js`
+#### `server.tsx`
 
-```js
-import qs from 'qs' // 文件顶部添加此行
-import { renderToString } from 'react-dom/server'
+```tsx
+async function handleRender(req: Request, res: Response) {
+  // Read the counter from the request, if provided
+  const counter = parseInt(String(req.query.counter), 10) || 0
 
-function handleRender(req, res) {
-  // 读取请求中的 counter 参数（如果提供的话）
-  const params = qs.parse(req.query)
-  const counter = parseInt(params.counter, 10) || 0
+  // Compile an initial state
+  const preloadedState = { counter: { value: counter } }
 
-  // 编译初始状态
-  let preloadedState = { counter }
-
-  // 创建新的 Redux store 实例
-  const store = createStore(counterApp, preloadedState)
+  // Create a new Redux store instance
+  const store = makeStore(preloadedState)
 
   // 将组件渲染为字符串
   const html = renderToString(
@@ -227,67 +260,67 @@ function handleRender(req, res) {
 
 ### 异步数据获取
 
-服务器渲染最常见的问题是异步状态的处理。服务器渲染本质上是同步的，因此需要将异步请求转换为同步操作。
-
-最简单的方式是通过回调函数将异步结果传递回同步代码。在这里，这个回调函数会引用响应对象，负责发送渲染好的 HTML 给客户端。别担心，没想象的那么难。
+The most common issue with server side rendering is dealing with state that comes in asynchronously. `renderToString` is synchronous, so any data the first render needs has to be loaded _before_ we call it. Because our request handler is an `async` function, we can `await` the data, then build the store and render.
 
 举例来说，我们假设有一个外部数据源存储计数器的初始值（Counter As A Service，简称 CaaS）。我们模拟调用该服务构建初始状态。先实现 API 调用：
 
-#### `api/counter.js`
+#### `api/counter.ts`
 
-```js
-function getRandomInt(min, max) {
+```ts
+function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min)) + min
 }
 
-export function fetchCounter(callback) {
-  setTimeout(() => {
-    callback(getRandomInt(1, 100))
-  }, 500)
-}
-```
-
-这只是一个模拟 API，使用 `setTimeout` 模拟网络请求，延迟 500 毫秒（真实 API 应更快）。异步通过回调返回一个随机数。如果你用的是基于 Promise 的 API 客户端，回调可以写在 `then` 里。
-
-服务器端，我们只需将已有代码包裹在 `fetchCounter` 内，通过回调接收结果：
-
-#### `server.js`
-
-```js
-// 导入新增模块
-import { fetchCounter } from './api/counter'
-import { renderToString } from 'react-dom/server'
-
-function handleRender(req, res) {
-  // 异步调用模拟 API
-  fetchCounter(apiResult => {
-    // 读取请求中的 counter 参数（如果提供的话）
-    const params = qs.parse(req.query)
-    const counter = parseInt(params.counter, 10) || apiResult || 0
-
-    // 编译初始状态
-    let preloadedState = { counter }
-
-    // 创建 Redux store 实例
-    const store = createStore(counterApp, preloadedState)
-
-    // 渲染组件成字符串
-    const html = renderToString(
-      <Provider store={store}>
-        <App />
-      </Provider>
-    )
-
-    // 获取最终状态
-    const finalState = store.getState()
-
-    // 发送页面给客户端
-    res.send(renderFullPage(html, finalState))
+export function fetchCounter(): Promise<number> {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve(getRandomInt(1, 100))
+    }, 500)
   })
 }
 ```
 
-由于我们在回调内调用了 `res.send()`，服务器会保持连接直到回调执行。你会注意到现在每个请求都会额外有 500 毫秒的延迟。更高级的用法会优雅处理 API 错误，比如返回错误或请求超时。
+Again, this is just a mock API, so we use `setTimeout` to simulate a network request that takes 500 milliseconds to respond (this should be much faster with a real world API). A real client would return the promise from `fetch` or a database query instead.
+
+On the server side, we `await` the result before creating the store:
+
+#### `server.tsx`
+
+```tsx
+// Add this to our imports
+import { fetchCounter } from './api/counter'
+
+async function handleRender(req: Request, res: Response) {
+  // Query our mock API asynchronously
+  const apiResult = await fetchCounter()
+
+  // Read the counter from the request, if provided
+  const counter = parseInt(String(req.query.counter), 10) || apiResult || 0
+
+  // Compile an initial state
+  const preloadedState = { counter: { value: counter } }
+
+  // Create a new Redux store instance
+  const store = makeStore(preloadedState)
+
+  // Render the component to a string
+  const html = renderToString(
+    <Provider store={store}>
+      <App />
+    </Provider>
+  )
+
+  // Grab the initial state from our Redux store
+  const finalState = store.getState()
+
+  // Send the rendered page back to the client
+  res.send(renderFullPage(html, finalState))
+}
+```
+
+Because we `await` before calling `res.send()`, the server will hold open the connection and won't send any data until the fetch completes. You'll notice a 500ms delay is now added to each server request as a result of our new API call. A more advanced usage would handle errors in the API gracefully, such as a bad response or timeout.
+
+You can also do the loading through the store itself: create the store first, `await store.dispatch(someThunk())` or `await store.dispatch(api.endpoints.getCounter.initiate())` for RTK Query, then render. The result is the same, but the data-loading logic lives in your Redux code and can be reused on the client.
 
 ### 安全注意事项
 
@@ -295,12 +328,16 @@ function handleRender(req, res) {
 
 示例中，我们采取了初级安全措施。解析请求参数时，我们对 `counter` 参数使用了 `parseInt`，保证其为数字。如果不这么做，攻击者可能在请求中加入恶意脚本标签，比如：`?counter=</script><script>doSomethingBad();</script>`，这会被直接渲染进 HTML。
 
-对于简单示例，将输入强制转换为数字已足够安全。若处理更复杂输入（如自由文本），建议使用合适的清理工具，例如 [xss-filters](https://github.com/yahoo/xss-filters)。
+For our simplistic example, coercing our input into a number is sufficiently secure. If you're handling more complex input, such as freeform text, then you should run that input through an appropriate sanitization library.
 
 此外，你还可以添加额外的安全层，对状态输出进行清理。`JSON.stringify` 可能引发脚本注入。为防止，通常对字符串进行替换，去除 HTML 标签和其他危险字符。例如使用 `JSON.stringify(state).replace(/</g, '\\u003c')`，或者更复杂的库，如 [serialize-javascript](https://github.com/yahoo/serialize-javascript)。
 
-## 后续步骤
+Embedding the state as JSON in a `<script>` tag is also the fastest way to hand it to the browser. See [The Fastest Way of Passing State to JavaScript, Re-visited](https://calendar.perfplanet.com/2023/fastest-way-passing-state-javascript-revisited/) for measurements of the alternatives and the escaping rules you need to follow.
 
-你可以阅读[“Redux 基础”第六部分：异步逻辑与数据获取](../tutorials/fundamentals/part-6-async-logic.md)，进一步了解如何用 Promise 和 thunk 等异步原语表达 Redux 中的异步流程。请记住，这些知识同样适用于通用渲染。
+## Next Steps
 
-如果你用的是类似 [React Router](https://github.com/remix-run/react-router) 的路由库，你可能想把数据获取依赖表达为路由处理组件上的静态 `fetchData()` 方法。它们可返回 [thunks](../tutorials/fundamentals/part-6-async-logic.md)，让你的 `handleRender` 函数能基于路由匹配路由处理组件，分发每个组件的 `fetchData()` 返回结果，并在所有 Promise 完成后再渲染页面。这样不同路由所需的 API 调用就和路由组件定义放在一起了。客户端也可用类似方法，阻止路由切换直到数据加载完成。
+You may want to read [Redux Fundamentals Part 6: Async Logic and Data Fetching](../tutorials/fundamentals/part-6-async-logic.md) to learn more about expressing asynchronous flow in Redux with async primitives such as Promises and thunks. Keep in mind that anything you learn there can also be applied to server rendering.
+
+If you use a router, you'll usually want to express each route's data requirements next to the route definition, load them before rendering, and render only after the data is in the store. React Router's framework mode and TanStack Start both provide route loaders for this, and Next.js has its own data-loading conventions; see [Redux Toolkit Setup with Next.js](./nextjs.mdx) for an example of creating the store per request in a framework.
+
+React 18+ also supports streaming server rendering with [`renderToPipeableStream`](https://react.dev/reference/react-dom/server/renderToPipeableStream). Redux works the same way there: create the store per request and pass the state to the client. Frameworks handle the details of streaming state alongside the HTML.

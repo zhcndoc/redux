@@ -6,6 +6,7 @@ description: '官方 Redux 基础教程：学习如何将 Redux 与 React 一起
 ---
 
 import { DetailedExplanation } from '../../components/DetailedExplanation'
+import { LiveExample } from '@site/src/components/LiveExample'
 
 :::tip 你将学到的内容
 
@@ -22,7 +23,7 @@ import { DetailedExplanation } from '../../components/DetailedExplanation'
 
 :::caution
 
-请注意，**本页面及所有“基础”教程都讲解如何使用[我们的现代 React-Redux hooks API](https://react-redux.js.org/api/hooks)**。旧式的[`connect` API](https://react-redux.js.org/api/connect) 仍然可用，但如今我们希望所有 Redux 用户都使用 hooks API。
+Note that **this page and all of the "Essentials" tutorial teach how to use [our modern React-Redux hooks API](/react-redux/api/hooks)**. The old-style [`connect` API](/react-redux/api/connect) still works, but today we want all Redux users using the hooks API.
 
 此外，本教程的其他页面故意展示了更传统的 Redux 逻辑模式，这些模式代码较多，目的是为了讲解 Redux 背后的原理和概念。而我们推荐用 Redux Toolkit 中的“现代 Redux”模式，这是构建 Redux 应用的推荐方式。
 
@@ -91,7 +92,7 @@ document.getElementById('increment').addEventListener('click', function () {
 
 ## 在 React 中使用 Redux
 
-官方的[**React-Redux UI 绑定库**](https://react-redux.js.org)是与 Redux 核心分开的独立包。你需要额外安装它：
+The official [**React-Redux UI bindings library**](/react-redux) is a separate package from the Redux core. You'll need to install that in addition:
 
 ```sh
 npm install react-redux
@@ -123,13 +124,12 @@ npm install react-redux
 
 这是添加 Redux 逻辑之前该应用的初始 React UI：
 
-<iframe
-  class="codesandbox"
-  src="https://codesandbox.io/embed/github/reduxjs/redux-fundamentals-example-app/tree/checkpoint-3-initialUI/?codemirror=1&fontsize=14&hidenavigation=1&theme=dark&view=preview&runonclick=1"
-  title="redux-fundamentals-example-app"
-  allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
-  sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
-></iframe>
+<LiveExample
+  repo="reduxjs/redux-fundamentals-example-app"
+  ref="checkpoint-3-initialUI"
+  view="preview"
+  title="Redux Fundamentals: initial UI"
+/>
 
 ### 使用 `useSelector` 从存储读取状态
 
@@ -137,9 +137,9 @@ npm install react-redux
 
 你应该熟悉像 [React hooks 的 `useState`](https://react.dev/reference/react/useState)，它可在函数组件中使组件拥有 React 状态。React 也让我们编写[自定义 Hooks](https://react.dev/learn/reusing-logic-with-custom-hooks)，抽取可重用逻辑，封装在自己的 Hook 里。
 
-像许多其他库一样，React-Redux 也包含[自定义 Hooks](https://react-redux.js.org/api/hooks)，你可以在组件里使用。React-Redux hooks 让组件有能力与 Redux 存储交互，读取状态和派发动作。
+Like many other libraries, React-Redux includes [its own custom hooks](/react-redux/api/hooks), which you can use in your own components. The React-Redux hooks give your React component the ability to talk to the Redux store by reading state and dispatching actions.
 
-第一个要看的是[**`useSelector` Hook**](https://react-redux.js.org/api/hooks#useselector)，它**让你的 React 组件能从 Redux 存储读取数据**。
+The first React-Redux hook that we'll look at is the [**`useSelector` hook**](/react-redux/api/hooks#useselector), which **lets your React components read data from the Redux store**.
 
 `useSelector` 接收一个函数，称为**selector 选择器函数**。**选择器函数接收整个 Redux 存储状态作为参数，从状态中读取某个值并返回该结果**。
 
@@ -162,7 +162,7 @@ const selectTotalCompletedTodos = state => {
 
 我们在 `<TodoList>` 组件里读取 todos 数组。首先导入 `react-redux` 的 `useSelector`，然后用一个选择器函数作为参数调用它：
 
-```jsx title="src/features/todos/TodoList.js"
+```jsx title="src/features/todos/TodoList.jsx"
 import React from 'react'
 // highlight-next-line
 import { useSelector } from 'react-redux'
@@ -228,7 +228,7 @@ const todos = useSelector(state => state.todos)
 
 现在我们知道如何将存储数据读取到组件，但如何从组件派发动作？我们知道在 React 外部可以直接写 `store.dispatch(action)`，但组件里没法直接访问 store，我们需要某种方式单独拿到 `dispatch` 函数。
 
-React-Redux 的[**`useDispatch` Hook**](https://react-redux.js.org/api/hooks#usedispatch) 为我们提供了存储的 `dispatch` 方法作为结果。（其实，这个 hook 实现就是 `return store.dispatch`。）
+The React-Redux [**`useDispatch` hook**](/react-redux/api/hooks#usedispatch) gives us the store's `dispatch` method as its result. (In fact, the implementation of the hook really is `return store.dispatch`.)
 
 因此，我们可以在任何需要派发动作的组件里调用 `const dispatch = useDispatch()`，然后按需用 `dispatch(someAction)` 派发动作。
 
@@ -236,7 +236,7 @@ React-Redux 的[**`useDispatch` Hook**](https://react-redux.js.org/api/hooks#use
 
 我们写一个典型的 React 表单组件，使用[“受控组件”](https://react.dev/reference/react-dom/components/input#controlling-an-input-with-a-state-variable) 让用户输入文本。用户按下回车键时派发动作。
 
-```jsx title="src/features/header/Header.js"
+```jsx title="src/features/header/Header.jsx"
 import React, { useState } from 'react'
 // highlight-next-line
 import { useDispatch } from 'react-redux'
@@ -282,9 +282,9 @@ export default Header
 
 我们必须明确告诉 React-Redux 用哪个存储。在整个 `<App>` 组件外围渲染一个 `<Provider>` 组件，并将存储作为 prop 传给它。这样之后，应用中所有组件都能访问到该存储。
 
-把它加到主入口文件 `index.js` 中：
+Let's add that to our main `main.jsx` file:
 
-```jsx title="src/index.js"
+```jsx title="src/main.jsx"
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 // highlight-next-line
@@ -315,13 +315,11 @@ root.render(
 
 现在我们可以实际操作应用了！这是到目前为止的 UI 效果：
 
-<iframe
-  class="codesandbox"
-  src="https://codesandbox.io/embed/github/reduxjs/redux-fundamentals-example-app/tree/checkpoint-4-initialHooks/?codemirror=1&fontsize=14&hidenavigation=1&theme=dark&runonclick=1"
-  title="redux-fundamentals-example-app"
-  allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
-  sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
-></iframe>
+<LiveExample
+  repo="reduxjs/redux-fundamentals-example-app"
+  ref="checkpoint-4-initialHooks"
+  title="Redux Fundamentals: initial hooks"
+/>
 
 接下来看看在待办事项应用中，我们还能怎样使用这些工具。
 
@@ -376,7 +374,7 @@ root.render(
 
 对应 React-Redux 的部分代码可能是：
 
-```jsx title="src/features/footer/Footer.js"
+```jsx title="src/features/footer/Footer.jsx"
 import React from 'react'
 // highlight-next-line
 import { useSelector } from 'react-redux'
@@ -435,7 +433,7 @@ export default Footer
 
 试试这种方法：
 
-```jsx title="src/features/todos/TodoList.js"
+```jsx title="src/features/todos/TodoList.jsx"
 import React from 'react'
 import { useSelector } from 'react-redux'
 import TodoListItem from './TodoListItem'
@@ -460,7 +458,7 @@ const TodoList = () => {
 
 接下来 `<TodoListItem>` 根据这个 ID 读取对应的待办，然后也修改它派发“切换完成状态”的动作：
 
-```jsx title="src/features/todos/TodoListItem.js"
+```jsx title="src/features/todos/TodoListItem.jsx"
 import React from 'react'
 // highlight-next-line
 import { useSelector, useDispatch } from 'react-redux'
@@ -510,7 +508,7 @@ export default TodoListItem
 
 React-Redux 提供了 `shallowEqual`，它做浅比较，判断数组元素是否一致。试试：
 
-```jsx title="src/features/todos/TodoList.js"
+```jsx title="src/features/todos/TodoList.jsx"
 import React from 'react'
 // highlight-next-line
 import { useSelector, shallowEqual } from 'react-redux'
@@ -552,13 +550,11 @@ const TodoList = () => {
 
 这是包含我们跳过细节的组件和功能的当前完整应用：
 
-<iframe
-  class="codesandbox"
-  src="https://codesandbox.io/embed/github/reduxjs/redux-fundamentals-example-app/tree/checkpoint-5-uiAllActions/?codemirror=1&fontsize=14&hidenavigation=1&theme=dark&runonclick=1"
-  title="redux-fundamentals-example-app"
-  allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
-  sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
-></iframe>
+<LiveExample
+  repo="reduxjs/redux-fundamentals-example-app"
+  ref="checkpoint-5-uiAllActions"
+  title="Redux Fundamentals: UI with all actions"
+/>
 
 :::tip 总结
 

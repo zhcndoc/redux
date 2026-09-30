@@ -16,10 +16,10 @@ description: '在 Next.js 项目中设置 Redux 的说明'
 
 :::info 前置知识
 
-- 熟悉 [ES2015 语法和特性](https://www.taniarascia.com/es6-syntax-and-feature-overview/)
-- 了解 React 术语：[JSX](https://reactjs.org/docs/introducing-jsx.html)、[State](https://reactjs.org/docs/state-and-lifecycle.html)、[函数组件和 Props](https://reactjs.org/docs/components-and-props.html)，以及[Hooks](https://reactjs.org/docs/hooks-intro.html)
-- 理解 [Redux 术语和概念](https://redux.js.org/tutorials/fundamentals/part-2-concepts-data-flow)
-- 推荐完成 [快速开始教程](../tutorials/quick-start.md) 和 [TypeScript 快速开始教程](../tutorials/typescript.md)，最好还要完整学习 [Redux Essentials 教程](https://redux.js.org/tutorials/essentials/part-1-overview-concepts)
+- Familiarity with [ES2015 syntax and features](https://www.taniarascia.com/es6-syntax-and-feature-overview/)
+- Knowledge of React terminology: [JSX](https://react.dev/learn/writing-markup-with-jsx), [State](https://react.dev/learn/state-a-components-memory), [Function Components, Props](https://react.dev/learn/passing-props-to-a-component), and [Hooks](https://react.dev/reference/react/hooks)
+- Understanding of [Redux terms and concepts](https://redux.js.org/tutorials/fundamentals/part-2-concepts-data-flow)
+- Working through the [Quick Start tutorial](../tutorials/quick-start.md) is recommended, and ideally the full [Redux Essentials](https://redux.js.org/tutorials/essentials/part-1-overview-concepts) tutorial as well
 
 :::
 
@@ -84,7 +84,7 @@ Next 应用的 `/app` 文件夹可位于根目录或 `/src/app` 下。你的 Red
 
 ## 初始配置
 
-类似于[RTK TypeScript 教程](../tutorials/typescript.md)，需要创建一个 Redux store 文件，以及推断的 `RootState` 和 `AppDispatch` 类型。
+Similar to the [Quick Start tutorial](../tutorials/quick-start.md), we need to create a file for the Redux store, as well as the inferred `RootState` and `AppDispatch` types.
 
 不过，由于 Next 的多页面架构，需要与单页应用不同的处理方式。
 
@@ -112,7 +112,7 @@ export type AppDispatch = AppStore['dispatch']
 
 我们没导出 `store` 变量，但可通过 `makeStore` 返回类型推断 `RootState` 和 `AppDispatch`。
 
-你还可以创建并导出经过预设类型的 React-Redux hooks（参见[定义类型化的 hooks](../tutorials/typescript.md#define-typed-hooks)），便于后续使用：
+You'll also want to create and export [pre-typed versions of the React-Redux hooks as well](../tutorials/quick-start.md#define-typed-hooks), to simplify usage later:
 
 ```ts title="lib/hooks.ts"
 // file: lib/store.ts noEmit
@@ -168,7 +168,7 @@ export type AppDispatch = AppStore['dispatch']
 
 // file: app/StoreProvider.tsx
 'use client'
-import { useRef } from 'react'
+import { useState } from 'react'
 import { Provider } from 'react-redux'
 // highlight-start
 import { makeStore, AppStore } from '../lib/store'
@@ -180,18 +180,15 @@ export default function StoreProvider({
   children: React.ReactNode
 }) {
   // highlight-start
-  const storeRef = useRef<AppStore | null>(null)
-  if (!storeRef.current) {
-    // 第一次渲染时创建 store 实例
-    storeRef.current = makeStore()
-  }
+  // Create the store instance the first time this renders
+  const [store] = useState<AppStore>(makeStore)
   // highlight-end
 
-  return <Provider store={storeRef.current}>{children}</Provider>
+  return <Provider store={store}>{children}</Provider>
 }
 ```
 
-示例中，我们用一个引用变量确保该客户端组件的重渲染安全，store 只创建一次。此组件在服务器端每个请求只渲染一次，但在客户端可能因上层有状态组件或自身有可变状态，导致多次重渲染。
+In this example code we are ensuring that this client component is re-render safe. The lazy initializer passed to `useState` runs only on the first render, so the store is created exactly once. This component will only be rendered once per request on the server, but might be re-rendered multiple times on the client if there are stateful client components located above this component in the tree, or if this component also contains other mutable state that causes a re-render.
 
 :::tip 为什么是客户端组件？
 
@@ -247,7 +244,7 @@ export type AppDispatch = AppStore['dispatch']
 
 // file: app/StoreProvider.tsx
 'use client'
-import { useRef } from 'react'
+import { useState } from 'react'
 import { Provider } from 'react-redux'
 import { makeStore, AppStore } from '../lib/store'
 // highlight-start
@@ -261,15 +258,15 @@ export default function StoreProvider({
   count: number
   children: React.ReactNode
 }) {
-  const storeRef = useRef<AppStore | null>(null)
-  if (!storeRef.current) {
-    storeRef.current = makeStore()
+  const [store] = useState<AppStore>(() => {
+    const newStore = makeStore()
     // highlight-start
-    storeRef.current.dispatch(initializeCount(count))
+    newStore.dispatch(initializeCount(count))
     // highlight-end
-  }
+    return newStore
+  })
 
-  return <Provider store={storeRef.current}>{children}</Provider>
+  return <Provider store={store}>{children}</Provider>
 }
 ```
 
@@ -279,9 +276,7 @@ export default function StoreProvider({
 
 如果使用 Next.js 的客户端 SPA 风格导航（使用 `next/navigation`），用户在页面间导航时，仅路由组件会重新渲染。这意味着如果在布局组件中创建并提供了同一个 Redux store，路由切换时该 store 会保留下来。
 
-这对只存储全局可变数据没问题，但如果将路由特定数据存储在 store 中，则需要在路由切换时重置这些数据。
-
-以下示例展示一个 `ProductName` 组件，它通过 Redux store 管理产品的可变名称。此组件是产品详情路由的一部分。为了保证 store 中名称的正确性，需要在 `ProductName` 初次渲染时（每次路由切换到此路由时）设置 store 的值。
+Shown below is a `ProductName` example component that uses the Redux store to manage the mutable name of a product. The `ProductName` component is part of a product detail route. In order to ensure that we have the correct name in the store we need to set the value in the store any time the `ProductName` component is initially rendered, which happens on any route change to the product detail route.
 
 ```ts title="app/ProductName.tsx"
 // file: lib/features/product/productSlice.ts noEmit
@@ -393,7 +388,7 @@ export const dynamic = 'force-dynamic'
 
 建议仅 **在客户端** 使用 RTK Query 进行数据请求。服务器端的数据请求应该用异步的 React Server Components 中的 `fetch`。
 
-你可以在 [Redux Toolkit Query 教程](https://redux-toolkit.js.org/tutorials/rtk-query) 学习更多。
+You can learn more about Redux Toolkit Query in the [Redux Toolkit Query tutorial](/toolkit/tutorials/rtk-query).
 
 :::note
 

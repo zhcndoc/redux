@@ -20,9 +20,9 @@ sidebar_label: 通用
 
 **文章**
 
-- [Deciding What Not To Learn](https://gedd.ski/post/what-not-to-learn/)
+- [Deciding What Not To Learn](https://mastery.games/post/what-not-to-learn/)
 - [How to learn web frameworks](https://ux.shopify.com/how-to-learn-web-frameworks-9d447cb71e68)
-- [Redux vs MobX vs Flux vs... Do you even need that?](https://goshakkk.name/redux-vs-mobx-vs-flux-etoomanychoices/)
+- [Redux vs MobX vs Flux vs... Do you even need that?](https://goshacmd.com/redux-vs-mobx-vs-flux-etoomanychoices/)
 
 **讨论**
 

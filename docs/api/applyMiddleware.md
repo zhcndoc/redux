@@ -5,6 +5,9 @@ hide_title: true
 description: 'API > applyMiddleware：扩展 Redux store'
 ---
 
+<!-- prettier-ignore -->
+import CoreApiNote from "../components/_CoreApiNote.mdx";
+
 &nbsp;
 
 # `applyMiddleware(...middleware)`
@@ -13,17 +16,15 @@ description: 'API > applyMiddleware：扩展 Redux store'
 
 中间件是扩展 Redux 以实现自定义功能的推荐方式。中间件可以让你包装 store 的 [`dispatch`](Store.md#dispatchaction) 方法，既有趣又实用。中间件的关键特点是它具备可组合性。多个中间件可以组合在一起，每个中间件不需要了解链中它之前或之后的中间件是做什么的。
 
-:::warning 警告
+<CoreApiNote />
 
-你通常不需要直接调用 `applyMiddleware`。Redux Toolkit 的 [`configureStore` 方法](https://redux-toolkit.js.org/api/configureStore) 会自动为 store 添加一组默认的中间件，或者接受一个中间件列表以添加。
-
-:::
+You shouldn't have to call `applyMiddleware` directly. [`configureStore`](/toolkit/api/configureStore) applies it for you, adds a default set of middleware (including `redux-thunk`), and accepts a `middleware` callback for adding more.
 
 中间件最常见的用例是支持异步动作，而无需大量模板代码或依赖像 [Rx](https://github.com/Reactive-Extensions/RxJS) 这样的库。中间件通过允许你分发[异步动作](../understanding/thinking-in-redux/Glossary.md#async-action)（除了普通动作之外）来实现这一点。
 
 例如，[redux-thunk](https://github.com/reduxjs/redux-thunk) 允许 action 创建者通过分发函数来反转控制流。这些函数会接收 [`dispatch`](Store.md#dispatchaction) 作为参数，并且可以异步调用它。这类函数称为 _thunks_。另一个中间件示例是 [redux-promise](https://github.com/acdlite/redux-promise)。它允许你分发一个 [Promise](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise) 异步动作，并在 Promise 解析时分发一个普通动作。
 
-Redux 原生的 [`createStore`](createStore.md) 方法默认并不支持中间件——必须通过 `applyMiddleware` 来配置，才能添加这类功能。然而，Redux Toolkit 的 [`configureStore` 方法](https://redux-toolkit.js.org/api/configureStore) 默认会自动添加中间件支持。
+The original Redux [`createStore`](createStore.md) method does not understand what middleware are out of the box - it has to be configured with `applyMiddleware` to add that behavior.
 
 ## 参数
 
@@ -178,22 +179,19 @@ store
 
 // 我还可以在组件的 props 变化时分发 thunk 异步动作加载缺失数据。
 
-import React from 'react'
-import { connect } from 'react-redux'
+import { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 
-function SandwichShop(props) {
-  const { dispatch, forPerson } = props
+export function SandwichShop({ forPerson }) {
+  const dispatch = useDispatch()
+  const sandwiches = useSelector(state => state.sandwiches)
 
   useEffect(() => {
     dispatch(makeASandwichWithSecretSauce(forPerson))
-  }, [forPerson])
+  }, [dispatch, forPerson])
 
-  return <p>{this.props.sandwiches.join('mustard')}</p>
+  return <p>{sandwiches.join('mustard')}</p>
 }
-
-export default connect(state => ({
-  sandwiches: state.sandwiches
-}))(SandwichShop)
 ```
 
 ## 小贴士

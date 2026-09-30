@@ -4,9 +4,14 @@ title: 重用 Reducer 逻辑
 description: '结构化 Reducers > 重用 Reducer 逻辑：创建可重用 reducers 的模式'
 ---
 
-# 重用 Reducer 逻辑
+<!-- prettier-ignore -->
+import HandWrittenReducersNote from "../../components/_HandWrittenReducersNote.mdx";
 
-随着应用程序规模的增长，reducer 逻辑中的常见模式将开始显现。你可能会发现 reducer 逻辑的多个部分针对不同类型的数据做着相同类型的工作，想通过重用相同的公共逻辑来减少重复。或者，你可能想在 store 中处理某种类型数据的多个“实例”。然而，Redux store 的全局结构带来了一些权衡：它使得跟踪应用程序的整体状态变得容易，但也会使“定位”需要更新特定状态的动作变得更困难，尤其是当你使用 `combineReducers` 时。
+# Reusing Reducer Logic
+
+<HandWrittenReducersNote />
+
+As an application grows, common patterns in reducer logic will start to emerge. You may find several parts of your reducer logic doing the same kinds of work for different types of data, and want to reduce duplication by reusing the same common logic for each data type. Or, you may want to have multiple "instances" of a certain type of data being handled in the store. However, the global structure of a Redux store comes with some trade-offs: it makes it easy to track the overall state of an application, but can also make it harder to "target" actions that need to update a specific piece of state, particularly if you are using `combineReducers`.
 
 举个例子，假设我们想在应用程序中跟踪多个计数器，命名为 A、B 和 C。我们定义了初始的 `counter` reducer，并使用 `combineReducers` 来设置状态：
 
@@ -126,26 +131,70 @@ const rootReducer = combineReducers({
 
 ```js
 function createFilteredReducer(reducerFunction, reducerPredicate) {
-    return (state, action) => {
-        const isInitializationCall = state === undefined;
-        const shouldRunWrappedReducer = reducerPredicate(action) || isInitializationCall;
-        return shouldRunWrappedReducer ? reducerFunction(state, action) : state;
-    }
+  return (state, action) => {
+    const isInitializationCall = state === undefined
+    const shouldRunWrappedReducer =
+      reducerPredicate(action) || isInitializationCall
+    return shouldRunWrappedReducer ? reducerFunction(state, action) : state
+  }
 }
 
 const rootReducer = combineReducers({
-    // 检查后缀字符串
-    counterA : createFilteredReducer(counter, action => action.type.endsWith('_A')),
-    // 检查 action 中的额外数据
-    counterB : createFilteredReducer(counter, action => action.name === 'B'),
-    // 响应所有 'INCREMENT' 动作，但永远不响应 'DECREMENT'
-    counterC : createFilteredReducer(counter, action => action.type === 'INCREMENT')
-};
+  // check for suffixed strings
+  counterA: createFilteredReducer(counter, action =>
+    action.type.endsWith('_A')
+  ),
+  // check for extra data in the action
+  counterB: createFilteredReducer(counter, action => action.name === 'B'),
+  // respond to all 'INCREMENT' actions, but never 'DECREMENT'
+  counterC: createFilteredReducer(
+    counter,
+    action => action.type === 'INCREMENT'
+  )
+})
 ```
 
-这些基本模式允许你做到，比如在 UI 中拥有多个智能连接组件的实例，或重用通用功能（如分页或排序）的公共逻辑。
+These basic patterns allow you to do things like having multiple instances of a store-connected component within the UI, or reuse common logic for generic capabilities such as pagination or sorting.
 
-除了用这种方式生成 reducers，你也可能想用相同方法生成 action creators，可以使用辅助函数同时生成它们。参见 [Action/Reducer Generators](https://github.com/markerikson/redux-ecosystem-links/blob/master/action-reducer-generators.md) 和 [Reducers](https://github.com/markerikson/redux-ecosystem-links/blob/master/reducers.md) 库，了解 action/reducer 的实用工具。
+In addition to generating reducers this way, you might also want to generate action creators using the same approach, and could generate them both at the same time with helper functions.
+
+## Reusing Logic with a `createSlice` Factory
+
+With Redux Toolkit, the "generate prefixed action types" approach falls out of `createSlice` for free. Every action type a slice generates is prefixed with the slice's `name`, so a function that calls `createSlice` with a different name each time produces reducers that only respond to their own actions, along with matching action creators:
+
+```ts
+import { configureStore, createSlice } from '@reduxjs/toolkit'
+
+function makeCounterSlice(name: string) {
+  return createSlice({
+    name,
+    initialState: 0,
+    reducers: {
+      incremented: state => state + 1,
+      decremented: state => state - 1
+    }
+  })
+}
+
+const counterA = makeCounterSlice('counterA')
+const counterB = makeCounterSlice('counterB')
+const counterC = makeCounterSlice('counterC')
+
+const store = configureStore({
+  reducer: {
+    counterA: counterA.reducer,
+    counterB: counterB.reducer,
+    counterC: counterC.reducer
+  }
+})
+
+store.dispatch(counterB.actions.incremented())
+// dispatches { type: 'counterB/incremented' }
+console.log(store.getState())
+// { counterA: 0, counterB: 1, counterC: 0 }
+```
+
+This is the `createCounterWithNamedType` pattern from above, with the action types and action creators generated for you. If you need several slices to share reducer logic but keep separate action types, define the case reducer functions once and pass them into each `createSlice` call.
 
 ## 集合 / 条目 Reducer 模式
 
@@ -153,35 +202,39 @@ const rootReducer = combineReducers({
 
 ```js
 function counterReducer(state, action) {
-    switch(action.type) {
-        case "INCREMENT" : return state + 1;
-        case "DECREMENT" : return state - 1;
-    }
+  switch (action.type) {
+    case 'INCREMENT':
+      return state + 1
+    case 'DECREMENT':
+      return state - 1
+    default:
+      return state
+  }
 }
 
 function countersArrayReducer(state, action) {
-    switch(action.type) {
-        case "INCREMENT":
-        case "DECREMENT":
-            return state.map( (counter, index) => {
-                if(index !== action.index) return counter;
-                return counterReducer(counter, action);
-            });
-        default:
-            return state;
-    }
+  switch (action.type) {
+    case 'INCREMENT':
+    case 'DECREMENT':
+      return state.map((counter, index) => {
+        if (index !== action.index) return counter
+        return counterReducer(counter, action)
+      })
+    default:
+      return state
+  }
 }
 
 function countersMapReducer(state, action) {
-    switch(action.type) {
-        case "INCREMENT":
-        case "DECREMENT":
-            return {
-                ...state,
-                state[action.name] : counterReducer(state[action.name], action)
-            };
-        default:
-            return state;
-    }
+  switch (action.type) {
+    case 'INCREMENT':
+    case 'DECREMENT':
+      return {
+        ...state,
+        [action.name]: counterReducer(state[action.name], action)
+      }
+    default:
+      return state
+  }
 }
 ```

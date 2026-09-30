@@ -1,6 +1,6 @@
 import type { Action, UnknownAction } from './actions'
 import type { Reducer } from './reducers'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// oxlint-disable-next-line typescript/no-unused-vars
 import _$$observable from '../utils/symbol-observable'
 
 /**
@@ -133,7 +133,7 @@ export interface Store<
    * progress. However, the next `dispatch()` call, whether nested or not,
    * will use a more recent snapshot of the subscription list.
    *
-   * 2. The listener should not expect to see all states changes, as the state
+   * 2. The listener should not expect to see all state changes, as the state
    * might have been updated multiple times during a nested `dispatch()` before
    * the listener is called. It is, however, guaranteed that all subscribers
    * registered before the `dispatch()` started will be called with the latest

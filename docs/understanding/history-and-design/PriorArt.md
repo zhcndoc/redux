@@ -35,7 +35,7 @@ Redux 受到了[Flux](https://facebookarchive.github.io/flux/)若干重要特性
 
 [Elm](https://elm-lang.org/) 是一种受 Haskell 启发，由 [Evan Czaplicki](https://twitter.com/evancz) 创建的函数式编程语言。它强制执行[“模型-视图-更新”架构](https://github.com/evancz/elm-architecture-tutorial/)，其中更新函数签名为 `(action, state) => state`。Elm 中的“updaters”相当于 Redux 中的 reducers。
 
-不同于 Redux，Elm 是一门语言，因此能够受益于强制的纯函数、静态类型、开箱即用的不可变性和模式匹配（使用 `case` 表达式）。即使你不打算用 Elm，也应该了解它的架构并试用。有一个有趣的[JavaScript 库 playground，借鉴了类似的理念](https://github.com/paldepind/noname-functional-frontend-framework)，我们可以从中为 Redux 寻找灵感！想要更接近 Elm 的静态类型能力，可以尝试[使用像 Flow 这样的渐进式类型方案](https://github.com/reduxjs/redux/issues/290)。
+Unlike Redux, Elm is a language, so it is able to benefit from many things like enforced purity, static typing, out of the box immutability, and pattern matching (using the `case` expression). Even if you don't plan to use Elm, you should read about the Elm architecture, and play with it. There is an interesting [JavaScript library playground implementing similar ideas](https://github.com/paldepind/noname-functional-frontend-framework). We should look there for inspiration on Redux! One way that we can get closer to the static typing of Elm is by [using TypeScript](../../usage/UsageWithTypescript.md).
 
 ### Immutable
 
@@ -45,7 +45,7 @@ Redux 受到了[Flux](https://facebookarchive.github.io/flux/)若干重要特性
 
 **Redux 不关心你如何存储状态——它可以是普通对象、Immutable 对象或任何其它形式。** 你可能需要一个（反）序列化机制来编写通用应用并从服务器激活状态，但除此之外，只要支持不可变性，你可以使用任何数据存储库。例如，直接用 Backbone 作为 Redux 状态就不合理，因为 Backbone 模型是可变的。
 
-即使你的不可变库支持光标（cursors），你也不该在 Redux 应用中使用。整个状态树应被视为只读，且应通过 Redux 来更新状态和订阅状态更新。因此通过光标写入不适合 Redux。**如果你使用光标的唯一目的是将状态树与 UI 树解耦并逐步细化光标，应该转向使用选择器（selectors）。** 选择器是可组合的 getter 函数。参见 [reselect](https://github.com/faassen/reselect) ，这是一个很好且简洁的选择器实现。
+Note that, even if your immutable library supports cursors, you shouldn't use them in a Redux app. The whole state tree should be considered read-only, and you should use Redux for updating the state, and subscribing to the updates. Therefore writing via cursor doesn't make sense for Redux. **If your only use case for cursors is decoupling the state tree from the UI tree and gradually refining the cursors, you should look at selectors instead.** Selectors are composable getter functions. See [reselect](https://github.com/reduxjs/reselect) for a really great and concise implementation of composable selectors.
 
 ### Baobab
 

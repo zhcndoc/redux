@@ -7,13 +7,17 @@ description: '介绍 > 为什么 RTK 是当今的 Redux：详述 RTK 如何取�
 
 ## 什么是 Redux Toolkit？
 
-[**Redux Toolkit**](https://redux-toolkit.js.org)（简称 **"RTK"**）是我们官方推荐的编写 Redux 逻辑的方法。`@reduxjs/toolkit` 包是对核心 `redux` 包的封装，包含了一些我们认为构建 Redux 应用必不可少的 API 方法和常用依赖。Redux Toolkit 内置了推荐的最佳实践，简化了大多数 Redux 任务，防止常见错误，提高了编写 Redux 应用的便利性。
+[**Redux Toolkit**](/toolkit) (also known as **"RTK"** for short) is our official recommended approach for writing Redux logic. The `@reduxjs/toolkit` package wraps around the core `redux` package, and contains API methods and common dependencies that we think are essential for building a Redux app. Redux Toolkit builds in our suggested best practices, simplifies most Redux tasks, prevents common mistakes, and makes it easier to write Redux applications.
 
 **如果你今天编写任何 Redux 代码，应该使用 Redux Toolkit 来写！**
 
-RTK 包含帮助简化多种常见用例的工具，包括 [store 配置](https://redux-toolkit.js.org/api/configureStore)、[创建 reducers 和编写不可变更新逻辑](https://redux-toolkit.js.org/api/createreducer)，甚至 [一次性创建整个「slice」状态](https://redux-toolkit.js.org/api/createslice)。
+RTK includes utilities that help simplify many common use cases, including [store setup](/toolkit/api/configureStore),
+[creating reducers and writing immutable update logic](/toolkit/api/createReducer),
+and even [creating entire "slices" of state at once](/toolkit/api/createSlice).
 
-无论你是刚开始使用 Redux，搭建第一个项目，还是想简化已有应用的经验用户，**[Redux Toolkit](https://redux-toolkit.js.org/)** 都能帮你写出更好的 Redux 代码。
+Whether you're a brand new Redux user setting up your first project, or an experienced user who wants to
+simplify an existing application, **[Redux Toolkit](/toolkit)** can help you
+make your Redux code better.
 
 :::tip
 

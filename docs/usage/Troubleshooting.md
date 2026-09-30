@@ -5,204 +5,196 @@ title: 故障排除
 
 # 故障排除
 
-这里是分享常见问题及其解决方案的地方。  
-示例使用 React，但如果你使用其他框架，仍然会觉得有用。
+This is a place to share common problems and solutions to them.
+The examples use React and Redux Toolkit, but you should still find them useful if you use something else.
+
+If your problem isn't listed here, the [Debugging Redux](./DebuggingRedux.md) page describes how to track down what your app is actually doing, using the Redux DevTools and other tools.
+
+## Common Problems
 
 ### 触发（dispatch）一个 action 后没有任何反应
 
-有时你尝试 dispatch 一个 action，但视图没有更新。这是为什么？可能有几个原因。
+Sometimes, you are trying to dispatch an action, but your view does not update. There are a few usual causes.
 
-#### 不要修改 reducer 的参数
+#### The reducer mutated the state
 
-修改 Redux 传给你的 `state` 或 `action` 是很诱人的，但千万不要这么做！
+Redux assumes that reducers never mutate the objects they are given. React-Redux's `useSelector` decides whether a component needs to re-render by comparing the selected value before and after the dispatch with `===`. If a reducer mutates the existing state object and returns it, the reference is the same, the comparison says "nothing changed", and the component does not update.
 
-Redux 假设你永远不会修改传给 reducer 的对象。**每一次，都必须返回新的状态对象。** 即使你不使用类似 [Immer](https://github.com/immerjs/immer) 这样库，也需要完全避免变异（mutation）。
+Redux Toolkit's `createSlice` and `createReducer` wrap your reducers in [Immer](https://immerjs.github.io/immer/), so you can write "mutating" code inside them and Immer produces a correctly updated copy:
 
-不可变性使得 [react-redux](https://github.com/gaearon/react-redux) 能够高效订阅状态的细粒度更新。同时也支持诸如 [redux-devtools](https://github.com/reduxjs/redux-devtools) 的时间旅行等极佳的开发体验功能。
+```ts
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-例如，下面的 reducer 是错误的，因为它修改了 state：
-
-```js
-function todos(state = [], action) {
-  switch (action.type) {
-    case 'ADD_TODO':
-      // 错误！这会修改 state
-      state.push({
-        text: action.text,
-        completed: false
-      })
-      return state
-    case 'COMPLETE_TODO':
-      // 错误！这会修改 state[action.index]
-      state[action.index].completed = true
-      return state
-    default:
-      return state
-  }
+interface Todo {
+  id: string
+  text: string
+  completed: boolean
 }
-```
 
-它需要改写成这样：
-
-```js
-function todos(state = [], action) {
-  switch (action.type) {
-    case 'ADD_TODO':
-      // 返回一个新数组
-      return [
-        ...state,
-        {
-          text: action.text,
-          completed: false
-        }
-      ]
-    case 'COMPLETE_TODO':
-      // 返回一个新数组
-      return state.map((todo, index) => {
-        if (index === action.index) {
-          // 先复制对象再修改
-          return Object.assign({}, todo, {
-            completed: true
-          })
-        }
-        return todo
-      })
-    default:
-      return state
-  }
-}
-```
-
-代码稍微多一点，但这正是使 Redux 可预测且高效的关键。  
-如果你想写更少的代码，可以用类似 [`React.addons.update`](https://facebook.github.io/react/docs/update.html) 的辅助工具，通过简洁的语法写不可变变换：
-
-```js
-// 之前：
-return state.map((todo, index) => {
-  if (index === action.index) {
-    return Object.assign({}, todo, {
-      completed: true
-    })
-  }
-  return todo
-})
-
-// 之后：
-return update(state, {
-  [action.index]: {
-    completed: {
-      $set: true
+const todosSlice = createSlice({
+  name: 'todos',
+  initialState: [] as Todo[],
+  reducers: {
+    todoAdded(state, action: PayloadAction<Todo>) {
+      // Safe: Immer turns this into an immutable update
+      state.push(action.payload)
+    },
+    todoToggled(state, action: PayloadAction<string>) {
+      const todo = state.find(todo => todo.id === action.payload)
+      if (todo) {
+        todo.completed = !todo.completed
+      }
     }
   }
 })
 ```
 
-最后，要更新对象，你需要用类似 Underscore 里的 `_.extend`，或更好的 [`Object.assign`](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Object/assign) polyfill。
+That only works _inside_ `createSlice`, `createReducer`, or Immer's `produce`. If you write a reducer by hand, you have to copy every level you change:
 
-确保正确使用 `Object.assign`。例如，别直接返回 `Object.assign(state, newData)`，而要返回 `Object.assign({}, state, newData)`，这样不会覆盖之前的 `state`。
+```ts
+import type { PayloadAction, UnknownAction } from '@reduxjs/toolkit'
 
-你也可以使用对象扩展运算符（object spread operator）提案，语法更简洁：
-
-```js
-// 之前：
-return state.map((todo, index) => {
-  if (index === action.index) {
-    return Object.assign({}, todo, {
-      completed: true
-    })
-  }
-  return todo
-})
-
-// 之后：
-return state.map((todo, index) => {
-  if (index === action.index) {
-    return { ...todo, completed: true }
-  }
-  return todo
-})
-```
-
-注意，实验语言特性可能会改变。
-
-同时注意需要深拷贝的嵌套状态对象。`_.extend` 和 `Object.assign` 只会做浅拷贝。参考 [更新嵌套对象](./structuring-reducers/ImmutableUpdatePatterns.md#updating-nested-objects)，了解如何处理嵌套状态。
-
-#### 别忘了调用 [`dispatch(action)`](api/Store.md#dispatchaction)
-
-如果你定义了 action creator，调用它**不会**自动 dispatch action。例如，这段代码什么都不会发生：
-
-#### `TodoActions.js`
-
-```js
-export function addTodo(text) {
-  return { type: 'ADD_TODO', text }
-}
-```
-
-#### `AddTodo.js`
-
-```js
-import React, { Component } from 'react'
-import { addTodo } from './TodoActions'
-
-class AddTodo extends Component {
-  handleClick() {
-    // 不会生效！
-    addTodo('Fix the issue')
-  }
-
-  render() {
-    return <button onClick={() => this.handleClick()}>Add</button>
+function todosReducer(state: Todo[] = [], action: UnknownAction): Todo[] {
+  switch (action.type) {
+    case 'todos/todoToggled': {
+      const id = (action as PayloadAction<string>).payload
+      return state.map(todo =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      )
+    }
+    default:
+      return state
   }
 }
 ```
 
-它不生效，因为你的 action creator 只是一个**返回** action 的函数。真正 dispatch 是你的责任。我们无法在定义时把 action creator 绑定到特定的 store，因为服务器渲染需要为每个请求单独的 Redux store。
+The same rule applies to selectors and to code that reads from `store.getState()`: don't modify the objects you get back.
 
-解决方案是调用 [store](api/Store.md) 实例的 [`dispatch()`](api/Store.md#dispatchaction) 方法：
+In development, `configureStore` adds a middleware that checks for accidental mutations and throws an error like `A state mutation was detected between dispatches, in the path 'todos.0.completed'`. If you see that error, the path tells you which value was changed in place. See [the immutability middleware docs](/toolkit/api/immutabilityMiddleware) for details. The [Immutable Update Patterns](./structuring-reducers/ImmutableUpdatePatterns.md) page covers how to write these updates by hand.
 
-```js
-handleClick() {
-  // 有效！但你需要获取 store
-  store.dispatch(addTodo('Fix the issue'))
+#### The action was never dispatched
+
+Calling an action creator does _not_ dispatch anything. It only returns an action object. This code does nothing:
+
+```tsx
+import { todoAdded } from './todosSlice'
+
+function AddTodo() {
+  const handleClick = () => {
+    // Won't work! This just creates an object and throws it away.
+    todoAdded({ id: '1', text: 'Fix the issue', completed: false })
+  }
+
+  return <button onClick={handleClick}>Add</button>
 }
 ```
 
-如果你处在组件层级很深的位置，手动传递 store 非常麻烦。  
-这也是为什么 [react-redux](https://github.com/gaearon/react-redux) 提供了 `connect` [高阶组件](https://medium.com/@dan_abramov/mixins-are-dead-long-live-higher-order-components-94a0d2f9e750)，它除了帮你订阅 Redux store，还会把 `dispatch` 注入到你的组件 props 里。
+It is up to you to pass the action to `dispatch`. In a component, get `dispatch` from the `useDispatch` hook (or a typed `useAppDispatch` wrapper):
 
-修正后的代码像这样：
+```tsx
+import { useAppDispatch } from '../../app/hooks'
+import { todoAdded } from './todosSlice'
 
-#### `AddTodo.js`
+function AddTodo() {
+  const dispatch = useAppDispatch()
 
-```js
-import React, { Component } from 'react'
-import { connect } from 'react-redux'
-import { addTodo } from './TodoActions'
-
-class AddTodo extends Component {
-  handleClick() {
-    // 有效！
-    this.props.dispatch(addTodo('Fix the issue'))
+  const handleClick = () => {
+    // Works!
+    dispatch(todoAdded({ id: '1', text: 'Fix the issue', completed: false }))
   }
 
-  render() {
-    return <button onClick={() => this.handleClick()}>Add</button>
-  }
+  return <button onClick={handleClick}>Add</button>
 }
-
-// 除了 state，`connect` 会把 `dispatch` 放入组件的 props。
-export default connect()(AddTodo)
 ```
 
-你也可以将 `dispatch` 手动传递给其他组件。
+The Redux DevTools show every dispatched action. If the action you expect is not in the list, it was never dispatched.
 
-#### 确保 mapStateToProps 函数正确
+#### The selector reads the wrong part of the state
 
-有时你正确地 dispatch 了 action 并且 reducer 也起作用了，但对应的状态没有正确映射到组件 props。
+If the action shows up in the DevTools and the state changes, but the component still doesn't update, check the selector. A common mistake is reading a field that doesn't exist, which silently returns `undefined`:
+
+```ts
+// State shape: { todos: Todo[]; filters: { status: string } }
+
+// Wrong: there is no `state.todo`, so this is always `undefined`
+const todos = useAppSelector(state => state.todo)
+
+// Right
+const todos = useAppSelector(state => state.todos)
+```
+
+Typing your hooks with `RootState` catches this at compile time. See [Usage with TypeScript](./UsageWithTypescript.md#define-typed-hooks).
+
+If the selector reads a value that isn't in the store at all (for example, the reducer wasn't added to `configureStore`), check the "State" tab in the DevTools to see the actual shape.
+
+### "A non-serializable value was detected in an action" or "in the state"
+
+In development, `configureStore` also adds a middleware that checks whether every action and every piece of state is serializable (plain objects, arrays, strings, numbers, booleans, `null`, `undefined`). The error message includes the path where the value was found:
+
+```
+A non-serializable value was detected in an action, in the path: `payload.dueDate`.
+Value: Fri Sep 18 2026 10:00:00 GMT-0400 (Eastern Daylight Time)
+```
+
+The usual causes are `Date` objects, class instances, `Map`/`Set`, functions, and Promises. The fix is to convert the value before it goes into an action or the state: store `dueDate.toISOString()` instead of a `Date`, store a plain object instead of a class instance, and keep functions and Promises out of actions entirely. If a value must be non-serializable, you can tell the middleware to ignore specific paths or action types, or disable the check. See [Working with Non-Serializable Data](/toolkit/usage/usage-guide#working-with-non-serializable-data) and the [serializability middleware docs](/toolkit/api/serializabilityMiddleware).
+
+The FAQ explains why this matters: [Can I put functions, promises, or other non-serializable items in my store state?](../faq/OrganizingState.md#can-i-put-functions-promises-or-other-non-serializable-items-in-my-store-state)
+
+### "Selector returned a different result when called with the same parameters"
+
+React-Redux logs this warning in development when a `useSelector` callback returns a new reference each time it runs. The warning is telling you the component will re-render after _every_ dispatched action, whether or not the data it uses changed. Selectors that build a new object or array (`.map()`, `.filter()`, `{ a, b }`) all do this:
+
+```ts
+// Re-renders on every action: `filter` returns a new array every time
+const completed = useAppSelector(state =>
+  state.todos.filter(todo => todo.completed)
+)
+```
+
+Either select the source data and derive the result inside the component, or memoize the derivation with `createSelector`:
+
+```ts
+import { createSelector } from '@reduxjs/toolkit'
+import type { RootState } from '../../app/store'
+
+const selectCompletedTodos = createSelector(
+  [(state: RootState) => state.todos],
+  todos => todos.filter(todo => todo.completed)
+)
+
+const completed = useAppSelector(selectCompletedTodos)
+```
+
+See [Why is my component re-rendering too often?](../faq/ReactRedux.md#why-is-my-component-re-rendering-too-often) and [Deriving Data with Selectors](./deriving-data-selectors.md). The check itself is described in the [React-Redux hooks docs](/react-redux/api/hooks#development-mode-checks).
+
+### "could not find react-redux context value; please ensure the component is wrapped in a `<Provider>`"
+
+`useSelector` and `useDispatch` read the store from React context. This error means a component called one of them without a `<Provider store={store}>` above it in the tree. Check that `Provider` wraps your root component, and that anything rendered outside the main tree (portals are fine, but a separate `createRoot` call or a test render is not) gets its own `Provider`. In tests, render the component inside a `Provider` with a store created for that test, as shown in [Writing Tests](./WritingTests.mdx).
+
+If `Provider` is definitely there, check for duplicate packages. Two copies of `react-redux` in `node_modules` (for example, one hoisted and one nested under a component library) create two different context objects, so a `Provider` from one copy is invisible to hooks from the other. Two copies of `react` cause the same problem. Run `npm ls react react-redux` (or the pnpm/yarn equivalent) and dedupe so each resolves to a single version.
+
+### TypeScript says a thunk is not assignable to `UnknownAction`
+
+Calling `dispatch(someThunk())` from a component fails with an error like `Argument of type 'ThunkAction<...>' is not assignable to parameter of type 'UnknownAction'`. The plain `useDispatch()` hook returns the base `Dispatch` type, which does not know about the thunk middleware. Use a `useAppDispatch` hook typed with your store's `AppDispatch` instead:
+
+```ts
+import { useDispatch, useSelector } from 'react-redux'
+import type { AppDispatch, RootState } from './store'
+
+export const useAppDispatch = useDispatch.withTypes<AppDispatch>()
+export const useAppSelector = useSelector.withTypes<RootState>()
+```
+
+`AppDispatch` is `typeof store.dispatch`, which `configureStore` infers to include the thunk middleware. See [Define Root State and Dispatch Types](./UsageWithTypescript.md#define-root-state-and-dispatch-types).
+
+### An RTK Query hook returns an error
+
+Query and mutation hooks do not throw. They return `isError`, `error`, and `status` fields, and the error object has a different shape depending on whether the request failed on the network (`{ status: 'FETCH_ERROR', error: string }`) or the server returned a non-2xx status (`{ status: number, data: unknown }`). Read the hook result rather than wrapping it in `try`/`catch`. See [RTK Query error handling](/toolkit/rtk-query/usage/error-handling). The "RTK Query" tab in the Redux DevTools shows every cached query, its status, and its last response.
 
 ## 其他问题
 
-可以去 **#redux** [Reactiflux](https://www.reactiflux.com/) Discord 频道问问，或者 [创建 issue](https://github.com/reduxjs/redux/issues)。
+Most Redux problems come down to one of three questions: was the action dispatched, what did the reducer do with it, and what did the component select? The Redux DevTools answer all three. See [Debugging Redux](./DebuggingRedux.md) for how to use them, and for the general debugging approach they fit into.
+
+Ask around on the **#redux** [Reactiflux](https://www.reactiflux.com/) Discord channel, or [create an issue](https://github.com/reduxjs/redux/issues).
 
 如果你解决了问题，也欢迎[编辑此文档](https://github.com/reduxjs/redux/edit/master/docs/usage/Troubleshooting.md)，帮助下一个遇到同样问题的人。

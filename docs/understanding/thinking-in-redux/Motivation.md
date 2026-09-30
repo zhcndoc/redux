@@ -1,7 +1,7 @@
 ---
 id: motivation
-title: 动机
-description: '介绍 > 动机：Redux 试图解决什么问题？'
+title: Motivation
+description: 'Understanding > Motivation: What problems does Redux try to solve?'
 ---
 
 # 动机
@@ -12,6 +12,6 @@ description: '介绍 > 动机：Redux 试图解决什么问题？'
 
 如果这还不够糟糕，试想一下**前端产品开发中日益普遍的新需求**。作为开发者，我们被期望处理乐观更新、服务端渲染、在路由转换前抓取数据等等。我们发现自己正在试图管理一种前所未有的复杂性，不可避免地会问出这个问题：[是否该放弃了？](https://www.quirksmode.org/blog/archives/2015/07/stop_pushing_th.html) 答案是否定的。
 
-这种复杂性难以处理，因为**我们正在混合两个极难被人脑推理的概念：** **变异（mutation）和异步（asynchronicity）。** 我称它们为 [Mentos 与可乐（Mentos and Coke）](https://en.wikipedia.org/wiki/Diet_Coke_and_Mentos_eruption)。两者单独存在时都很棒，但放在一起却会制造混乱。像 [React](https://facebook.github.io/react) 这样的库试图通过取消异步和直接 DOM 操作来解决视图层面的问题。然而，数据状态的管理留给了开发者自己。这就是 Redux 的用武之地。
+This complexity is difficult to handle as **we're mixing two concepts** that are very hard for the human mind to reason about: **mutation and asynchronicity.** I call them [Mentos and Coke](https://en.wikipedia.org/wiki/Diet_Coke_and_Mentos_eruption). Both can be great in separation, but together they create a mess. Libraries like [React](https://react.dev) attempt to solve this problem in the view layer by removing both asynchrony and direct DOM manipulation. However, managing the state of your data is left up to you. This is where Redux enters.
 
 继承了 [Flux](https://facebookarchive.github.io/flux)、[CQRS](https://martinfowler.com/bliki/CQRS.html) 和 [事件溯源（Event Sourcing）](https://martinfowler.com/eaaDev/EventSourcing.html) 的思想，**Redux 试图通过对更新的方式和时间施加一定的限制，使状态变异变得可预测。** 这些限制反映在 Redux 的[三大原则](ThreePrinciples.md)中。

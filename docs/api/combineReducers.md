@@ -5,19 +5,22 @@ hide_title: true
 description: 'API > combineReducers：合并切片 reducer 以创建组合状态'
 ---
 
+<!-- prettier-ignore -->
+import CoreApiNote from "../components/_CoreApiNote.mdx";
+
 &nbsp;
 
 # `combineReducers(reducers)`
 
 ## 概述
 
-`combineReducers` 辅助函数将一个对象（其值为不同的“切片 reducer”函数）转换为一个单一的组合 reducer 函数，你可以将该函数传递给 Redux Toolkit 的 [`configureStore`](https://redux-toolkit.js.org/api/configureStore)（或传统的 [`createStore`](createStore.md) 方法）
+The `combineReducers` helper function turns an object whose values are different "slice reducer" functions into a single combined reducer function you can pass to the store.
 
 生成的组合 reducer 会在每次派发动作时调用所有切片 reducer，并将它们的结果收集到一个单一的状态对象中。这使得将 reducer 逻辑拆分为独立的函数成为可能，每个函数独立管理自己状态的切片。
 
-:::tip
+<CoreApiNote />
 
-这通常不常用——Redux Toolkit 的 [`configureStore` 方法](https://redux-toolkit.js.org/api/configureStore) 会自动为你调用 `combineReducers`，当你传入一个切片 reducer 对象时：
+You should rarely need to call `combineReducers` yourself. `configureStore` calls it for you if you pass in an object of slice reducers:
 
 ```ts
 const store = configureStore({
@@ -28,9 +31,7 @@ const store = configureStore({
 })
 ```
 
-如果你需要手动构造根 reducer，仍然可以自己调用 `combineReducers()`。
-
-:::
+You can still call `combineReducers()` directly if you need to construct the root reducer manually first, and Redux Toolkit's [`combineSlices`](/toolkit/api/combineSlices) does the same job with support for lazy-loaded slices.
 
 ### 状态切片
 
@@ -82,7 +83,7 @@ combineReducers({
 
 - 如果传入的 `state` 是 `undefined`，它必须返回该 reducer 的初始状态。根据前面的规则，初始状态也不得为 `undefined`。你可以使用可选参数语法指定初始状态，也可以显式检查第一个参数是否为 `undefined`。
 
-尽管 `combineReducers` 会试图检查你的 reducer 是否符合这些规则，但你仍应牢记并尽力遵守。`combineReducers` 会通过传入 `undefined` 来检测你的 reducer；即使你向 `Redux.createStore(combineReducers(...), initialState)` 指定了初始状态，也会这样做。因此，你**必须**确保你的 reducer 在接收到 `undefined` 作为状态时能正确工作，即使你自己的代码中不打算让它们实际接收 `undefined`。
+While `combineReducers` attempts to check that your reducers conform to some of these rules, you should remember them, and do your best to follow them. `combineReducers` will check your reducers by passing `undefined` to them; this is done even if you specify initial state with `configureStore({ reducer, preloadedState })`. Therefore, you **must** ensure your reducers work properly when receiving `undefined` as state, even if you never intend for them to actually receive `undefined` in your own code.
 
 ## 示例
 

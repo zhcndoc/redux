@@ -73,9 +73,9 @@ Redux 处理的工作一般分为几个方面：处理中间件和 reducer 中�
 
 不可变更新状态通常是浅拷贝，不是深拷贝。浅拷贝比深拷贝快得多，因为复制的对象和字段更少，实际上就是指针的移动。
 
-而且，深拷贝状态会为每个字段创建新的引用。React-Redux 的 `connect` 函数依赖引用比较来判断数据是否改变，这意味着即使数据没有实质变化，UI 组件也会被迫不必要地重新渲染。
+In addition, deep cloning state creates new references for every field. Since React-Redux's `useSelector` relies on reference comparisons to determine if data has changed, this means that UI components will be forced to re-render unnecessarily even though the other data hasn't meaningfully changed. See [Why is my component re-rendering too often?](./ReactRedux.md#why-is-my-component-re-rendering-too-often) for details.
 
-不过，你确实需要为受影响的每个嵌套层级创建副本和更新对象。虽然不算特别昂贵，但这也是你应尽量保持状态归一化和扁平化的重要原因。
+However, you _do_ need to create a copied and updated object for each level of nesting that is affected. Although that shouldn't be particularly expensive, it's another good reason why you should keep your state normalized and shallow if possible. Reducers written with `createSlice` handle this for you: Immer copies only the objects along the path you changed and keeps every other reference the same.
 
 > 常见误区：你需要深度克隆状态。事实是：如果某部分不变，就保持原引用不变！
 
@@ -99,23 +99,7 @@ Redux 会在每个成功派发的 action 后通知订阅者（即 action 到达 
 
 有几个插件以不同方式添加了批处理能力，比如：[redux-batched-actions](https://github.com/tshelburne/redux-batched-actions)（高阶 reducer，让你像处理单个 action 一样派发多个，并在 reducer 解包），[redux-batched-subscribe](https://github.com/tappleby/redux-batched-subscribe)（store 增强器，可对多次派发的订阅调用进行防抖），或 [redux-batch](https://github.com/manaflair/redux-batch)（store 增强器，处理数组派发，只触发一次订阅者通知）。
 
-对于 React-Redux，从 [React-Redux v7](https://github.com/reduxjs/react-redux/releases/tag/v7.0.1) 开始提供了新的 `batch` 公共 API，帮助在非 React 事件处理器中派发多个 action 时，将 React 重新渲染次数降到最低。它包装了 React 的 `unstable_batchedUpdate()` API，允许在同一事件循环中合并多个 React 更新为单次渲染。React 自身事件处理回调内部已使用该机制。这个 API 属于如 ReactDOM 和 React Native 这样的渲染包，而非 React 核心。
-
-由于 React-Redux 需同时支持 ReactDOM 和 React Native，我们在构建时已处理正确导入该 API，并重新导出为 `batch()`。你可以这样用，确保多次在 React 外派发的 action 只触发一次更新：
-
-```js
-import { batch } from 'react-redux'
-
-function myThunk() {
-  return (dispatch, getState) => {
-    // 这里只会导致一次合并的重渲染，而非两次
-    batch(() => {
-      dispatch(increment())
-      dispatch(increment())
-    })
-  }
-}
-```
+For React specifically, React 18 and later automatically batch all state updates that happen in the same event loop tick into a single render pass, including updates triggered by Redux dispatches outside of React event handlers (in thunks, timeouts, or promise callbacks). Dispatching several actions in a row will still notify subscribers and run selectors once per action, but React will only render once. React-Redux still exports a `batch()` function from earlier versions, but it is a no-op in React-Redux v9 and will be removed in v10.
 
 #### 更多信息
 
@@ -128,11 +112,7 @@ function myThunk() {
 - [React Redux #263：派发数百个 action 时的巨大性能问题](https://github.com/reduxjs/react-redux/issues/263)
 - [React-Redux #1177：路线图：v6，Context，订阅和 Hooks](https://github.com/reduxjs/react-redux/issues/1177)
 
-**库**
-
-- [Redux 附加组件目录：Store - 变更订阅](https://github.com/markerikson/redux-ecosystem-links/blob/master/store.md#store-change-subscriptions)
-
-### 拥有“一棵状态树”会导致内存问题吗？派发大量 action 会占用内存吗？
+### Will having “one state tree” cause memory problems? Will dispatching many actions take up memory?
 
 首先，就原始内存使用而言，Redux 与任何其它 JavaScript 库没有区别。唯一不同的是所有对象引用被嵌套在一棵树中，而不是像 Backbone 那样保存在各独立模型实例中。第二，典型 Redux 应用可能比等效 Backbone 应用内存使用更少，因为 Redux 鼓励使用普通 JS 对象和数组，而非创建模型和集合实例。最后，Redux 只保留某一时刻的单一状态树引用。未被引用的对象会被垃圾回收。
 

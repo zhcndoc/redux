@@ -6,6 +6,7 @@ description: 'Redux 官方必备知识教程：学习典型 React + Redux Toolki
 ---
 
 import { DetailedExplanation } from '../../components/DetailedExplanation'
+import { LiveExample } from '@site/src/components/LiveExample'
 
 :::tip 你将学到
 
@@ -24,28 +25,28 @@ import { DetailedExplanation } from '../../components/DetailedExplanation'
 
 我们要看的示例项目是一个小型计数器应用，允许我们点击按钮对数字进行增加或减少。它或许并不十分复杂，但它展示了一个 React+Redux 应用中的所有重要组成部分。
 
-该项目使用一个更小的版本创建，基于 [官方 Redux Toolkit 的 Vite 模板](https://github.com/reduxjs/redux-templates/tree/master/packages/vite-template-redux)。开箱即用，它已经配置了标准的 Redux 应用结构，使用 [Redux Toolkit](https://redux-toolkit.js.org) 创建 Redux store 和逻辑，使用 [React-Redux](https://react-redux.js.org) 连接 Redux store 与 React 组件。
+The project has been created using a smaller version of [the official Redux Toolkit template for Vite](https://github.com/reduxjs/redux-templates/tree/master/packages/vite-template-redux). Out of the box, it has already been configured with a standard Redux application structure, using [Redux Toolkit](/toolkit) to create the Redux store and logic, and [React-Redux](/react-redux) to connect together the Redux store and the React components.
 
 这是该项目的在线演示。你可以通过点击右侧应用预览中的按钮进行操作，也可以浏览左侧的源文件。
 
-<iframe
-  class="codesandbox"
-  src="https://codesandbox.io/embed/github/reduxjs/redux-templates/tree/master/packages/rtk-app-structure-example?fontsize=14&hidenavigation=1&module=%2Fsrc%2Ffeatures%2Fcounter%2FcounterSlice.ts&theme=dark&runonclick=1"
-  title="redux-essentials-example"
-  allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
-  sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
-></iframe>
+<LiveExample
+  repo="reduxjs/redux-templates"
+  ref="master"
+  path="examples/rtk-app-structure-example"
+  file="src/features/counter/counterSlice.ts"
+  title="Redux Toolkit app structure: counter example"
+/>
 
 如果你想在自己的电脑上搭建此项目，可以用此命令创建本地副本：
 
 ```sh
-npx degit reduxjs/redux-templates/packages/rtk-app-structure-example my-app
+npx tiged reduxjs/redux-templates/examples/rtk-app-structure-example my-app
 ```
 
 你也可以使用完整的 Redux Toolkit Vite 模板创建新项目：
 
 ```sh
-npx degit reduxjs/redux-templates/packages/vite-template-redux my-app
+npx tiged reduxjs/redux-templates/packages/vite-template-redux my-app
 ```
 
 ### 使用计数器应用
@@ -292,7 +293,7 @@ export default counterSlice.reducer
 
 我们可以每次手写这些代码，但这很繁琐。Redux 的重点其实在 reducer 函数，以及它们计算新状态的逻辑。
 
-Redux Toolkit 有一个函数叫 [**`createSlice`**](https://redux-toolkit.js.org/api/createSlice)，它帮我们生成 action 类型字符串、action 创建函数和 action 对象。只需定义切片名称，写一组 reducer 函数，其他代码便自动生成。每个 action 类型由 `name` 选项生成的字符串作为前缀，reducer 函数键名作为后缀组成。因此 `"counter"` + `"increment"` 生成的 action 类型是 `{type: "counter/increment"}`。毕竟，有电脑干的活儿，何必手写！
+Redux Toolkit has a function called [**`createSlice`**](/toolkit/api/createSlice), which takes care of the work of generating action type strings, action creator functions, and action objects. All you have to do is define a name for this slice, write an object that has some reducer functions in it, and it generates the corresponding action code automatically. The string from the `name` option is used as the first part of each action type, and the key name of each reducer function is used as the second part. So, the `"counter"` name + the `"increment"` reducer function generated an action type of `{type: "counter/increment"}`. (After all, why write this by hand if the computer can do it for us!)
 
 除了 `name` 字段，`createSlice` 还需要我们传入初始状态，确保第一次调用 reducer 时有 `state` 值。这里我们传入一个对象，其 `value` 初始为 0，`status` 初始为 `'idle'`。
 
@@ -452,7 +453,7 @@ export const counterSlice = createSlice({
 
 想了解不可变和不可变更新，请参见 [“不可变更新模式” 文档页](../../usage/structuring-reducers/ImmutableUpdatePatterns.md) 和 [React 和 Redux 中不可变性的完整指南](https://daveceddia.com/react-redux-immutability-guide/)。
 
-想了解用 Immer 写 reducer，请参阅 [Immer 文档](https://immerjs.github.io/immer/) 及 [“用 Immer 编写 Reducers” 文档页](https://redux-toolkit.js.org/usage/immer-reducers)。
+For details on using Immer for "mutating" immutable updates, see [the Immer docs](https://immerjs.github.io/immer/) and the ["Writing Reducers with Immer" docs page](/toolkit/usage/immer-reducers).
 
 :::
 
@@ -546,7 +547,7 @@ const fetchUserById = (userId: string): AppThunk => {
 }
 ```
 
-Redux Toolkit 提供了一个[**`createAsyncThunk`**](https://redux-toolkit.js.org/api/createAsyncThunk) 方法，它帮你自动完成所有派发工作。`counterSlice.ts` 中的下一个函数是一个 async thunk，模拟用计数器值发起 API 请求。派发该 thunk 时，它会先派发一个 `pending` action，然后等异步完成后派发 `fulfilled` 或 `rejected` action。
+Redux Toolkit includes a [**`createAsyncThunk`**](/toolkit/api/createAsyncThunk) method that does all of the dispatching work for you. The next function in `counterSlice.ts` is an async thunk that makes a mock API request with a counter value. When we dispatch this thunk, it will dispatch a `pending` action before making the request, and either a `fulfilled` or `rejected` action after the async logic is done.
 
 ```ts title="features/counter/counterSlice.ts"
 // Thunks 常用于异步逻辑，如请求数据。
@@ -718,7 +719,7 @@ export function Counter() {
 
 React 内置了 `useState`、`useEffect` 等几个 hook，其他库也可以基于 React 的 hook 自定义 [自定义 hook](https://reactjs.org/docs/hooks-custom.html)，封装复用逻辑。
 
-[React-Redux 库](https://react-redux.js.org/) 提供了一组自定义 hooks，使 React 组件能与 Redux store 交互，详见 [API 文档](https://react-redux.js.org/api/hooks)。
+The [React-Redux library](/react-redux) has [a set of custom hooks that allow your React component to interact with a Redux store](/react-redux/api/hooks).
 
 #### 使用 `useSelector` 读取数据
 

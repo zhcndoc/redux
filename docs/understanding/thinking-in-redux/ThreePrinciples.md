@@ -1,12 +1,17 @@
 ---
 id: three-principles
-title: 三大原则
-description: '介绍 > 三大原则：使用 Redux 的三个关键原则'
+title: Three Principles
+description: 'Understanding > Three Principles: Three key principles for using Redux'
 ---
 
-# 三大原则
+<!-- prettier-ignore -->
+import CoreApiNote from "../../components/_CoreApiNote.mdx";
 
-Redux 可以用三个基本原则来描述：
+# Three Principles
+
+<CoreApiNote />
+
+Redux can be described in three fundamental principles:
 
 ### 单一数据源
 
@@ -92,9 +97,8 @@ function todos(state = [], action) {
   }
 }
 
-import { combineReducers, createStore } from 'redux'
-const reducer = combineReducers({ visibilityFilter, todos })
-const store = createStore(reducer)
+import { configureStore } from '@reduxjs/toolkit'
+const store = configureStore({ reducer: { visibilityFilter, todos } })
 ```
 
 就是这样！现在你明白 Redux 的核心理念了。

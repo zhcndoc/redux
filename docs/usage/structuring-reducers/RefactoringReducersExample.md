@@ -5,9 +5,14 @@ sidebar_label: 重构 Reducers 示例
 description: '结构化 Reducers > 重构 Reducers：重构 reducer 逻辑的示例方法'
 ---
 
-# 通过函数式分解和 Reducer 组合来重构 Reducer 逻辑
+<!-- prettier-ignore -->
+import HandWrittenReducersNote from "../../components/_HandWrittenReducersNote.mdx";
 
-了解不同类型的子 reducer 函数是什么样子以及它们如何协同工作，可能会很有帮助。让我们来看一个演示，展示如何将一个大型的单一 reducer 函数重构为由几个较小函数组合而成。
+# Refactoring Reducer Logic Using Functional Decomposition and Reducer Composition
+
+<HandWrittenReducersNote />
+
+It may be helpful to see examples of what the different types of sub-reducer functions look like and how they fit together. Let's look at a demonstration of how a large single reducer function can be refactored into a composition of several smaller functions.
 
 > **注意**：本示例故意采用冗长的样式以便于说明概念和重构过程，而不是追求代码的极致简洁。
 
@@ -401,4 +406,68 @@ const appReducer = combineReducers({
 
 我们现在有了几个拆分 reducer 函数的示例：辅助工具函数如 `updateObject` 和 `createReducer`，具体 case 的处理函数如 `setVisibilityFilter` 和 `addTodo`，以及状态切片的处理函数如 `visibilityReducer` 和 `todosReducer`。我们还看到 `appReducer` 是 “根 reducer” 的一个示例。
 
-虽然最终结果相较于最初版本明显更长，但这主要是因为提取了工具函数、增加了注释以及为了清晰刻意写的详细代码，比如使用分开的 return 语句。从单个函数来看，它们的责任范围更小，意图也更明确。另外，在真实的项目中，这些函数大概率会被拆分到不同的文件中，例如 `reducerUtilities.js`、`visibilityReducer.js`、`todosReducer.js` 和 `rootReducer.js`。
+Although the final result in this example is noticeably longer than the original version, this is primarily due to the extraction of the utility functions, the addition of comments, and some deliberate verbosity for the sake of clarity, such as separate return statements. Looking at each function individually, the amount of responsibility is now smaller, and the intent is hopefully clearer. Also, in a real application, these functions would probably then be split into separate files such as `reducerUtilities.js`, `visibilityReducer.js`, `todosReducer.js`, and `rootReducer.js`.
+
+#### The Same Result with Redux Toolkit
+
+Every piece we extracted above has a counterpart in Redux Toolkit. `createSlice` is a lookup table of case reducers, like our hand-written `createReducer`, and it generates the action types and action creators for us. Immer handles the copying that `updateObject` and `updateItemInArray` did. `configureStore` calls `combineReducers` when it's given an object of slice reducers. So the two slices from the final step, written with Redux Toolkit, look like this:
+
+```ts
+import { configureStore, createSlice } from '@reduxjs/toolkit'
+import type { PayloadAction } from '@reduxjs/toolkit'
+
+type VisibilityFilter = 'SHOW_ALL' | 'SHOW_ACTIVE' | 'SHOW_COMPLETED'
+
+const visibilitySlice = createSlice({
+  name: 'visibilityFilter',
+  initialState: 'SHOW_ALL' as VisibilityFilter,
+  reducers: {
+    // Case reducer: returning a value replaces the slice state
+    visibilityFilterSet(state, action: PayloadAction<VisibilityFilter>) {
+      return action.payload
+    }
+  }
+})
+
+interface Todo {
+  id: string
+  text: string
+  completed: boolean
+}
+
+const todosSlice = createSlice({
+  name: 'todos',
+  initialState: [] as Todo[],
+  reducers: {
+    // Case reducers: "mutating" the draft is converted to an immutable update
+    todoAdded(state, action: PayloadAction<{ id: string; text: string }>) {
+      state.push({ ...action.payload, completed: false })
+    },
+    todoToggled(state, action: PayloadAction<string>) {
+      const todo = state.find(todo => todo.id === action.payload)
+      if (todo) {
+        todo.completed = !todo.completed
+      }
+    },
+    todoEdited(state, action: PayloadAction<{ id: string; text: string }>) {
+      const todo = state.find(todo => todo.id === action.payload.id)
+      if (todo) {
+        todo.text = action.payload.text
+      }
+    }
+  }
+})
+
+export const { visibilityFilterSet } = visibilitySlice.actions
+export const { todoAdded, todoToggled, todoEdited } = todosSlice.actions
+
+// "Root reducer": configureStore combines these for us
+export const store = configureStore({
+  reducer: {
+    visibilityFilter: visibilitySlice.reducer,
+    todos: todosSlice.reducer
+  }
+})
+```
+
+The structure is the same one we arrived at by hand: case reducers grouped into slice reducers, combined into a root reducer. The difference is that the utilities, the action constants, and the action creators are generated rather than written.

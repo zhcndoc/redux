@@ -6,6 +6,7 @@ description: 'Redux 官方基础教程：学习在实际 Redux 应用中使用�
 ---
 
 import { DetailedExplanation } from '../../components/DetailedExplanation'
+import { LiveExample } from '@site/src/components/LiveExample'
 
 <!-- prettier-ignore -->
 import FundamentalsWarning from "../../components/_FundamentalsWarning.mdx";
@@ -33,7 +34,7 @@ import FundamentalsWarning from "../../components/_FundamentalsWarning.mdx";
 
 需要注意的是，**这些模式都不是使用 Redux 的 _必须_ 条件！** 但每种模式都有其深刻的理由，而且你几乎在每个 Redux 代码库中都会看到它们的一些或全部用法。
 
-本节将重构我们现有的待办应用代码，使用其中一些模式，并讨论它们为何在 Redux 应用中被广泛使用。随后，在[第八部分](./part-8-modern-redux.md)中，我们将介绍“现代 Redux”，包括**如何使用官方的 [Redux Toolkit](https://redux-toolkit.js.org) 简化我们之前“手写”的全部 Redux 逻辑**，并且为什么**我们推荐将 Redux Toolkit 作为编写 Redux 应用的标准实践**。
+In this section, we'll rework our existing todo app code to use some of these patterns, and talk about why they're commonly used in Redux apps. Then, in [**Part 8**](./part-8-modern-redux.md), we'll talk about "modern Redux", including **how to use our official [Redux Toolkit](/toolkit) package to simplify all the Redux logic we've written "by hand"** in our app, and why **we recommend using Redux Toolkit as the standard approach for writing Redux apps**.
 
 <FundamentalsWarning />
 
@@ -150,7 +151,7 @@ export const colorFilterChanged = (color, changeType) => {
 
 由于该 action 是从 `<Footer>` 组件中 dispatch 的，我们需要在 `<Footer>` 中导入 `colorFilterChanged` 并使用它：
 
-```js title="src/features/footer/Footer.js"
+```js title="src/features/footer/Footer.jsx"
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 
@@ -204,9 +205,9 @@ export function fetchTodos() {
 }
 ```
 
-这意味着我们得在 `index.js` 中调用外层的 thunk action 创建函数，传给 `dispatch` 返回的内层 thunk 函数：
+And that means we have to change the place it's dispatched in `main.jsx` to call the outer thunk action creator function, and pass the returned inner thunk function to `dispatch`:
 
-```js title="src/index.js"
+```js title="src/main.jsx"
 import store from './store'
 import { fetchTodos } from './features/todos/todosSlice'
 
@@ -283,7 +284,7 @@ const selectTodoIds = state => state.todos.map(todo => todo.id)
 npm install reselect
 ```
 
-然后导入并用 `createSelector` 创建。我们的原 `selectTodoIds` 在 `TodoList.js` 中定义，但通常选择器写在对应的 slice 文件更合适。我们在 todos slice 中添加如下代码：
+Then, we can import and call `createSelector`. Our original `selectTodoIds` function was defined over in `TodoList.jsx`, but it's more common for selector functions to be written in the relevant slice file. So, let's add this to the todos slice:
 
 ```js title="src/features/todos/todosSlice.js"
 // highlight-next-line
@@ -306,7 +307,7 @@ export const selectTodoIds = createSelector(
 
 再在 `<TodoList>` 中使用它：
 
-```js title="src/features/todos/TodoList.js"
+```js title="src/features/todos/TodoList.jsx"
 import React from 'react'
 import { useSelector, shallowEqual } from 'react-redux'
 
@@ -592,25 +593,22 @@ export const fetchTodos = () => async dispatch => {
 }
 ```
 
-但在显示加载状态之前，需要修改模拟服务器 API，给请求添加人为延迟。打开 `src/api/server.js`，在第 63 行附近找到这条被注释掉的代码：
+However, before we try to show this in the UI, we need to modify the fake server API to add an artificial delay to our API calls. Open up `src/api/server.js`, and change the `ARTIFICIAL_DELAY_MS` value near the top of the file from `0` to `2000`:
 
 ```js title="src/api/server.js"
-new Server({
-  routes() {
-    this.namespace = 'fakeApi'
-    // highlight-next-line
-    // this.timing = 2000
+// Add an extra delay to all endpoints, so loading spinners show up.
+// Set this to 2000 to simulate a slow network.
+// highlight-next-line
+const ARTIFICIAL_DELAY_MS = 2000
 
-    // omit other code
-  }
-})
+// omit other code
 ```
 
-取消注释这一行，模拟服务器会对所有 API 调用延迟 2 秒，足够让我们观察加载动画。
+With that change, the fake server will add a 2-second delay to every API call our app makes, which gives us enough time to actually see a loading spinner being displayed.
 
 接着，在 `<TodoList>` 组件中读取加载状态，基于该状态显示加载指示动画：
 
-```js title="src/features/todos/TodoList.js"
+```js title="src/features/todos/TodoList.jsx"
 // omit imports
 
 const TodoList = () => {
@@ -639,13 +637,11 @@ const TodoList = () => {
 
 打开应用后，这样可以看到启用加载状态的效果（想再次看到加载动画，请刷新预览或新标签打开）：
 
-<iframe
-  class="codesandbox"
-  src="https://codesandbox.io/embed/github/reduxjs/redux-fundamentals-example-app/tree/checkpoint-7-asyncLoading/?codemirror=1&fontsize=14&hidenavigation=1&theme=dark&runonclick=1"
-  title="redux-fundamentals-example-app"
-  allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
-  sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
-></iframe>
+<LiveExample
+  repo="reduxjs/redux-fundamentals-example-app"
+  ref="checkpoint-7-asyncLoading"
+  title="Redux Fundamentals: async loading status"
+/>
 
 ## Flux 标准 Action
 
@@ -894,7 +890,7 @@ const reduxThunkMiddleware = storeAPI => next => action => {
 
 我们已有 `<Header>` 组件 dispatch 保存新 todo 的 thunk。让我们给 `<Header>` 增加加载状态，当等待服务响应时禁用文本输入框，显示加载动画：
 
-```js title="src/features/header/Header.js"
+```js title="src/features/header/Header.jsx"
 const Header = () => {
   const [text, setText] = useState('')
   // highlight-next-line
@@ -963,13 +959,11 @@ export default Header
 
 下面是我们应用在完全转换为这些模式后效果：
 
-<iframe
-  class="codesandbox"
-  src="https://codesandbox.io/embed/github/reduxjs/redux-fundamentals-example-app/tree/checkpoint-8-normalizedState/?codemirror=1&fontsize=14&hidenavigation=1&theme=dark&runonclick=1"
-  title="redux-fundamentals-example-app"
-  allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
-  sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
-></iframe>
+<LiveExample
+  repo="reduxjs/redux-fundamentals-example-app"
+  ref="checkpoint-8-normalizedState"
+  title="Redux Fundamentals: standard patterns"
+/>
 
 :::tip 总结
 
@@ -991,7 +985,7 @@ export default Header
 
 ## 下一步？
 
-手写这些代码既耗时又容易出错。**这就是为什么推荐你使用官方的 [Redux Toolkit](https://redux-toolkit.js.org) 包来编写 Redux 逻辑**。
+Writing all this code "by hand" can be time-consuming and difficult. **That's why we recommend that you use our official [Redux Toolkit](/toolkit) package to write your Redux logic instead**.
 
 Redux Toolkit 提供的 API 能帮你**用更少代码写出典型 Redux 逻辑**，也有助于**避免状态被误修改等常见错误**。
 

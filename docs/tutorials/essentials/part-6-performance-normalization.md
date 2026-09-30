@@ -6,6 +6,7 @@ description: '官方 Redux 必备教学：学习如何提升应用性能并正�
 ---
 
 import { DetailedExplanation } from '../../components/DetailedExplanation'
+import { LiveExample } from '@site/src/components/LiveExample'
 
 :::tip 你将学到
 
@@ -285,7 +286,7 @@ export const LoginPage = () => {
   const navigate = useNavigate()
 
   // highlight-next-line
-  const handleSubmit = async (e: React.FormEvent<LoginPageFormElements>) => {
+  const handleSubmit = async (e: React.SubmitEvent<LoginPageFormElements>) => {
     e.preventDefault()
 
     const username = e.currentTarget.elements.username.value
@@ -314,9 +315,7 @@ import { logout } from '@/features/auth/authSlice'
 const postsSlice = createSlice({
   name,
   initialState,
-  reducers: {
-    /* 略 */
-  },
+  reducers: {/* omitted */},
   extraReducers: builder => {
     builder
       // highlight-start
@@ -415,7 +414,7 @@ export const selectAllNotifications = (state: RootState) => state.notifications
 
 :::info
 
-更多详情及取消请求处理，参考 [createAsyncThunk API 参考](https://redux-toolkit.js.org/api/createAsyncThunk)。
+For more details on these arguments and how to handle canceling thunks and requests, see [the `createAsyncThunk` API reference page](/toolkit/api/createAsyncThunk).
 
 :::
 
@@ -851,7 +850,7 @@ Selectors that return a new reference (such as an object or an array) should be 
 
 目前我们自己写选择器，仅用于复用读取 store 代码。若能让选择器记忆化就能提升性能。
 
-**[Reselect](https://github.com/reduxjs/reselect) 是专门为 Redux 设计的记忆化选择器库**，提供 `createSelector` 函数，只会在输入改变时重新计算结果。Redux Toolkit [内置导出了 `createSelector`](https://redux-toolkit.js.org/api/createSelector)，我们已经可以直接用。
+**[Reselect](https://github.com/reduxjs/reselect) is a library for creating memoized selector functions**, and was specifically designed to be used with Redux. It has a `createSelector` function that generates memoized selectors that will only recalculate results when the inputs change. Redux Toolkit [exports the `createSelector` function](/toolkit/api/createSelector), so we already have it available.
 
 改写 `selectPostsByUser` 使其用 `createSelector` 记忆化：
 
@@ -982,7 +981,7 @@ PostExcerpt = React.memo(PostExcerpt)
 
 2. 改写 `<PostsList>` 让它只读取帖子 ID 列表，不再读取整个帖子数组。改 `<PostExcerpt>` 接收 `postId` 参数，并通过 `useSelector` 单独取帖子数据。若 ID 数组无变动，`<PostsList>` 不会渲染，只改动的 `<PostExcerpt>` 触发渲染。
 
-这稍复杂，因为需确保帖子数组按日期排序，无需每次在组件排序。可持续维护有序 ID 数组，并用记忆化选择器读取。
+Unfortunately, this gets tricky because we also need to have all our posts sorted by date and rendered in the right order. We could update our `postsSlice` to keep the array sorted at all times, so we don't have to sort it in the component, and use a memoized selector to extract just the list of post IDs. We could also [customize the comparison function that `useSelector` runs to check the results](/react-redux/api/hooks#equality-comparisons-and-updates), like `useSelector(selectPostIds, shallowEqual)`, so that will skip re-rendering if the _contents_ of the IDs array haven't changed.
 
 也可用 `useSelector` 自定义比较函数实现浅比较，如 `useSelector(selectPostIds, shallowEqual)`。
 
@@ -1028,13 +1027,13 @@ const userObject = state.users.entities[userId]
 
 :::info
 
-为什么要正规化，详情见 [正规化状态结构](../../usage/structuring-reducers/NormalizingStateShape.md) 和 Redux Toolkit 用法指南的 [管理正规化数据](https://redux-toolkit.js.org/usage/usage-guide#managing-normalized-data) 章节。
+For more details on why normalizing state is useful, see [Normalizing State Shape](../../usage/structuring-reducers/NormalizingStateShape.md) and the Redux Toolkit Usage Guide section on [Managing Normalized Data](/toolkit/usage/usage-guide#managing-normalized-data).
 
 :::
 
 ### 用 `createEntityAdapter` 管理正规化状态
 
-Redux Toolkit 的 [**`createEntityAdapter`**](https://redux-toolkit.js.org/api/createEntityAdapter) 提供标准做法来将集合正规化为 `{ids: [], entities: {}}` 格式。它生成预设的 reducers 和选择器方便管理。
+Redux Toolkit's [**`createEntityAdapter`**](/toolkit/api/createEntityAdapter) API provides a standardized way to store your data in a slice by taking a collection of items and putting them into the shape of `{ ids: [], entities: {} }`. Along with this predefined state shape, it generates a set of reducer functions and selectors that know how to work with that data.
 
 好处：
 
@@ -1044,7 +1043,7 @@ Redux Toolkit 的 [**`createEntityAdapter`**](https://redux-toolkit.js.org/api/c
 
 `createEntityAdapter` 接收配置对象，支持带排序的比较函数（和 `Array.sort()` 一样用法）。
 
-返回适配器对象包含：
+It returns an object that contains [a set of generated reducer functions for adding, updating, and removing items from an entity state object](/toolkit/api/createEntityAdapter#crud-functions). These reducer functions can either be used as a case reducer for a specific action type, or as a "mutating" utility function within another reducer in `createSlice`.
 
 - 预设 reducer 函数集合，也可用作 `createSlice` 内部 reducer 的辅助工具
 - `getInitialState()`，返回初始正规化状态 `{ids: [], entities: {}}`，可传入额外字段合并
@@ -1401,7 +1400,7 @@ export const selectUnreadNotificationsCount = (state: RootState) => {
 
 ### 用 `createListenerMiddleware` 实现响应式逻辑
 
-之前用过异步 thunk 中间件处理「立即执行」的异步逻辑，但 thunk 只是个函数，不是响应动作派发的「监听」。
+**Redux Toolkit includes the [`createListenerMiddleware`](/toolkit/api/createListenerMiddleware) API to let us write logic that runs in response to specific actions being dispatched**. It lets us add "listener" entries that define what actions to look for and have an `effect` callback that will run whenever it matches against an action.
 
 **Redux Toolkit 提供 [`createListenerMiddleware`](https://redux-toolkit.js.org/api/createListenerMiddleware)，允许我们定义「监听器」，监听某动作并执行额外逻辑。**
 
@@ -1503,7 +1502,9 @@ function App() {
 }
 ```
 
-给 `postsSlice` 添加监听器：
+Now we can go add a listener that will watch for the `addNewPost.fulfilled` action, show a toast that says "Post Added", and remove it after a delay.
+
+There's [multiple approaches we can use for defining listeners in our codebase](/toolkit/api/createListenerMiddleware#organizing-listeners-in-files). That said, it's usually a good practice to define listeners in whatever slice file seems most related to the logic we want to add. In this case, we want to show a toast when a post gets added, so let's add this listener in the `postsSlice` file:
 
 ```ts title="features/posts/postsSlice.ts"
 import {
@@ -1551,11 +1552,19 @@ export const addPostsListeners = (startAppListening: AppStartListening) => {
 - `actionCreator`：指定监听的动作（此处是 thunk 完成动作 `addNewPost.fulfilled`）
 - `effect`：执行回调，接收匹配动作和 `listenerApi` 对象
 
-`effect` 支持同步异步。`listenerApi` 提供 `dispatch`、`getState` 及更多辅助异步功能。
+- `actionCreator: ActionCreator`: any RTK action creator function, like `reactionAdded` or `addNewPost.fulfilled`. This will run the effect when that one specific action is dispatched.
+- `matcher: (action: UnknownAction) => boolean`: Any RTK ["matcher" function](/toolkit/api/matching-utilities), like `isAnyOf(reactionAdded, addNewPost.fulfilled)`. This will run the effect any time the matcher returns `true`.
+- `predicate: (action: UnknownAction, currState: RootState, prevState: RootState) => boolean`: a more general matching function that has access to `currState` and `prevState`. This can be used to make any check you want against the action or state values, including seeing if a piece of state has changed (such as `currState.counter.value !== prevState.counter.value`)
 
 这里动态导入 toast 库，调 show 弹出成功提示，等待 5 秒后移除提示。
 
-为避免切片文件导入监听文件导致循环依赖，我们把监听器导出成函数，留给监听文件调用。监听文件导入切片的监听工厂函数，调用它注册监听：
+The `effect` callback itself is much like an async thunk. It gets the matched `action` as the first argument, and a `listenerApi` object as the second argument.
+
+The `listenerApi` includes the usual `dispatch` and `getState` methods, but also [several other functions that can be used to implement complex async logic and workflows](/toolkit/api/createListenerMiddleware#listener-api). That includes methods like `condition()` to pause until some other action is dispatched or state value changes, `unsubscribe()/subscribe()` to change whether this listener entry is active, `fork()` to kick off a child task, and more.
+
+In this case, we want to import the actual `react-tiny-toast` library dynamically, show the success toast, wait a few seconds, and then remove the toast.
+
+Finally, we need to actually import and call `addPostsListeners` somewhere. In this case, we'll import it into `app/listenerMiddleware.ts`:
 
 ```ts title="app/listenerMiddleware.ts"
 import { createListenerMiddleware, addListener } from '@reduxjs/toolkit'
@@ -1587,13 +1596,12 @@ addPostsListeners(startAppListening)
 
 本节我们做了大量新功能。成品示例如下：
 
-<iframe
-  class="codesandbox"
-  src="https://codesandbox.io/embed/github/reduxjs/redux-essentials-example-app/tree/ts-checkpoint-4-listenerToasts?fontsize=14&hidenavigation=1&module=%2fsrc%2Ffeatures%2Fposts%2FpostsSlice.ts&theme=dark&runonclick=1"
-  title="redux-essentials-example"
-  allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
-  sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
-></iframe>
+<LiveExample
+  repo="reduxjs/redux-essentials-example-app"
+  ref="ts-checkpoint-4-listenerToasts"
+  file="src/features/posts/postsSlice.ts"
+  title="Redux Essentials: end of Part 6"
+/>
 
 总结：
 

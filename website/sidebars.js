@@ -12,7 +12,6 @@ module.exports = {
     '教程': [
       'tutorials/tutorials-index',
       'tutorials/quick-start',
-      'tutorials/typescript-quick-start',
       {
         type: 'category',
         label: 'Redux 入门',
@@ -73,7 +72,8 @@ module.exports = {
         items: [
           'usage/usage-with-typescript',
           'usage/writing-tests',
-          'usage/troubleshooting'
+          'usage/troubleshooting',
+          'usage/debugging'
         ]
       },
       {
@@ -153,8 +153,7 @@ module.exports = {
       'api/bindactioncreators',
       'api/compose',
       'api/utils',
-      { type: 'link', label: '错误信息', href: '/errors' }
-    ],
-    'Redux 工具包': ['redux-toolkit/overview']
+      'api/errors'
+    ]
   }
 }

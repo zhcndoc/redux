@@ -11,76 +11,38 @@ Redux 是一个用于可预测且可维护的全局状态管理的 JavaScript �
 
 它帮助你编写行为一致、能够在不同环境（客户端、服务器和原生）运行且易于测试的应用程序。除此之外，它还提供了极佳的开发者体验，比如[结合时间旅行调试器的实时代码编辑](https://github.com/reduxjs/redux-devtools)。
 
-你可以将 Redux 和 [React](https://reactjs.org) 一起使用，也可以与任何其他视图库配合使用。它体积小（2KB，含依赖），但拥有庞大的插件生态。
+You can use Redux together with [React](https://react.dev), or with any other view library. It is tiny (2kB, including dependencies), but has a large ecosystem of addons available.
 
-[**Redux Toolkit**](https://redux-toolkit.js.org) 是我们官方推荐的编写 Redux 逻辑的方式。它封装了 Redux 核心，包含我们认为构建 Redux 应用必不可少的包和函数。Redux Toolkit 内置了我们推荐的最佳实践，简化了大多数 Redux 任务，防止常见错误，并使编写 Redux 应用更轻松。
+[**Redux Toolkit**](/toolkit) is our official recommended approach for writing Redux logic. It wraps around the Redux core, and contains packages and functions that we think are essential for building a Redux app. Redux Toolkit builds in our suggested best practices, simplifies most Redux tasks, prevents common mistakes, and makes it easier to write Redux applications.
 
-RTK 包含简化许多常见用例的工具，包括[store 配置](https://redux-toolkit.js.org/api/configureStore)、[创建 reducers 和编写不可变更新逻辑](https://redux-toolkit.js.org/api/createreducer)，甚至[一次性创建完整的状态切片](https://redux-toolkit.js.org/api/createslice)。
+RTK includes utilities that help simplify many common use cases, including [store setup](/toolkit/api/configureStore),
+[creating reducers and writing immutable update logic](/toolkit/api/createReducer),
+and even [creating entire "slices" of state at once](/toolkit/api/createSlice).
 
-无论你是首次使用 Redux 创建第一个项目的新手，还是想简化现有应用的有经验用户，**[Redux Toolkit](https://redux-toolkit.js.org/)** 都能帮助你优化 Redux 代码。
+Whether you're a brand new Redux user setting up your first project, or an experienced user who wants to
+simplify an existing application, **[Redux Toolkit](/toolkit)** can help you
+make your Redux code better.
 
 ## 安装
 
-### Redux Toolkit
-
-Redux Toolkit 作为 NPM 包提供，可用于模块打包器或 Node 应用：
+Redux Toolkit is available as a package on NPM for use with a module bundler or in a Node application:
 
 ```bash
 # NPM
-npm install @reduxjs/toolkit
+npm install @reduxjs/toolkit react-redux
 
 # Yarn
-yarn add @reduxjs/toolkit
+yarn add @reduxjs/toolkit react-redux
 ```
 
-### 创建新的 Redux 项目
-
-使用 Redux 启动新应用的推荐方式是使用我们的[官方模板](https://github.com/reduxjs/redux-templates)。这些模板预配置了 Redux Toolkit，并包含一个小型示例应用来帮助你入门。
-
-你可以使用类似 `tiged` 的工具来克隆并提取模板。
+The recommended way to start a new React + Redux app is to use one of our [official templates](https://github.com/reduxjs/redux-templates), which come pre-configured with Redux Toolkit and include a small example app:
 
 ```bash
 # Vite + TypeScript
 npx tiged reduxjs/redux-templates/packages/vite-template-redux my-app
-
-# Create React App + TypeScript
-npx tiged reduxjs/redux-templates/packages/cra-template-redux-typescript my-app
-
-# Create React App + JavaScript
-npx tiged reduxjs/redux-templates/packages/cra-template-redux my-app
-
-# Expo + TypeScript
-npx tiged reduxjs/redux-templates/packages/expo-template-redux-typescript my-app
-
-# React Native + TypeScript
-npx tiged reduxjs/redux-templates/packages/react-native-template-redux-typescript my-app
-
-# 独立 Redux Toolkit 应用结构示例
-npx tiged reduxjs/redux-templates/packages/rtk-app-structure-example my-app
 ```
 
-除了官方模板，社区还创建了其他模板，例如 [Next.js 的 `with-redux` 模板](https://github.com/vercel/next.js/tree/canary/examples/with-redux)。
-
-```bash
-# Next.js + Redux
-npx create-next-app --example with-redux my-app
-```
-
-### Redux 核心
-
-Redux 核心库作为 NPM 包提供，可用于模块打包器或 Node 应用：
-
-```bash
-# NPM
-npm install redux
-
-# Yarn
-yarn add redux
-```
-
-该包包含一个预编译的 ESM 版本，可直接在浏览器中作为 [`<script type="module">` 标签](https://unpkg.com/redux/dist/redux.browser.mjs) 使用。
-
-更多细节请参见[安装页面](Installation.md)。
+See the [Installation](Installation.md) page for the full list of templates (including Expo, React Native, and Next.js), the Redux DevTools browser extension, and installing the Redux core package by itself.
 
 ## 基本示例
 
@@ -90,14 +52,20 @@ yarn add redux
 
 Redux Toolkit 简化了编写 Redux 逻辑和设置 store 的过程。使用 Redux Toolkit，基本的应用逻辑如下：
 
-```js
+```ts
 import { createSlice, configureStore } from '@reduxjs/toolkit'
+
+interface CounterState {
+  value: number
+}
+
+const initialState: CounterState = {
+  value: 0
+}
 
 const counterSlice = createSlice({
   name: 'counter',
-  initialState: {
-    value: 0
-  },
+  initialState,
   reducers: {
     incremented: state => {
       // Redux Toolkit 允许我们在 reducers 中写“可变”逻辑。
@@ -202,7 +170,7 @@ store.dispatch({ type: 'counter/decremented' })
 
 Redux 维护者 Mark Erikson 在“Learn with Jason”节目中讲解我们今日推荐的 Redux 用法。节目中包含了一个现场编码的示例应用，展示如何用 Redux Toolkit 和 React-Redux hooks（含 TypeScript），以及新的 RTK Query 数据获取 API。
 
-请查看[“Learn Modern Redux” 节目说明页](https://www.learnwithjason.dev/let-s-learn-modern-redux)获取文字记录及示例源代码链接。
+See [the "Learn Modern Redux" show notes page](https://codetv.dev/series/learn-with-jason/s4/let-s-learn-modern-redux) for a transcript and links to the example app source.
 
 <LiteYouTubeEmbed
     id="9zySeP5vH9c"
@@ -211,17 +179,17 @@ Redux 维护者 Mark Erikson 在“Learn with Jason”节目中讲解我们今�
 
 ### 其他教程
 
-- Redux 仓库包含多个示例项目，展示如何使用 Redux 的各个方面。几乎所有示例都配有对应的 CodeSandbox 沙盒。你可以在线交互式体验代码。完整示例列表见 **[示例页面](./Examples.md)**。
-- Redux 创建者 Dan Abramov 的免费 **["Redux 入门视频系列"](https://egghead.io/courses/fundamentals-of-redux-course-from-dan-abramov-bd5cc867)** 及 **[构建符合规范的 React 应用](https://egghead.io/courses/building-react-applications-with-idiomatic-redux)** 视频课程，均托管于 Egghead.io。
-- Redux 维护者 Mark Erikson 的 **["Redux 基础" 会议演讲](https://blog.isquaredsoftware.com/2018/03/presentation-reactathon-redux-fundamentals/)** 和 **[“Redux 基础” 工作坊幻灯片](https://blog.isquaredsoftware.com/2018/06/redux-fundamentals-workshop-slides/)**。
-- Dave Ceddia 的博文 [**完整的 React Redux 新手教程**](https://daveceddia.com/redux-tutorial/)。
+- The Redux repository contains several example projects demonstrating various aspects of how to use Redux. Almost all examples have a corresponding CodeSandbox sandbox. This is an interactive version of the code that you can play with online. See the complete list of examples in the **[Examples page](./Examples.md)**.
+- Redux creator Dan Abramov's **free ["Getting Started with Redux" video series](https://egghead.io/courses/fundamentals-of-redux-course-from-dan-abramov-bd5cc867)** and **[Building React Applications with Idiomatic Redux](https://egghead.io/courses/building-react-applications-with-idiomatic-redux)** video courses on Egghead.io. These predate Redux Toolkit and show the core APIs written by hand. They're still a good explanation of how Redux works underneath, but read the Essentials tutorial first.
+- Redux maintainer Mark Erikson's **["Redux Fundamentals" conference talk](https://blog.isquaredsoftware.com/2018/03/presentation-reactathon-redux-fundamentals/)** and [**"Redux Fundamentals" workshop slides**](https://blog.isquaredsoftware.com/2018/06/redux-fundamentals-workshop-slides/) (2018, older patterns)
+- Dave Ceddia's post [**A Complete React Redux Tutorial for Beginners**](https://daveceddia.com/redux-tutorial/) (older patterns)
 
 ### 其他资源
 
-- **[Redux FAQ](../FAQ.md)** 回答了许多关于如何使用 Redux 的常见问题，**[“使用 Redux” 文档部分](../usage/index.md)** 则提供了关于派生数据处理、测试、拆分 reducer 逻辑和减少样板代码的信息。
-- Redux 维护者 Mark Erikson 的 **[“实用 Redux” 教程系列](https://blog.isquaredsoftware.com/series/practical-redux/)** 展示了与 React 和 Redux 配合使用的中高级技巧（也可通过 **[Educative.io 的交互式课程](https://www.educative.io/collection/5687753853370368/5707702298738688)** 学习）。
-- **[React/Redux 链接列表](https://github.com/markerikson/react-redux-links)** 分类收录了关于 [reducers 和 selectors](https://github.com/markerikson/react-redux-links/blob/master/redux-reducers-selectors.md)、[管理副作用](https://github.com/markerikson/react-redux-links/blob/master/redux-side-effects.md)、[Redux 架构与最佳实践](https://github.com/markerikson/react-redux-links/blob/master/redux-architecture.md) 等主题的文章。
-- 社区创建了数以千计的 Redux 相关库、插件和工具。**[“生态系统” 文档页面](./Ecosystem.md)** 推荐了我们挑选的资源，完整列表请见 **[Redux 插件目录](https://github.com/markerikson/redux-ecosystem-links)**。
+- The **[Redux FAQ](../FAQ.md)** answers many common questions about how to use Redux, and the **["Using Redux" docs section](../usage/index.md)** has information on handling derived data, testing, structuring reducer logic, and reducing boilerplate.
+- Redux maintainer Mark Erikson's **["Practical Redux" tutorial series](https://blog.isquaredsoftware.com/series/practical-redux/)** demonstrates real-world intermediate and advanced techniques for working with React and Redux (also available as **[an interactive course on Educative.io](https://www.educative.io/collection/5687753853370368/5707702298738688)**).
+- The **[React/Redux links list](https://github.com/markerikson/react-redux-links)** has categorized articles on working with [reducers and selectors](https://github.com/markerikson/react-redux-links/blob/master/redux-reducers-selectors.md), [managing side effects](https://github.com/markerikson/react-redux-links/blob/master/redux-side-effects.md), [Redux architecture and best practices](https://github.com/markerikson/react-redux-links/blob/master/redux-architecture.md), and more.
+- Our community has created thousands of Redux-related libraries, addons, and tools. The **["Ecosystem" docs page](./Ecosystem.md)** lists our recommendations.
 
 ## 帮助和讨论
 

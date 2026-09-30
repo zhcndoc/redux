@@ -6,6 +6,7 @@ description: '官方 Redux 基础教程：学习 reducers 如何根据动作更�
 ---
 
 import { DetailedExplanation } from '../../components/DetailedExplanation'
+import { LiveExample } from '@site/src/components/LiveExample'
 
 <!-- prettier-ignore -->
 import FundamentalsWarning from "../../components/_FundamentalsWarning.mdx";
@@ -36,34 +37,37 @@ import FundamentalsWarning from "../../components/_FundamentalsWarning.mdx";
 
 本教程提供了一个预配置的起始项目，已经配置好了 React，包含一些默认样式，并且内置了一个假 REST API，允许我们在应用中实际编写 API 请求。你将以此为基础编写实际的应用代码。
 
-开始之前，你可以打开并 Fork 这个 CodeSandbox：
+To get started, you can open and fork this StackBlitz project:
 
-<iframe
-  class="codesandbox"
-  src="https://codesandbox.io/embed/github/reduxjs/redux-fundamentals-example-app/tree/master/?codemirror=1&fontsize=14&hidenavigation=1&theme=dark&runonclick=1"
-  title="redux-fundamentals-example-app"
-  allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
-  sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
-></iframe>
+<LiveExample
+  repo="reduxjs/redux-fundamentals-example-app"
+  ref="master"
+  file="src/main.jsx"
+  title="Redux Fundamentals: starter project"
+/>
 
-你也可以 [从此 Github 仓库克隆同一项目](https://github.com/reduxjs/redux-fundamentals-example-app)。克隆后，使用 `npm install` 安装项目依赖，用 `npm start` 启动项目。
+You can also [clone the same project from this Github repo](https://github.com/reduxjs/redux-fundamentals-example-app). The project is configured to use [NPM](https://docs.npmjs.com/cli/v10) as the package manager, but you can use any package manager ([pnpm](https://pnpm.io/), [Yarn](https://yarnpkg.com/), or [Bun](https://bun.sh/docs/cli/install)) as you prefer. After installing packages, you can start the local dev server with the `npm run dev` command.
 
-如果你想看我们将要构建的最终版本，可以查看 [**`tutorial-steps` 分支**](https://github.com/reduxjs/redux-fundamentals-example-app/tree/tutorial-steps)，或查看 [这个 CodeSandbox 中的最终版本](https://codesandbox.io/s/github/reduxjs/redux-fundamentals-example-app/tree/tutorial-steps)。
+If you'd like to see the final version of what we're going to build, you can check out [the **`tutorial-steps` branch**](https://github.com/reduxjs/redux-fundamentals-example-app/tree/tutorial-steps), or [open the final version on StackBlitz](https://stackblitz.com/github/reduxjs/redux-fundamentals-example-app/tree/checkpoint-10-finalCode).
 
 #### 新建 Redux + React 项目
 
-完成本教程后，你可能想尝试自己动手建项目。**我们推荐使用 [Create-React-App 的 Redux 模板](https://github.com/reduxjs/cra-template-redux)，这是创建 Redux + React 项目的最快方式**。它内置了 Redux Toolkit 和 React-Redux，使用了[第一部分中你见过的「计数器」应用的现代版本](./part-1-overview.md)。这样你可以直接编写业务代码，而无需手动添加 Redux 包和配置 store。
+Once you've finished this tutorial, you'll probably want to try working on your own projects. **We recommend using the [Redux+TS template for Vite](https://github.com/reduxjs/redux-templates/tree/master/packages/vite-template-redux) as the fastest way to create a new Redux + React project**. It comes with Redux Toolkit and React-Redux already configured, using [a modernized version of the "counter" app example you saw in Part 1](./part-1-overview.md). This lets you jump right into writing your actual application code without having to add the Redux packages and set up the store. You can create a new project from it with `tiged`:
+
+```sh
+npx tiged reduxjs/redux-templates/packages/vite-template-redux my-app
+```
 
 如果你想知道如何具体将 Redux 添加到项目中，可以参考此说明：
 
 <DetailedExplanation title="详细说明：向 React 项目添加 Redux">
 
-CRA 的 Redux 模板已经集成了 Redux Toolkit 和 React-Redux。如果你从头开始搭建新项目，未使用该模板，则需要执行以下步骤：
+The Redux template for Vite comes with Redux Toolkit and React-Redux already configured. If you're setting up a new project from scratch without that template, follow these steps:
 
-- 添加 `@reduxjs/toolkit` 和 `react-redux` 包
-- 使用 RTK 的 `configureStore` API 创建 Redux store，并至少传入一个 reducer 函数
-- 在应用入口文件（如 `src/index.js`）中引入 Redux store
-- 用 React-Redux 的 `<Provider>` 组件包裹根 React 组件，如：
+- Add the `@reduxjs/toolkit` and `react-redux` packages
+- Create a Redux store using RTK's `configureStore` API, and pass in at least one reducer function
+- Import the Redux store into your application's entry point file (such as `src/main.jsx`)
+- Wrap your root React component with the `<Provider>` component from React-Redux, like:
 
 ```jsx
 root.render(
@@ -78,18 +82,18 @@ root.render(
 
 #### 初始项目结构概览
 
-该初始项目基于标准 [Vite](https://create-react-app.dev/docs/getting-started) 项目模板，做了一些修改。
+This initial project is based on [the standard Vite](https://vite.dev/guide/) React project template, with some modifications.
 
 让我们快速看一下项目包含的内容：
 
 - `/src`
-  - `index.js`：应用入口文件，渲染主 `<App>` 组件。
-  - `App.js`：主应用组件。
-  - `index.css`：整个应用的样式文件
+  - `main.jsx`: the entry point file for the application. It renders the main `<App>` component.
+  - `App.jsx`: the main application component.
+  - `index.css`: styles for the complete application
   - `/api`
-    - `client.js`：一个小型的 `fetch` 封装客户端，允许我们发起 HTTP GET 和 POST 请求
-    - `server.js`：提供了一个假 REST API 用于模拟数据，应用后续会从这些假端点请求数据。
-  - `/exampleAddons`：包含一些额外 Redux 插件，后面教程将用到，演示功能如何实现
+    - `client.js`: a small `fetch` wrapper client that allows us to make HTTP GET and POST requests
+    - `server.js`: provides a fake REST API for our data, using [Mock Service Worker](https://mswjs.io/). Our app will fetch data from these fake endpoints later.
+  - `/exampleAddons`: contains some additional Redux addons that we'll use later in the tutorial to show how things work
 
 运行应用，你会看到一条欢迎消息，但应用其它部分仍然是空的。
 
@@ -225,7 +229,7 @@ Redux store 对 `action.type` 字段具体值没有要求。但你的代码会�
 
 **Redux 应用实际上只有一个 reducer 函数：即后续传递给 `createStore` 的“根 reducer”函数**。该函数负责处理所有分发的动作，计算整棵状态树完整的新值。
 
-让我们在 `src` 目录下新建一个 `reducer.js` 文件，与 `index.js` 和 `App.js` 并列。
+Let's start by creating a `reducer.js` file in the `src` folder, alongside `main.jsx` and `App.jsx`.
 
 每个 reducer 都需要初始状态，因此先创建几条假代办项准备使用。然后，写一个大致的 reducer 代码框架：
 
@@ -574,7 +578,7 @@ export default function filtersReducer(state = initialState, action) {
 
 **请你根据[需求描述](#defining-requirements)，自己尝试实现其它动作的 reducer 逻辑。**
 
-如遇困难，可以参考 [页面末尾的 CodeSandbox](#what-youve-learned) 查看完整实现。
+If you get stuck, see [the live example at the end of this page](#what-youve-learned) for the complete implementation of these reducers.
 
 :::
 
@@ -639,13 +643,12 @@ export default rootReducer
 
 这是我们目前应用的内容：
 
-<iframe
-  class="codesandbox"
-  src="https://codesandbox.io/embed/github/reduxjs/redux-fundamentals-example-app/tree/checkpoint-1-combinedReducers/?codemirror=1&fontsize=14&hidenavigation=1&module=%2Fsrc%2Freducer.js&theme=dark&runonclick=1"
-  title="redux-fundamentals-example-app"
-  allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
-  sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
-></iframe>
+<LiveExample
+  repo="reduxjs/redux-fundamentals-example-app"
+  ref="checkpoint-1-combinedReducers"
+  file="src/reducer.js"
+  title="Redux Fundamentals: combined reducers"
+/>
 
 :::tip 总结
 

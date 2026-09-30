@@ -104,7 +104,7 @@ thunk 使用方式是向 `dispatch` 传入一个函数。thunk 中间件拦截�
 
 thunk 最适合处理需要访问 `dispatch` 和 `getState` 的复杂同步逻辑，或中等复杂度异步逻辑，如一次性“异步请求数据并以结果分发动作”。
 
-我们传统上推荐 thunk 作为默认方法，Redux Toolkit 也专门提供了 [`createAsyncThunk` API](https://redux-toolkit.js.org/api/createAsyncThunk) 以简化“请求并分发”场景。其他场景可自行编写 thunk 函数。
+We have traditionally recommended thunks as the default approach, and Redux Toolkit specifically includes the [`createAsyncThunk` API](/toolkit/api/createAsyncThunk) for the "request and dispatch" use case. For other use cases, you can write your own thunk functions.
 
 #### Thunk 权衡
 
@@ -252,7 +252,7 @@ const fetchReposEpic = action$ =>
 
 ### 监听器（Listeners）
 
-Redux Toolkit 提供了 [createListenerMiddleware API](https://redux-toolkit.js.org/api/createListenerMiddleware) 来处理“响应式”逻辑。设计为比 saga 和 observable 更轻量的替代方案，涵盖了 90% 的常见用例，包体更小，API 简单，TypeScript 支持更佳。
+Redux Toolkit includes [the `createListenerMiddleware` API](/toolkit/api/createListenerMiddleware) to handle "reactive" logic. It's specifically intended to be a lighter-weight alternative to sagas and observables that handles 90% of the same use cases, with a smaller bundle size, simpler API, and better TypeScript support.
 
 概念上类似 React 的 `useEffect`，但用于 Redux store 更新。
 
@@ -272,8 +272,8 @@ Redux Toolkit 提供了 [createListenerMiddleware API](https://redux-toolkit.js.
 
 #### 监听器权衡
 
-- 👍 ：含于 Redux Toolkit ；`async/await` 更易用；类似 thunk；轻量；TypeScript 支持优良
-- 👎 ：相对较新，尚未广泛“实战检验”；灵活度略逊 saga/observable
+- 👍: Built into Redux Toolkit; `async/await` is more familiar syntax; similar to thunks; lightweight concepts and size; works great with TypeScript
+- 👎: Not _quite_ as flexible as sagas/observables
 
 ```js title="Listener 示例"
 // 创建监听器中间件实例及方法
@@ -327,7 +327,7 @@ listenerMiddleware.startListening({
 
 ### RTK Query
 
-Redux Toolkit 含有 [RTK Query](https://redux-toolkit.js.org/rtk-query/overview)，专为 Redux 应用设计的数据获取与缓存方案。它简化了常见数据加载场景，免去手写数据获取和缓存逻辑。
+Redux Toolkit includes [RTK Query](/toolkit/rtk-query/overview), a purpose-built data fetching and caching solution for Redux apps. It's designed to simplify common cases for loading data in a web application, eliminating the need to hand-write data fetching & caching logic yourself.
 
 RTK Query 借助定义 API 及“端点”实现功能。端点可以是获取数据的“查询”，或发送更新的“变更”。RTKQ 内部管理数据获取和缓存，追踪缓存条目使用情况，自动移除不再需要的缓存。采用独特的“标签”机制，能在变更更新服务器状态时自动触发重抓取。
 
@@ -426,7 +426,7 @@ const delayedActionMiddleware = storeAPI => next => action => {
 
 Redux reducer 可以写成真正的有限状态机，但 RTK 并未提供专门支持。实际上它们更像是针对动作判断的“部分”状态机。监听器、saga 和 observable 可以负责“派发后执行副作用”场景，但有时需花更多工夫确保副作用只在特定时刻运行。
 
-[XState](https://xstate.js.org/docs/) 是个强大的状态机库，支持事件驱动状态转移和副作用触发。还带图形化编辑工具，帮助创建状态机定义，后续加载运行。
+[XState](https://stately.ai/docs) is a powerful library for defining true state machines and executing them, including managing state transitions based on events and triggering related side effects. It also has related tools for creating state machine definitions via a graphical editor, which can then be loaded into the XState logic for execution.
 
 目前 XState 与 Redux 无官方集成，但可用 XState 机器作为 Redux reducer，且 XState 开发者有一个以 Redux 侧效果中间件形式演示的有趣 POC：
 
@@ -434,19 +434,19 @@ Redux reducer 可以写成真正的有限状态机，但 RTK 并未提供专门�
 
 ## 深入了解
 
-- 演讲：[**Redux 异步逻辑的演化**](https://blog.isquaredsoftware.com/2022/05/presentations-evolution-redux-async-logic/)
-- 关于中间件和副作用的理由：
-  - ["如何用超时分发 Redux action？"](https://stackoverflow.com/questions/35411423/how-to-dispatch-a-redux-action-with-a-timeout/35415559#35415559)
-  - ["为什么异步流需要中间件？"](https://stackoverflow.com/questions/34570758/why-do-we-need-middleware-for-async-flow-in-redux/34599594#34599594)
-- 文档与教程：
-  - [Redux 基础，第4部分：Store > 中间件](../tutorials/fundamentals/part-4-store.md#middleware)
-  - [Redux 基础，第6部分：异步逻辑与数据获取](../tutorials/fundamentals/part-6-async-logic.md)
-  - [Redux 核心教程，第5部分：异步逻辑与数据获取](../tutorials/essentials/part-5-async-logic.md)
-  - [Redux 核心教程，第7部分：RTK Query 基础](../tutorials/essentials/part-7-rtk-query-basics.md)
-  - [Using Redux：用 Thunks 编写逻辑](./writing-logic-thunks.mdx)
-  - [Redux Toolkit：RTK Query 概览](https://redux-toolkit.js.org/rtk-query/overview)
-- 文章与对比
-  - [设计 RTK 监听器中间件](https://blog.isquaredsoftware.com/2022/03/designing-rtk-listener-middleware/)
-  - [异步 Redux 思考：thunks、sagas 和 observables 比较](https://nordfjord.io/2020/08/31/async-redux.html)
-  - [Redux Toolkit 新监听器中间件 vs. Redux-Saga](https://blog.logrocket.com/redux-toolkits-new-listener-middleware-vs-redux-saga/)
-  - [尝试 Redux Listener Middleware](https://www.rsarai.xyz/redux-listener-middleware/)
+- Presentation: [**The Evolution of Redux Async Logic**](https://blog.isquaredsoftware.com/2022/05/presentations-evolution-redux-async-logic/)
+- Reason for middleware and side effects:
+  - ["How to dispatch a Redux action with a timeout?"](https://stackoverflow.com/questions/35411423/how-to-dispatch-a-redux-action-with-a-timeout/35415559#35415559)
+  - ["Why do we need middleware for async flow?"](https://stackoverflow.com/questions/34570758/why-do-we-need-middleware-for-async-flow-in-redux/34599594#34599594)
+- Docs and Tutorials:
+  - [Redux Fundamentals, Part 4: Store > Middleware](../tutorials/fundamentals/part-4-store.md#middleware)
+  - [Redux Fundamentals, Part 6: Async Logic and Data Fetching](../tutorials/fundamentals/part-6-async-logic.md)
+  - [Redux Essentials, Part 5: Async Logic and Data Fetching](../tutorials/essentials/part-5-async-logic.md)
+  - [Redux Essentials, Part 7: RTK Query Basics](../tutorials/essentials/part-7-rtk-query-basics.md)
+  - [Using Redux: Writing Logic with Thunks](./writing-logic-thunks.mdx)
+  - [Redux Toolkit: RTK Query Overview](/toolkit/rtk-query/overview)
+- Articles and comparisons
+  - [Designing the RTK Listener Middleware](https://blog.isquaredsoftware.com/2022/03/designing-rtk-listener-middleware/)
+  - [Thoughts on Async Redux: comparing thunks, sagas, and observables](https://nordfjord.io/2020/08/31/async-redux.html)
+  - [Redux Toolkit’s new listener middleware vs. Redux-Saga](https://blog.logrocket.com/redux-toolkits-new-listener-middleware-vs-redux-saga/)
+  - [Experimenting with the Redux Listener Middleware](https://www.rsarai.xyz/redux-listener-middleware/)

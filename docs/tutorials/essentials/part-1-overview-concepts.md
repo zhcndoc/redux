@@ -92,11 +92,11 @@ Redux 核心是一个小巧独立的 JS 库。它通常与以下包一同使用�
 
 #### Redux Toolkit
 
-[**Redux Toolkit**](https://redux-toolkit.js.org) 是我们推荐的编写 Redux 逻辑的标准方案。它包含了构建 Redux 应用必需的包和函数。Redux Toolkit 集成了我们的最佳实践，简化了大部分 Redux 任务，防止常见错误，使编写 Redux 应用更容易。
+[**Redux Toolkit**](/toolkit) is our recommended approach for writing Redux logic. It contains packages and functions that we think are essential for building a Redux app. Redux Toolkit builds in our suggested best practices, simplifies most Redux tasks, prevents common mistakes, and makes it easier to write Redux applications.
 
 #### React-Redux
 
-Redux 可以和任何 UI 框架集成，最常用的是 React。[**React-Redux**](https://react-redux.js.org/) 是我们官方提供的包，允许你的 React 组件与 Redux store 交互——读取 state 片段并分发 actions 来更新 store。
+Redux can integrate with any UI framework, and is most frequently used with React. [**React-Redux**](/react-redux) is our official package that lets your React components interact with a Redux store by reading pieces of state and dispatching actions to update the store.
 
 #### Redux DevTools 扩展
 

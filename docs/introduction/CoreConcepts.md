@@ -4,9 +4,14 @@ title: 核心概念
 description: "介绍 > 核心概念：Redux 的关键思想、reducer 函数简要概述"
 ---
 
-# 核心概念
+<!-- prettier-ignore -->
+import CoreApiNote from "../components/_CoreApiNote.mdx";
 
-想象你的应用状态是由一个普通对象描述的。例如，一个待办事项应用的状态可能如下所示：
+# Core Concepts
+
+<CoreApiNote />
+
+Imagine your app’s state is described as a plain object. For example, the state of a todo app might look like this:
 
 ```js
 {
@@ -73,4 +78,6 @@ function todoApp(state = {}, action) {
 }
 ```
 
-这基本上就是 Redux 的全部思想。注意这里我们并没有使用任何 Redux 的 API。Redux 提供了一些工具以方便这种模式，但主要思想是你描述你的状态如何随着 action 对象随时间更新，而你写的 90% 代码只是普通的 JavaScript，没有使用 Redux 本身、它的 API，或任何魔法。
+This is basically the whole idea of Redux. Note that we haven’t used any Redux APIs. It comes with a few utilities to facilitate this pattern, but the main idea is that you describe how your state is updated over time in response to action objects, and 90% of the code you write is just plain JavaScript, with no use of Redux itself, its APIs, or any magic.
+
+In practice, Redux Toolkit's [`createSlice`](/toolkit/api/createSlice) generates reducers like `todos` and `visibilityFilter` for you, along with the matching action creators, and [`configureStore`](/toolkit/api/configureStore) combines them into `todoApp`. The pattern underneath is exactly what you see above.

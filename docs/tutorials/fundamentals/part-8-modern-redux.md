@@ -6,6 +6,7 @@ description: 'Redux 官方基础教程：学习书写 Redux 逻辑的现代方�
 ---
 
 import { DetailedExplanation } from '../../components/DetailedExplanation'
+import { LiveExample } from '@site/src/components/LiveExample'
 
 :::tip 你将学到的内容
 
@@ -57,7 +58,7 @@ import { DetailedExplanation } from '../../components/DetailedExplanation'
 
 正如你所见，Redux 的许多方面都涉及编写一些可能比较冗长的代码，例如不变更新、动作类型和动作创建函数、以及归一化状态等。这些模式存在着合理的原因，但“手写”那些代码可能很困难。此外，搭建 Redux store 的过程需要多个步骤，我们还需要为诸如在 thunk 中派发“加载”动作或处理归一化数据等逻辑自行设计流程。最后，很多时候用户也不确定该如何写出“正确的” Redux 逻辑。
 
-这就是 Redux 团队创建 [**Redux Toolkit**：官方的、有自己观点的、“内置电池”工具包，用于高效开发 Redux 应用](https://redux-toolkit.js.org) 的原因。
+That's why the Redux team created [**Redux Toolkit**: our official, opinionated, "batteries included" toolset for efficient Redux development](/toolkit).
 
 Redux Toolkit 包含我们认为构建 Redux 应用不可或缺的包和函数。Redux Toolkit 内置了我们推荐的最佳实践，简化了大多数 Redux 任务，防止常见错误，并让编写 Redux 应用更容易。
 
@@ -83,7 +84,7 @@ npm install @reduxjs/toolkit
 
 我们经过了几轮的 Redux store 设置逻辑，目前代码如下：
 
-```js title="src/rootReducer.js"
+```js title="src/reducer.js"
 import { combineReducers } from 'redux'
 
 import todosReducer from './features/todos/todosSlice'
@@ -101,7 +102,7 @@ export default rootReducer
 ```js title="src/store.js"
 import { createStore, applyMiddleware } from 'redux'
 import { thunk } from 'redux-thunk'
-import { composeWithDevTools } from 'redux-devtools-extension'
+import { composeWithDevTools } from '@redux-devtools/extension'
 import rootReducer from './reducer'
 
 const composedEnhancer = composeWithDevTools(applyMiddleware(thunk))
@@ -189,7 +190,13 @@ npm uninstall redux redux-thunk reselect
 
 需要说明的是，**我们依然在用这些包，也需要它们被安装**。不过，由于 Redux Toolkit 依赖这些包，当你安装 `@reduxjs/toolkit` 时它们会自动安装，因此不必在 `package.json` 中单独声明。
 
-## 编写 Slice
+We can also remove the `@redux-devtools/extension` package entirely, since `configureStore` sets up the Redux DevTools connection for us:
+
+```js
+npm uninstall @redux-devtools/extension
+```
+
+## Writing Slices
 
 随着功能增加，slice 文件变得更大更复杂。特别是 `todosReducer`，因大量内嵌对象展开写不变更新，代码难以阅读，同时有多组动作创建函数。
 
@@ -439,13 +446,12 @@ export default todosSlice.reducer
 
 整合后的完整代码如下：
 
-<iframe
-  class="codesandbox"
-  src="https://codesandbox.io/embed/github/reduxjs/redux-fundamentals-example-app/tree/checkpoint-9-createSlice/?codemirror=1&fontsize=14&hidenavigation=1&theme=dark&module=%2Fsrc%2Ffeatures%2Ftodos%2FtodosSlice.js&runonclick=1"
-  title="redux-fundamentals-example-app"
-  allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
-  sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
-></iframe>
+<LiveExample
+  repo="reduxjs/redux-fundamentals-example-app"
+  ref="checkpoint-9-createSlice"
+  file="src/features/todos/todosSlice.js"
+  title="Redux Fundamentals: createSlice"
+/>
 
 ## 编写 Thunks
 
@@ -455,9 +461,9 @@ export default todosSlice.reducer
 
 :::tip
 
-Redux Toolkit 还有一个新[**RTK Query 数据获取 API**](https://redux-toolkit.js.org/rtk-query/overview)。RTK Query 是专门为 Redux 应用打造的数据获取和缓存方案，**它可以完全省去你写任何 thunk 和 reducer 来管理数据获取的需求**。推荐你试试，看看是否能简化你自己的数据获取代码！
+Redux Toolkit has a new [**RTK Query data fetching API**](/toolkit/rtk-query/overview). RTK Query is a purpose built data fetching and caching solution for Redux apps, and **can eliminate the need to write _any_ thunks or reducers to manage data fetching**. We encourage you to try it out and see if it can help simplify the data fetching code in your own apps!
 
-我们会在今后的 Redux 教程中增加 RTK Query 内容。之前可以查看[Redux Toolkit 官方文档中的 RTK Query 部分](https://redux-toolkit.js.org/rtk-query/overview)。
+We'll be updating the Redux tutorials soon to include sections on using RTK Query. Until then, see [the RTK Query section in the Redux Toolkit docs](/toolkit/rtk-query/overview).
 
 :::
 
@@ -827,13 +833,12 @@ export const selectFilteredTodoIds = createSelector(
 
 我们来最终看看使用 Redux Toolkit 完整转换后的待办应用代码：
 
-<iframe
-  class="codesandbox"
-  src="https://codesandbox.io/embed/github/reduxjs/redux-fundamentals-example-app/tree/checkpoint-10-finalCode/?codemirror=1&fontsize=14&hidenavigation=1&theme=dark&module=%2Fsrc%2Ffeatures%2Ftodos%2FtodosSlice.js&runonclick=1"
-  title="redux-fundamentals-example-app"
-  allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
-  sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
-></iframe>
+<LiveExample
+  repo="reduxjs/redux-fundamentals-example-app"
+  ref="checkpoint-10-finalCode"
+  file="src/features/todos/todosSlice.js"
+  title="Redux Fundamentals: final code"
+/>
 
 我们最后总结这一部分的关键点：
 

@@ -5,11 +5,16 @@ description: '结构化 Reducers > 使用 combineReducers：combineReducers 在�
 hide_title: true
 ---
 
+<!-- prettier-ignore -->
+import HandWrittenReducersNote from "../../components/_HandWrittenReducersNote.mdx";
+
 &nbsp;
 
 # 使用 `combineReducers`
 
-## 核心概念
+<HandWrittenReducersNote />
+
+## Core Concepts
 
 Redux 应用中最常见的状态结构是一个包含各领域特定数据“切片”的普通 Javascript 对象，每个顶级键对应一个切片。类似地，为该状态结构编写 reducer 逻辑的最常用方法是编写多个“切片 reducer”函数，这些函数都具有相同的 `(state, action)` 签名，并负责管理该特定状态切片的所有更新。多个切片 reducer 可以响应同一动作，独立地根据需要更新各自的切片，最终将更新后的切片组合成新的状态对象。
 
@@ -24,22 +29,22 @@ Redux 应用中最常见的状态结构是一个包含各领域特定数据“�
 
 ## 定义状态结构
 
-有两种方式来定义存储的初始状态形状和内容。第一，`createStore` 函数可以接受第二个参数 `preloadedState`，主要用来初始化之前持久化在别处（例如浏览器的 localStorage）中的状态。另一种方式是根 reducer 在接收到 `undefined` 状态时返回初始状态值。这两种方法在[初始化状态](./InitializingState.md)中有更详细的描述，但在使用 `combineReducers` 时还需注意一些额外事项。
+There are two ways to define the initial shape and contents of your store's state. First, `configureStore` accepts a `preloadedState` option. This is primarily intended for initializing the store with state that was previously persisted elsewhere, such as the browser's localStorage. The other way is for the root reducer to return the initial state value when the state argument is `undefined`. These two approaches are described in more detail in [Initializing State](./InitializingState.md), but there are some additional concerns to be aware of when using `combineReducers`.
 
-`combineReducers` 接收一个由切片 reducer 函数组成的对象，并创建一个输出对应状态对象的函数，输出对象的键名与输入对象相同。这意味着如果没有向 `createStore` 提供预加载状态，则传入的切片 reducer 对象的键名决定了输出状态对象的键名。当使用诸如默认模块导出和对象字面量简写等特性时，这些名称之间的对应关系并不总是显而易见。
+`combineReducers` takes an object full of slice reducer functions, and creates a function that outputs a corresponding state object with the same keys. This means that if no preloaded state is provided when creating the store, the naming of the keys in the input slice reducer object will define the naming of the keys in the output state object. The correlation between these names is not always apparent, especially when using features such as default module exports and object literal shorthands.
 
 下面是一个示例，展示了使用对象字面量简写与 `combineReducers` 如何定义状态结构：
 
 ```js
 // reducers.js
-export default theDefaultReducer = (state = 0, action) => state
+export default (theDefaultReducer = (state = 0, action) => state)
 
 export const firstNamedReducer = (state = 1, action) => state
 
 export const secondNamedReducer = (state = 2, action) => state
 
 // rootReducer.js
-import { combineReducers, createStore } from 'redux'
+import { combineReducers, configureStore } from '@reduxjs/toolkit'
 
 import theDefaultReducer, {
   firstNamedReducer,
@@ -53,7 +58,7 @@ const rootReducer = combineReducers({
   secondNamedReducer
 })
 
-const store = createStore(rootReducer)
+const store = configureStore({ reducer: rootReducer })
 console.log(store.getState())
 // {theDefaultReducer : 0, firstNamedReducer : 1, secondNamedReducer : 2}
 ```
@@ -65,7 +70,7 @@ console.log(store.getState())
 更好的写法可能如下：
 
 ```js
-import { combineReducers, createStore } from 'redux'
+import { combineReducers, configureStore } from '@reduxjs/toolkit'
 
 // 将默认导入重命名为我们想要的名称，也可以重命名命名导入
 import defaultState, {
@@ -79,9 +84,11 @@ const rootReducer = combineReducers({
   secondState // 键名与我们精心重命名的命名导出相同
 })
 
-const reducerInitializedStore = createStore(rootReducer)
+const reducerInitializedStore = configureStore({ reducer: rootReducer })
 console.log(reducerInitializedStore.getState())
 // {defaultState : 0, firstState : 1, secondState : 2}
 ```
 
-这种状态结构更好地体现了所涉及的数据，因为我们细心设置了传给 `combineReducers` 的键名。
+This state shape better reflects the data involved, because we took care to set up the keys we passed to `combineReducers`.
+
+`configureStore` does this step for you when its `reducer` option is an object of slice reducers: it calls `combineReducers` on that object, so the keys you write there become the top-level state keys. Redux Toolkit also has [`combineSlices`](/toolkit/api/combineSlices), which builds the root reducer from slice objects and supports adding reducers lazily.

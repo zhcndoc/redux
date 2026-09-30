@@ -6,6 +6,7 @@ description: '官方 Redux 基础教程：学习如何创建和使用 Redux stor
 ---
 
 import { DetailedExplanation } from '../../components/DetailedExplanation'
+import { LiveExample } from '@site/src/components/LiveExample'
 
 <!-- prettier-ignore -->
 import FundamentalsWarning from "../../components/_FundamentalsWarning.mdx";
@@ -31,11 +32,11 @@ import FundamentalsWarning from "../../components/_FundamentalsWarning.mdx";
 
 Redux **store** 将组成你应用的状态、动作和 reducers 结合起来。store 有几个职责：
 
-- 内部保存当前应用状态
-- 通过 [`store.getState()`](../../api/Store.md#getState) 访问当前状态
-- 通过 [`store.dispatch(action)`](../../api/Store.md#dispatch) 更新状态
-- 通过 [`store.subscribe(listener)`](../../api/Store.md#subscribe) 注册监听回调
-- 通过 [`store.subscribe(listener)`](../../api/Store.md#subscribe) 返回的 `unsubscribe` 函数取消注册监听
+- Holds the current application state inside
+- Allows access to the current state via [`store.getState()`](../../api/Store.md#getstate);
+- Allows state to be updated via [`store.dispatch(action)`](../../api/Store.md#dispatchaction);
+- Registers listener callbacks via [`store.subscribe(listener)`](../../api/Store.md#subscribelistener);
+- Handles unregistering of listeners via the `unsubscribe` function returned by [`store.subscribe(listener)`](../../api/Store.md#subscribelistener).
 
 需要注意的是，**在 Redux 应用中你只会有一个单一的 store**。当你想拆分数据处理逻辑时，应使用[reducer 组合](./part-3-state-actions-reducers.md#splitting-reducers)，创建多个 reducer 并将它们合并，而不是创建多个 store。
 
@@ -87,8 +88,8 @@ const store = createStore(rootReducer, preloadedState)
 
 :::
 
-```js title="src/index.js"
-// 省略已有的 React 导入
+```js title="src/main.jsx"
+// Omit existing React imports
 
 import store from './store'
 
@@ -199,7 +200,7 @@ function createStore(reducer, preloadedState) {
 }
 ```
 
-这个 Redux store 版本足够好用，甚至可以用它替换你应用中实际用的 Redux `createStore` 函数（不妨试试！）。[Redux 的真实实现更长且复杂一些](https://github.com/reduxjs/redux/blob/v4.0.5/src/createStore.js)，但大部分是注释、警告消息和一些异常情况处理。
+This small version of a Redux store works well enough that you could use it to replace the actual Redux `createStore` function you've been using in your app so far. (Try it and see for yourself!) [The actual Redux store implementation is longer and a bit more complicated](https://github.com/reduxjs/redux/blob/v5.0.1/src/createStore.ts), but most of that is comments, warning messages, and handling some edge cases.
 
 核心逻辑看起来相当简洁：
 
@@ -262,7 +263,7 @@ export default store
 
 接着派发一个动作了解效果：
 
-```js title="src/index.js"
+```js title="src/main.jsx"
 import store from './store'
 
 // highlight-start
@@ -304,7 +305,7 @@ export default store
 
 然后运行看看：
 
-```js title="src/index.js"
+```js title="src/main.jsx"
 import store from './store'
 
 store.dispatch({ type: 'todos/todoAdded', payload: 'Learn about actions' })
@@ -369,7 +370,7 @@ export default store
 
 派发动作时会怎样？
 
-```js title="src/index.js"
+```js title="src/main.jsx"
 import store from './store'
 
 store.dispatch({ type: 'todos/todoAdded', payload: 'Learn about actions' })
@@ -539,11 +540,13 @@ Redux DevTools UI 作为浏览器扩展提供，下载地址为 Chrome：[https:
 
 安装扩展后，需要配置 store，添加 DevTools 增强器。官方文档（[Redux DevTools Extension docs](https://github.com/reduxjs/redux-devtools/tree/main/extension)）中配置方式略显复杂，但有个 NPM 包 `redux-devtools-extension` 能简化配置，它导出一个 `composeWithDevTools` 函数，替代 Redux 原来的 `compose`。
 
-示例：
+The [Redux DevTools Extension docs](https://github.com/reduxjs/redux-devtools/tree/main/extension) have some instructions on how to set up the store, but the steps listed are a bit complicated. However, there's an NPM package called `@redux-devtools/extension` that takes care of the complicated part. That package exports a specialized `composeWithDevTools` function that we can use instead of the original Redux `compose` function.
+
+Here's how that looks:
 
 ```js title="src/store.js"
 import { createStore, applyMiddleware } from 'redux'
-import { composeWithDevTools } from 'redux-devtools-extension'
+import { composeWithDevTools } from '@redux-devtools/extension'
 import rootReducer from './reducer'
 import { print1, print2, print3 } from './exampleAddons/middleware'
 
@@ -557,7 +560,7 @@ const store = createStore(rootReducer, composedEnhancer)
 export default store
 ```
 
-确保 `index.js` 在导入 store 后仍派发动作。打开浏览器 DevTools 里的 Redux 标签页，应该会看到类似下面界面：
+Make sure that `main.jsx` is still dispatching an action after importing the store. Now, open up the Redux DevTools tab in the browser's DevTools window. You should see something that looks like this:
 
 ![Redux DevTools 扩展：动作标签](/img/tutorials/fundamentals/devtools-action-tab.png)
 
@@ -582,13 +585,12 @@ export default store
 
 来看我们示例应用此刻的样貌：
 
-<iframe
-  class="codesandbox"
-  src="https://codesandbox.io/embed/github/reduxjs/redux-fundamentals-example-app/tree/checkpoint-2-storeSetup/?codemirror=1&fontsize=14&hidenavigation=1&theme=dark&module=%2Fsrc%2Fstore.js&runonclick=1"
-  title="redux-fundamentals-example-app"
-  allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
-  sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
-></iframe>
+<LiveExample
+  repo="reduxjs/redux-fundamentals-example-app"
+  ref="checkpoint-2-storeSetup"
+  file="src/store.js"
+  title="Redux Fundamentals: store setup"
+/>
 
 再来回顾本节内容：
 

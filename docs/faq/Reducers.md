@@ -12,9 +12,10 @@ Redux 存储推荐的结构是通过键将状态对象拆分成多个“切片�
 
 许多用户后来希望尝试在两个 reducer 之间共享数据，但发现 `combineReducers` 并不支持这样做。有几种解决方法：
 
-- 如果一个 reducer 需要了解其他状态切片的数据，可能需要重新组织状态树结构，让单个 reducer 处理更多的数据。
-- 你可能需要编写一些自定义函数来处理部分动作，这可能需要用你自己的顶层 reducer 函数替代 `combineReducers`。你也可以使用像 [reduce-reducers](https://github.com/acdlite/reduce-reducers) 这样的工具，先用 `combineReducers` 处理大部分动作，同时针对跨状态切片的特定动作运行更专门的 reducer。
-- 带异步逻辑的[中间件](../tutorials/fundamentals/part-4-store.md#middleware)，例如 [redux-thunk](https://github.com/reduxjs/redux-thunk)，可以通过 `getState()` 访问整个状态。一个 action 创建者可以从状态中检索额外数据并放进 action 中，使各个 reducer 拥有足够信息来更新自己的状态切片。
+- First, check whether you need to _share_ state at all, or whether several slices just need to _respond to the same action_. The latter is the common case, and it needs no special handling: each `createSlice` can handle actions from other slices (or from `createAsyncThunk`) in its [`extraReducers`](/toolkit/api/createSlice#extrareducers) field. See [Allow Many Reducers to Respond to the Same Action](../style-guide/style-guide.md#allow-many-reducers-to-respond-to-the-same-action) in the Style Guide.
+- If a reducer needs to know data from another slice of state, the state tree shape may need to be reorganized so that a single reducer is handling more of the data.
+- You may need to write some custom functions for handling some of these actions. This may require replacing `combineReducers` with your own top-level reducer function. You can also use a utility such as [reduce-reducers](https://github.com/redux-utilities/reduce-reducers) to run `combineReducers` to handle most actions, but also run a more specialized reducer for specific actions that cross state slices. [Beyond `combineReducers`](../usage/structuring-reducers/BeyondCombineReducers.md) shows this approach.
+- [Thunks](../usage/writing-logic-thunks.mdx) and [listener middleware](/toolkit/api/createListenerMiddleware) effects have access to the entire state through `getState()`. A thunk can retrieve additional data from the state and put it in the action it dispatches, so that each reducer has enough information to update its own state slice.
 
 总的来说，记住 reducer 只是函数 —— 你可以按任何方式组织和细分它们，推荐将它们拆分为更小的、可复用的函数（“reducer 组合”）。在拆分的过程中，如果子 reducer 需要额外数据计算下一状态，你可以从父 reducer 传入自定义的第三个参数。只需确保它们共同遵守 reducer 的基本规则：`(state, action) => newState`，并且以不可变方式更新状态，而不是直接修改。
 
@@ -35,14 +36,17 @@ Redux 存储推荐的结构是通过键将状态对象拆分成多个“切片�
 
 ### 我必须使用 `switch` 语句来处理动作吗？
 
-不必。你可以用任何你喜欢的方法在 reducer 中响应动作。`switch` 语句是最常见的做法，但使用 `if` 语句、函数查找表，或者创建一个抽象函数来封装这部分逻辑都是可以的。事实上，虽然 Redux 要求 action 对象包含一个 `type` 字段，但你的 reducer 逻辑甚至不必依赖它来处理动作。话虽如此，标准做法确实是基于 `type` 使用 switch 语句或查找表。
+No. You are welcome to use any approach you'd like to respond to an action in a reducer. The `switch` statement was the most common approach in hand-written reducers, but it's fine to use `if` statements, a lookup table of functions, or to create a function that abstracts this away. In fact, while Redux does require that action objects contain a `type` field, your reducer logic doesn't even have to rely on that to handle the action.
+
+Today the standard approach is [`createSlice`](/toolkit/api/createSlice), which is a lookup table: each function in its `reducers` field handles one action type, and the slice generates the matching action creators and the combined reducer for you. The [`createReducer`](/toolkit/api/createReducer) builder callback does the same for reducers that aren't part of a slice.
 
 #### 进一步信息
 
 **文档**
 
-- [使用 Redux：简化样板代码](../usage/ReducingBoilerplate.md)
-- [使用 Redux：构建 Reducer 结构 - 拆分 Reducer 逻辑](../usage/structuring-reducers/SplittingReducerLogic.md)
+- [Style Guide: Use Redux Toolkit for Writing Redux Logic](../style-guide/style-guide.md#use-redux-toolkit-for-writing-redux-logic)
+- [Using Redux: Reducing Boilerplate](../usage/ReducingBoilerplate.md)
+- [Using Redux: Structuring Reducers - Splitting Reducer Logic](../usage/structuring-reducers/SplittingReducerLogic.md)
 
 **讨论**
 

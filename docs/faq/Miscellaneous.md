@@ -10,12 +10,12 @@ sidebar_label: 杂项
 
 有，很多！举几个例子：
 
-- [Twitter 的移动端网站](https://mobile.twitter.com/)
-- [Wordpress 的新管理页面](https://github.com/Automattic/wp-calypso)
-- [Firefox 的新调试器](https://github.com/devtools-html/debugger.html)
-- [HyperTerm 终端应用](https://github.com/zeit/hyperterm)
+- [Twitter / X's web client](https://x.com/)
+- [Wordpress's admin page](https://github.com/Automattic/wp-calypso)
+- [Firefox's debugger](https://github.com/firefox-devtools/debugger)
+- [The Hyper terminal application](https://github.com/vercel/hyper)
 
-还有许许多多！Redux Addons 目录中有**[一份基于Redux的应用和示例列表](https://github.com/markerikson/redux-ecosystem-links/blob/master/apps-and-examples.md)**，其中包含各种实际应用，无论大小。
+And many, many more!
 
 #### 进一步信息
 
@@ -32,25 +32,20 @@ sidebar_label: 杂项
 
 身份认证对任何真实的应用都是必不可少的。实现身份认证时，你必须记住，这不会改变你组织应用的方式，应像实现其他功能一样实现身份认证。过程相对简单：
 
-1. 创建表示 `LOGIN_SUCCESS`、`LOGIN_FAILURE` 等的 action 常量。
+1. Create an `auth` slice with `createSlice` that holds the current user and token (or a flag indicating whether the user is logged in), plus loading and error fields for the login request.
 
-2. 创建 action creators，接收凭证、表示认证是否成功的标志、token 或错误消息作为 payload。
+2. Make the login request either with an [RTK Query mutation](/toolkit/rtk-query/usage/mutations) or with a [`createAsyncThunk`](/toolkit/api/createAsyncThunk) that takes the credentials and returns the token. Handle the pending, fulfilled, and rejected cases in the slice's `extraReducers` (or with `addMatcher` for the mutation's lifecycle actions) to save the token or the error message.
 
-3. 使用 Redux Thunk 中间件或任何你认为合适的中间件创建异步 action creator，发送网络请求到 API，若凭证有效则返回 token。然后将 token 保存在本地存储，或者如果失败则向用户显示响应。你可以在上一步写的 action creators 中执行这些副作用。
+3. Read the token from the store when making other requests. With RTK Query, do this in `baseQuery`'s [`prepareHeaders`](/toolkit/rtk-query/api/fetchBaseQuery#setting-default-headers-on-requests) callback, which receives `getState`. For other code that needs the token outside a component, see [How can I use the Redux store in non-component files?](./CodeStructure.md#how-can-i-use-the-redux-store-in-non-component-files).
 
-4. 创建 reducer，根据每种可能的认证情况（如 `LOGIN_SUCCESS`、`LOGIN_FAILURE` 等）返回下一个状态。
+4. If you want the session to survive a page reload, persist the token from a [listener middleware](/toolkit/api/createListenerMiddleware) effect that runs when the login succeeds, and read it back into `preloadedState` when you create the store.
 
 #### 进一步信息
 
-**文章**
+**Documentation**
 
-- [Auth0: 使用 JWT 进行身份认证](https://auth0.com/blog/2016/01/04/secure-your-react-and-redux-app-with-jwt-authentication/)
-- [处理 Redux 中身份认证的技巧](https://medium.com/@MattiaManzati/tips-to-handle-authentication-in-redux-2-introducing-redux-saga-130d6872fbe7)
+- [RTK Query: Authentication example](/toolkit/rtk-query/usage/examples#authentication)
 
-**示例**
+**Articles**
 
-- [react-redux-jwt-auth-example](https://github.com/joshgeller/react-redux-jwt-auth-example)
-
-**库**
-
-- [Redux Addons 目录：使用场景 - 身份认证](https://github.com/markerikson/redux-ecosystem-links/blob/master/use-cases.md#authentication)
+- [Authentication with JWT by Auth0](https://auth0.com/blog/secure-your-react-and-redux-app-with-jwt-authentication/) (2016, uses `connect` and hand-written thunks; the overall flow still applies)
